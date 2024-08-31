@@ -1,0 +1,105 @@
+@font-face {
+  font-family: 'Inter';
+  font-weight: 200;
+  src: url('/fonts/inter/inter-extralight.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-weight: 300;
+  src: url('/fonts/inter/inter-light.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-weight: 400;
+  src: url('/fonts/inter/inter-regular.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-weight: 500;
+  src: url('/fonts/inter/inter-medium.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-weight: 600;
+  src: url('/fonts/inter/inter-semibold.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-weight: 700;
+  src: url('/fonts/inter/inter-bold.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-weight: 800;
+  src: url('/fonts/inter/inter-extrabold.woff') format('woff');
+}
+
+:root {
+  --pt-purple-50: #f5f0ff;
+  --pt-purple-100: #deceff;
+  --pt-purple-200: #c8adff;
+  --pt-purple-300: #b18cff;
+  --pt-purple-400: #9b6aff;
+  --pt-purple-500: #8050e3;
+  --pt-purple-600: #6538c1;
+  --pt-purple-700: #4c249f;
+  --pt-purple-800: #36147d;
+  --pt-purple-900: #24095b;
+  --pt-teal-light: #35f0d0;
+  --pt-teal-dark: #0dc5a5;
+  --pt-pink-light: #fa48e8;
+  --pt-pink-dark: #b623a7;
+  --pt-bg-purple-light: #5d3a97;
+  --pt-bg-purple-dark: #2d0c66;
+  --pt-bg-purple-darker: #21064e;
+  --pt-warning-light: #ffb6b6;
+  --pt-warning-dark: #8b0000;
+  --pt-gold: #ffb636;
+  --pt-transparent: #f5f0ff1a;
+}
+
+html {
+  font-family: 'Inter';
+  font-feature-settings: 'calt' off;
+  color: var(--pt-purple-50);
+  background-color: var(--pt-bg-purple-darker);
+}
+
+body {
+  margin: 0;
+}
+
+button {
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  user-select: none;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.desktop-only {
+  display: none;
+}
+
+@media (min-width: 720px) {
+  .desktop-only {
+    display: block;
+  }
+
+  .mobile-only {
+    display: none;
+  }
+}
