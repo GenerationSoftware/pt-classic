@@ -13,8 +13,12 @@
     "format": "prettier --write ."
   },
   "dependencies": {
-    "@wagmi/core": "^2.13.4",
-    "viem": "^2.21.0"
+    "@rainbow-me/rainbowkit": "^2.1.5",
+    "@tanstack/react-query": "^5.53.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "viem": "^2.21.0",
+    "wagmi": "^2.12.8"
   },
   "devDependencies": {
     "@sveltejs/adapter-static": "^3.0.4",
@@ -24,6 +28,7 @@
     "prettier-plugin-svelte": "^3.1.2",
     "svelte": "^4.2.7",
     "svelte-check": "^3.6.0",
+    "svelte-preprocess-react": "^0.17.0",
     "typescript": "^5.5.4",
     "vite": "^5.0.3"
   },

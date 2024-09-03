@@ -1,23 +1,39 @@
 <script>
+  import { QueryClientProvider } from '@tanstack/react-query'
+  import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
+  import { queryClient, wagmiConfig } from '$lib/constants'
+  import { used } from 'svelte-preprocess-react'
+  import { WagmiProvider } from 'wagmi'
   import { appName } from '$lib/config'
   import { page } from '$app/stores'
   import Nav from '$lib/components/Nav.svelte'
+  import '@rainbow-me/rainbowkit/styles.css'
   import '../app.css'
 
   $: currentPage = $page.url.pathname.split('/')[1]
   $: pageTitle = currentPage.slice(0, 1).toUpperCase() + currentPage.slice(1)
   $: title = appName + (!!pageTitle ? ` | ${pageTitle}` : '')
+
+  used(WagmiProvider)
+  used(QueryClientProvider)
+  used(RainbowKitProvider)
 </script>
 
 <svelte:head>
   <title>{title}</title>
 </svelte:head>
 
-<Nav />
+<react:WagmiProvider config={wagmiConfig}>
+  <react:QueryClientProvider client={queryClient}>
+    <react:RainbowKitProvider>
+      <Nav />
 
-<main>
-  <slot />
-</main>
+      <main>
+        <slot />
+      </main>
+    </react:RainbowKitProvider>
+  </react:QueryClientProvider>
+</react:WagmiProvider>
 
 <style>
   main {

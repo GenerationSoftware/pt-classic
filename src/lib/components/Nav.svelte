@@ -1,6 +1,17 @@
 <script>
-  import ConnectButton from './ConnectButton.svelte'
+  import { ConnectButton } from '@rainbow-me/rainbowkit'
+  import { hooks, used } from 'svelte-preprocess-react'
   import NavPageLink from './NavPageLink.svelte'
+  import { useWalletClient } from 'wagmi'
+  import { walletClient } from '$lib/stores'
+
+  const wagmiStore = hooks(() => useWalletClient())
+
+  wagmiStore.subscribe((val) => {
+    walletClient.set(val?.data)
+  })
+
+  used(ConnectButton)
 </script>
 
 <div class="top-nav-wrapper">
@@ -9,7 +20,7 @@
       <img src="pooltogether.svg" alt="PoolTogether" class="desktop-only" />
       <img src="pooltogether-small.svg" alt="PoolTogether" class="mobile-only" />
     </a>
-    <ConnectButton />
+    <react:ConnectButton />
   </div>
 </div>
 
