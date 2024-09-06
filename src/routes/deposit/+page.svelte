@@ -1,5 +1,5 @@
 <script>
-  import DepositCard from '$lib/components/DepositCard.svelte'
+  import DepositCard from '$lib/components/deposit/DepositCard.svelte'
 </script>
 
 <DepositCard />

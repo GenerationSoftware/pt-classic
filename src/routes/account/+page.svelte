@@ -1,5 +1,5 @@
 <script>
-  import AccountBalance from '$lib/components/AccountBalance.svelte'
+  import AccountBalance from '$lib/components/account/AccountBalance.svelte'
 </script>
 
 <AccountBalance />

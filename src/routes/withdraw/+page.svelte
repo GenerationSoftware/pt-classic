@@ -1,5 +1,5 @@
 <script>
-  import WithdrawCard from '$lib/components/WithdrawCard.svelte'
+  import WithdrawCard from '$lib/components/withdraw/WithdrawCard.svelte'
 </script>
 
 <WithdrawCard />
