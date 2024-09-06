@@ -79,6 +79,8 @@ h1,
 h2,
 h3 {
   margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
 }
 
 button {
@@ -98,6 +100,17 @@ button:disabled {
 
 .desktop-only {
   display: none;
+}
+
+.teal-button {
+  padding: 0.75rem 1.25rem;
+  color: var(--pt-purple-800);
+  background-color: var(--pt-teal-light);
+  font-weight: 500;
+  line-height: 150%;
+  border: 1px solid var(--pt-teal-dark);
+  border-radius: 0.5rem;
+  text-decoration: none;
 }
 
 @media (min-width: 720px) {

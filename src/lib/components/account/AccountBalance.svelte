@@ -8,7 +8,10 @@
   $: vaultBalance = $userBalances[lower(prizeVault.address)]
   $: formattedVaultBalance =
     vaultBalance !== undefined
-      ? parseFloat(formatUnits(vaultBalance, prizeVault.decimals)).toLocaleString('en', { maximumFractionDigits: 2 })
+      ? parseFloat(formatUnits(vaultBalance, prizeVault.decimals)).toLocaleString('en', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        })
       : ''
 </script>
 
@@ -23,15 +26,15 @@
 
 <style>
   div {
+    width: calc(100% - 2rem);
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin: 1rem;
+    margin: 1rem 0;
   }
 
   h2 {
     color: var(--pt-purple-200);
-    font-weight: 500;
     line-height: 150%;
   }
 
