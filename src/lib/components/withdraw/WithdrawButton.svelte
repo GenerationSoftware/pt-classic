@@ -47,7 +47,7 @@
 </script>
 
 {#if !$walletClient || !$userAddress || !amount}
-  <button disabled={true}>Withdraw</button>
+  <button class="teal-button" disabled={true}>Withdraw</button>
 {:else}
-  <button type="submit" on:click={withdraw} disabled={isWithdrawing || disabled}>Withdraw</button>
+  <button type="submit" on:click={withdraw} class="teal-button" disabled={isWithdrawing || disabled}>Withdraw</button>
 {/if}
