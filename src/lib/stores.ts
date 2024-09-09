@@ -2,6 +2,7 @@ import { getFlashEvents, getPrizeHookStatus, getTokenBalances, getTransferEvents
 import { prizeVault, zapInTokenOptions } from './config'
 import { dolphinAddress } from './constants'
 import { writable } from 'svelte/store'
+import type { FlashEvent, PrizeHookStatus, TransferEvent } from './types'
 import type { Address, WalletClient } from 'viem'
 
 export const walletClient = writable<WalletClient | undefined>(undefined)
@@ -12,14 +13,17 @@ walletClient.subscribe(async (client) => {
 })
 
 export const userBalances = writable<{ [tokenAddress: Lowercase<Address>]: bigint }>({})
-export const userPrizeHookStatus = writable<Awaited<ReturnType<typeof getPrizeHookStatus>> | undefined>(undefined)
+export const userPrizeHookStatus = writable<PrizeHookStatus | undefined>(undefined)
 
 // TODO: cache these somehow (save results, only query past X block next load, etc.)
-export const userTransferEvents = writable<Awaited<ReturnType<typeof getTransferEvents>>>([])
-export const userFlashEvents = writable<Awaited<ReturnType<typeof getFlashEvents>>>([])
+export const userTransferEvents = writable<TransferEvent[]>([])
+export const userFlashEvents = writable<FlashEvent[]>([])
 
 export const isFetchedUserTransferEvents = writable<boolean>(false)
 export const isFetchedUserFlashEvents = writable<boolean>(false)
+
+// TODO: cache this somehow (careful with potential future network overlaps)
+export const blockTimestamps = writable<{ [blockNumber: number]: number }>({})
 
 userAddress.subscribe(async (address) => {
   if (!!address) {

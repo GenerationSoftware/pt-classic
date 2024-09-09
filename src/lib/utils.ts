@@ -1,10 +1,23 @@
-import { erc20Abi, zeroAddress, type Address } from 'viem'
+import { erc20Abi, formatUnits, zeroAddress, type Address } from 'viem'
 import { dolphinAddress, publicClient } from './constants'
 import { prizeHookAddress, prizeVault } from './config'
+import { blockTimestamps } from './stores'
 import { vaultABI } from './abis/vaultABI'
+import { get } from 'svelte/store'
+import type { FlashEvent } from './types'
 
 export const lower = (address: Address) => {
   return address.toLowerCase() as Lowercase<Address>
+}
+
+export const formatPrize = (flashEvent: FlashEvent) => {
+  const amount = flashEvent.args.amountsToBeneficiary.reduce((a, b) => a + b, 0n) + flashEvent.args.excessToBeneficiary
+
+  return { txHash: flashEvent.transactionHash, blockNumber: flashEvent.blockNumber, amount, formattedAmount: formatShareAmount(amount) }
+}
+
+export const formatShareAmount = (amount: bigint) => {
+  return parseFloat(formatUnits(amount, prizeVault.decimals)).toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
 export const getTokenBalances = async (owner: Address, tokenAddresses: Address[]) => {
@@ -71,25 +84,59 @@ export const getPrizeHookStatus = async (
   return { isPrizeHookSet, isSwapperSet: false, pastSwapperAddresses: [] }
 }
 
-export const getTransferEvents = async (address: Address, tokenAddress: Address) => {
-  const transferEvents = await publicClient.getLogs({
-    address: tokenAddress,
-    event: {
-      type: 'event',
-      name: 'Transfer',
-      inputs: [
-        { indexed: true, name: 'from', type: 'address' },
-        { indexed: true, name: 'to', type: 'address' },
-        { indexed: false, name: 'value', type: 'uint256' }
-      ]
-    },
-    args: { from: address, to: address },
-    fromBlock: prizeVault.deployedAtBlock,
-    toBlock: 'latest',
-    strict: true
-  })
+export const getBlockTimestamp = async (blockNumber: bigint) => {
+  const existingBlockTimestamp = get(blockTimestamps)[Number(blockNumber)]
+  if (!!existingBlockTimestamp) return existingBlockTimestamp
 
-  return transferEvents
+  const block = await publicClient.getBlock({ blockNumber, includeTransactions: false })
+
+  blockTimestamps.update((oldBlockTimestamps) => ({ ...oldBlockTimestamps, [Number(blockNumber)]: Number(block.timestamp) }))
+
+  return Number(block.timestamp)
+}
+
+export const getTransferEvents = async (address: Address, tokenAddress: Address, options?: { filter?: 'from' | 'to' }) => {
+  const fromTransferEvents =
+    options?.filter === 'to'
+      ? []
+      : await publicClient.getLogs({
+          address: tokenAddress,
+          event: {
+            type: 'event',
+            name: 'Transfer',
+            inputs: [
+              { indexed: true, name: 'from', type: 'address' },
+              { indexed: true, name: 'to', type: 'address' },
+              { indexed: false, name: 'value', type: 'uint256' }
+            ]
+          },
+          args: { from: address },
+          fromBlock: prizeVault.deployedAtBlock,
+          toBlock: 'latest',
+          strict: true
+        })
+
+  const toTransferEvents =
+    options?.filter === 'from'
+      ? []
+      : await publicClient.getLogs({
+          address: tokenAddress,
+          event: {
+            type: 'event',
+            name: 'Transfer',
+            inputs: [
+              { indexed: true, name: 'from', type: 'address' },
+              { indexed: true, name: 'to', type: 'address' },
+              { indexed: false, name: 'value', type: 'uint256' }
+            ]
+          },
+          args: { to: address },
+          fromBlock: prizeVault.deployedAtBlock,
+          toBlock: 'latest',
+          strict: true
+        })
+
+  return [...fromTransferEvents, ...toTransferEvents]
 }
 
 export const getFlashEvents = async (beneficiary: Address, swapperAddresses: Address[]) => {

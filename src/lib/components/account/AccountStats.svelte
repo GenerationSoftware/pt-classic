@@ -1,26 +1,22 @@
-<script>
-  import { prizePool, prizeVault } from '$lib/config'
+<script lang="ts">
+  import { isFetchedUserFlashEvents, isFetchedUserTransferEvents, userAddress, userFlashEvents, userTransferEvents } from '$lib/stores'
+  import { formatPrize, formatShareAmount, lower } from '$lib/utils'
+  import { prizePool } from '$lib/config'
   import { formatUnits } from 'viem'
   import Loading from '../Loading.svelte'
 
-  // TODO: get total deposited (only manual user deposits)
-  // TODO: need to distinguish between weth zaps and prize zaps
-  $: deposited = 0n
-  $: formattedDeposited =
-    deposited !== undefined
-      ? parseFloat(formatUnits(deposited, prizeVault.decimals)).toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-      : ''
+  $: totalPrizesWon = $userFlashEvents.map((flashEvent) => formatPrize(flashEvent)).reduce((a, b) => a + b.amount, 0n)
+  $: formattedTotalPrizesWon = totalPrizesWon !== undefined ? formatShareAmount(totalPrizesWon) : '?'
 
-  // TODO: get total won as prizes
-  // TODO: convert to $ value
-  $: prizesWon = 0n
-  $: formattedTotalPrizesWon =
-    prizesWon !== undefined
-      ? parseFloat(formatUnits(prizesWon, prizePool.prizeToken.decimals)).toLocaleString('en', {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2
-        })
-      : ''
+  $: aggregatedTransferAmount = !!$userAddress
+    ? $userTransferEvents.reduce(
+        (a, b) =>
+          lower(b.args.to) === lower($userAddress) ? a + b.args.value : lower(b.args.from) === lower($userAddress) ? a - b.args.value : a,
+        0n
+      )
+    : 0n
+  $: totalDepositedAmount = aggregatedTransferAmount - totalPrizesWon
+  $: formattedTotalDepositedAmount = totalDepositedAmount >= 0n ? formatShareAmount(totalDepositedAmount) : '?'
 
   // TODO: get total won as bonus rewards
   // TODO: convert to $ value
@@ -37,15 +33,15 @@
 <div class="wrapper">
   <div class="stat">
     <h3>Total Deposited</h3>
-    {#if deposited !== undefined}
-      <span>${formattedDeposited}</span>
+    {#if isFetchedUserTransferEvents && isFetchedUserFlashEvents}
+      <span>${formattedTotalDepositedAmount}</span>
     {:else}
       <Loading />
     {/if}
   </div>
   <div class="stat">
     <h3>Total Prizes Won</h3>
-    {#if prizesWon !== undefined}
+    {#if isFetchedUserFlashEvents}
       <span>+${formattedTotalPrizesWon}</span>
     {:else}
       <Loading />

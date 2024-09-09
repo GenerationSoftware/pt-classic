@@ -1,18 +1,11 @@
 <script>
+  import { formatShareAmount, lower } from '$lib/utils'
   import { userBalances } from '$lib/stores'
   import { prizeVault } from '$lib/config'
-  import { formatUnits } from 'viem'
-  import { lower } from '$lib/utils'
   import Loading from '../Loading.svelte'
 
   $: vaultBalance = $userBalances[lower(prizeVault.address)]
-  $: formattedVaultBalance =
-    vaultBalance !== undefined
-      ? parseFloat(formatUnits(vaultBalance, prizeVault.decimals)).toLocaleString('en', {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2
-        })
-      : ''
+  $: formattedVaultBalance = vaultBalance !== undefined ? formatShareAmount(vaultBalance) : ''
 </script>
 
 <div>

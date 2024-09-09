@@ -1,12 +1,17 @@
 <script lang="ts">
+  import { isFetchedUserFlashEvents, userFlashEvents } from '$lib/stores'
+  import { formatPrize, getBlockTimestamp } from '$lib/utils'
   import Loading from '../Loading.svelte'
 
-  // TODO: get rows based on prizes and bonus rewards received / claimed
-  $: isFetchedData = true
-  $: rows = []
+  let isExpanded = false
 
-  const onClickSeeMore = () => {
-    // TODO: double rows and turn content scrollable
+  $: prizesWon = $userFlashEvents.map((flashEvent) => formatPrize(flashEvent))
+
+  // TODO: also include bonus rewards (show underlying tokens on hover or click)
+  $: rows = [...prizesWon]
+
+  const getBlockDate = async (blockNumber: bigint) => {
+    return new Date((await getBlockTimestamp(blockNumber)) * 1e3).toLocaleDateString('en', { day: '2-digit', month: '2-digit' })
   }
 </script>
 
@@ -16,19 +21,31 @@
     <span class="title">Prizes</span>
   </div>
   <div class="content-wrapper">
-    {#if !isFetchedData}
-      <Loading />
-    {:else if !rows.length}
-      <span style="margin-bottom: 0.5rem">No prizes... yet</span>
-    {:else}
-      {#each rows as row}
-        <!-- TODO: show prizes won -->
-        <!-- TODO: show claimed bonus rewards -->
-        <span>ROW</span>
-      {/each}
-    {/if}
-    {#if rows.length > 3}
-      <button class="expand" on:click={onClickSeeMore}>See More</button>
+    <div class="rows">
+      {#if !$isFetchedUserFlashEvents}
+        <Loading height="1rem" />
+      {:else if !rows.length}
+        <span>No prizes... yet</span>
+      {:else}
+        {#each prizesWon.slice(0, isExpanded ? undefined : 3) as prize}
+          <div class="prize-row">
+            <div class="prize-info">
+              {#await getBlockDate(prize.blockNumber)}
+                <Loading height="1rem" />
+              {:then date}
+                <!-- TODO: need a monospace font for this -->
+                <span>{date}</span>
+              {/await}
+              <span>•</span>
+              <span>Prize</span>
+            </div>
+            <span class="prize-amount">+${prize.formattedAmount}</span>
+          </div>
+        {/each}
+      {/if}
+    </div>
+    {#if rows.length > 3 && !isExpanded}
+      <button class="expand" on:click={() => (isExpanded = true)}>See More</button>
     {/if}
   </div>
 </div>
@@ -89,7 +106,26 @@
     border-radius: 0 0 1rem 1rem;
   }
 
-  div.content-wrapper > button.expand {
+  div.rows {
+    max-height: 10rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
+    overflow-y: auto;
+  }
+
+  div.prize-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  div.prize-info > span:first-child {
+    color: var(--pt-purple-200);
+  }
+
+  button.expand {
     color: var(--pt-purple-400);
     font-size: 0.75rem;
   }
