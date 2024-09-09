@@ -5,6 +5,7 @@
   import { formatUnits } from 'viem'
   import Loading from '../Loading.svelte'
 
+  // TODO: this needs to only display checked prizes
   $: totalPrizesWon = $userFlashEvents.map((flashEvent) => formatPrize(flashEvent)).reduce((a, b) => a + b.amount, 0n)
   $: formattedTotalPrizesWon = totalPrizesWon !== undefined ? formatShareAmount(totalPrizesWon) : '?'
 

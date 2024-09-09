@@ -5,6 +5,7 @@
 
   let isExpanded = false
 
+  // TODO: this needs to only display checked prizes
   $: prizesWon = $userFlashEvents.map((flashEvent) => formatPrize(flashEvent))
 
   // TODO: also include bonus rewards (show underlying tokens on hover or click)
