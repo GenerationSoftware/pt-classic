@@ -16,7 +16,10 @@ export const prizeVault = {
   decimals: 6,
   name: 'Prize USDC',
   symbol: 'przUSDC',
-  asset: { address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', decimals: 6, name: 'USD Coin', symbol: 'USDC' }
-} satisfies Token & { asset: Token }
+  asset: { address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', decimals: 6, name: 'USD Coin', symbol: 'USDC' },
+  deployedAtBlock: 14_508_078n
+} satisfies Token & { asset: Token; deployedAtBlock: bigint }
+
+export const prizeHookAddress: Lowercase<Address> = '0x24857c8da1a89d06f5e37dc42094969621385a50' // TODO: get actual hook address
 
 export const zapInTokenOptions: Token[] = []
