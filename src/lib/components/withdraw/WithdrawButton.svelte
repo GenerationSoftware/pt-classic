@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { userAddress, userBalances, walletClient } from '$lib/stores'
+  import { userAddress, userBalances, userTransferEvents, walletClient } from '$lib/stores'
   import { chain, prizeVault } from '$lib/config'
-  import { getTokenBalances } from '$lib/utils'
+  import { getTokenBalances, getTransferEvents } from '$lib/utils'
   import { publicClient } from '$lib/constants'
   import { vaultABI } from '$lib/abis/vaultABI'
 
@@ -14,6 +14,16 @@
     if (!!$userAddress) {
       const updatedBalances = await getTokenBalances($userAddress, [prizeVault.address, prizeVault.asset.address])
       userBalances.update((oldBalances) => ({ ...oldBalances, ...updatedBalances }))
+    }
+  }
+
+  const updateTransferEvents = async () => {
+    if (!!$userAddress) {
+      const lastTransferEvent = $userTransferEvents.at(-1)
+      const newTransferEvents = await getTransferEvents($userAddress, prizeVault.address, {
+        fromBlock: !!lastTransferEvent ? lastTransferEvent.blockNumber + 1n : undefined
+      })
+      userTransferEvents.update((oldTransferEvents) => [...oldTransferEvents, ...newTransferEvents])
     }
   }
 
@@ -32,6 +42,7 @@
         const txReceipt = await publicClient.waitForTransactionReceipt({ hash })
 
         if (txReceipt.status === 'success') {
+          updateTransferEvents()
           onSuccess()
         } else {
           throw new Error(`redeem tx reverted: ${hash}`)

@@ -95,7 +95,11 @@ export const getBlockTimestamp = async (blockNumber: bigint) => {
   return Number(block.timestamp)
 }
 
-export const getTransferEvents = async (address: Address, tokenAddress: Address, options?: { filter?: 'from' | 'to' }) => {
+export const getTransferEvents = async (
+  address: Address,
+  tokenAddress: Address,
+  options?: { filter?: 'from' | 'to'; fromBlock?: bigint }
+) => {
   const fromTransferEvents =
     options?.filter === 'to'
       ? []
@@ -111,7 +115,7 @@ export const getTransferEvents = async (address: Address, tokenAddress: Address,
             ]
           },
           args: { from: address },
-          fromBlock: prizeVault.deployedAtBlock,
+          fromBlock: options?.fromBlock ?? prizeVault.deployedAtBlock,
           toBlock: 'latest',
           strict: true
         })
@@ -131,7 +135,7 @@ export const getTransferEvents = async (address: Address, tokenAddress: Address,
             ]
           },
           args: { to: address },
-          fromBlock: prizeVault.deployedAtBlock,
+          fromBlock: options?.fromBlock ?? prizeVault.deployedAtBlock,
           toBlock: 'latest',
           strict: true
         })

@@ -52,6 +52,7 @@
       <Loading height="1rem" />
     {/if}
   </div>
+  <!-- TODO: style error message (avoid moving button) -->
   <span>{error}</span>
   <WithdrawButton {amount} onSuccess={() => (formInput = '')} disabled={!!error} />
 </div>
