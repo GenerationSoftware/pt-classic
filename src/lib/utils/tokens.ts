@@ -7,18 +7,13 @@ export const getTokenBalances = async (owner: Address, tokenAddresses: Address[]
 
   const uniqueTokenAddresses = [...new Set<Lowercase<Address>>(tokenAddresses.filter((a) => a !== dolphinAddress).map(lower))]
 
-  const multicallResults = await publicClient.multicall({
-    contracts: tokenAddresses.map((tokenAddress) => ({
-      address: tokenAddress,
-      abi: erc20Abi,
-      functionName: 'balanceOf',
-      args: [owner]
-    }))
+  const multicall = await publicClient.multicall({
+    contracts: tokenAddresses.map((tokenAddress) => ({ address: tokenAddress, abi: erc20Abi, functionName: 'balanceOf', args: [owner] }))
   })
 
   uniqueTokenAddresses.forEach((address, i) => {
-    if (multicallResults[i].status === 'success' && typeof multicallResults[i].result === 'bigint') {
-      balances[address] = multicallResults[i].result
+    if (multicall[i].status === 'success' && typeof multicall[i].result === 'bigint') {
+      balances[address] = multicall[i].result
     }
   })
 

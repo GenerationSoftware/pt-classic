@@ -2,7 +2,7 @@ import { prizeHookAddress, prizeVault } from '$lib/config'
 import { zeroAddress, type Address } from 'viem'
 import { getSetSwapperEvents } from './events'
 import { publicClient } from '$lib/constants'
-import { vaultABI } from '$lib/abis/vaultABI'
+import { vaultABI } from '$lib/abis'
 import { lower } from './formatting'
 
 export const getPrizeHookStatus = async (

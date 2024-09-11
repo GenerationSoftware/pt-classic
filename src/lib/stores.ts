@@ -2,7 +2,7 @@ import { getFlashEvents, getPrizeHookStatus, getTokenBalances, getTransferEvents
 import { prizeVault, zapInTokenOptions } from './config'
 import { dolphinAddress } from './constants'
 import { writable } from 'svelte/store'
-import type { FlashEvent, PrizeHookStatus, TransferEvent } from './types'
+import type { FlashEvent, PrizeDistribution, PrizeHookStatus, TransferEvent } from './types'
 import type { Address, WalletClient } from 'viem'
 
 export const walletClient = writable<WalletClient | undefined>(undefined)
@@ -58,3 +58,5 @@ userAddress.subscribe(async (address) => {
 })
 
 export const tokenPrices = writable<{ [tokenAddress: Lowercase<Address>]: number }>({})
+
+export const prizeDistribution = writable<PrizeDistribution | undefined>(undefined)

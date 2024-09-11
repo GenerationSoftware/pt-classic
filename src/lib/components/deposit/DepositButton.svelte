@@ -3,7 +3,7 @@
   import { getTokenBalances, getTransferEvents } from '$lib/utils'
   import { chain, prizeVault } from '$lib/config'
   import { publicClient } from '$lib/constants'
-  import { vaultABI } from '$lib/abis/vaultABI'
+  import { vaultABI } from '$lib/abis'
   import { erc20Abi } from 'viem'
 
   export let amount: bigint

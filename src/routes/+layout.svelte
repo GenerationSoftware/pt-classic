@@ -2,11 +2,14 @@
   import { QueryClientProvider } from '@tanstack/react-query'
   import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
   import { queryClient, wagmiConfig } from '$lib/constants'
+  import { getPrizeDistribution } from '$lib/utils'
+  import { prizeDistribution } from '$lib/stores'
   import { used } from 'svelte-preprocess-react'
   import { fade } from 'svelte/transition'
   import { WagmiProvider } from 'wagmi'
   import { appName } from '$lib/config'
   import { page } from '$app/stores'
+  import { onMount } from 'svelte'
   import Nav from '$lib/components/Nav.svelte'
   import '@rainbow-me/rainbowkit/styles.css'
   import '../app.css'
@@ -21,6 +24,11 @@
   used(WagmiProvider)
   used(QueryClientProvider)
   used(RainbowKitProvider)
+
+  onMount(async () => {
+    // TODO: load any token prices necessary and assign to store
+    getPrizeDistribution().then(prizeDistribution.set)
+  })
 </script>
 
 <svelte:head>

@@ -1,8 +1,6 @@
 <script lang="ts">
   import { isFetchedUserFlashEvents, isFetchedUserTransferEvents, userAddress, userFlashEvents, userTransferEvents } from '$lib/stores'
   import { formatPrize, formatShareAmount, lower } from '$lib/utils'
-  import { prizePool } from '$lib/config'
-  import { formatUnits } from 'viem'
   import Loading from '../Loading.svelte'
 
   // TODO: this needs to only display checked prizes
@@ -22,13 +20,7 @@
   // TODO: get total won as bonus rewards
   // TODO: convert to $ value
   $: bonusRewardsClaimed = 0n
-  $: formattedBonusRewardsClaimed =
-    bonusRewardsClaimed !== undefined
-      ? parseFloat(formatUnits(bonusRewardsClaimed, prizePool.prizeToken.decimals)).toLocaleString('en', {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2
-        })
-      : ''
+  $: formattedBonusRewardsClaimed = '0.00'
 </script>
 
 <div class="wrapper">
