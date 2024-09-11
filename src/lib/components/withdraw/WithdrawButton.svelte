@@ -1,13 +1,14 @@
 <script lang="ts">
   import { userAddress, userBalances, userTransferEvents, walletClient } from '$lib/stores'
-  import { getTokenBalances, getTransferEvents } from '$lib/utils'
+  import { getTokenBalances, getTransferEvents, lower } from '$lib/utils'
+  import { decodeEventLog, type TransactionReceipt } from 'viem'
   import { chain, prizeVault } from '$lib/config'
   import { publicClient } from '$lib/constants'
   import { vaultABI } from '$lib/abis'
 
   export let amount: bigint
   export let disabled: boolean = false
-  export let onSuccess: () => void = () => {}
+  export let onSuccess: (txReceipt: TransactionReceipt, amount: bigint) => void = () => {}
   let isWithdrawing: boolean = false
 
   const updateBalances = async () => {
@@ -43,7 +44,11 @@
 
         if (txReceipt.status === 'success') {
           updateTransferEvents()
-          onSuccess()
+
+          const encodedEvent = txReceipt.logs.filter((log) => lower(log.address) === lower(prizeVault.address))[1]
+          const event = decodeEventLog({ abi: vaultABI, eventName: 'Withdraw', topics: encodedEvent.topics, strict: true })
+
+          onSuccess(txReceipt, event.args.assets)
         } else {
           throw new Error(`redeem tx reverted: ${hash}`)
         }
