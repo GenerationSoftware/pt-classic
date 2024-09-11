@@ -1,7 +1,9 @@
 import { getDefaultConfig } from '@rainbow-me/rainbowkit'
 import { QueryClient } from '@tanstack/react-query'
 import { getPublicClient } from 'wagmi/actions'
+import { http, type PublicClient } from 'viem'
 import { appName, chain } from './config'
+import { DSKit } from 'dskit-eth'
 
 // TODO: find a way to use public RPCs + connected wallet's RPCs
 export const wagmiConfig = getDefaultConfig({
@@ -13,6 +15,8 @@ export const wagmiConfig = getDefaultConfig({
 export const queryClient = new QueryClient()
 
 export const publicClient = getPublicClient(wagmiConfig, { chainId: chain.id })
+
+export const dskit = new DSKit({ viemPublicClient: publicClient as PublicClient })
 
 export const dolphinAddress = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
 

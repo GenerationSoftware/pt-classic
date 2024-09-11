@@ -1,13 +1,13 @@
 <script>
+  import { getPrizeDistribution, getTokenPrice } from '$lib/utils'
   import { QueryClientProvider } from '@tanstack/react-query'
   import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
   import { queryClient, wagmiConfig } from '$lib/constants'
-  import { getPrizeDistribution } from '$lib/utils'
+  import { appName, prizePool } from '$lib/config'
   import { prizeDistribution } from '$lib/stores'
   import { used } from 'svelte-preprocess-react'
   import { fade } from 'svelte/transition'
   import { WagmiProvider } from 'wagmi'
-  import { appName } from '$lib/config'
   import { page } from '$app/stores'
   import { onMount } from 'svelte'
   import Nav from '$lib/components/Nav.svelte'
@@ -26,7 +26,7 @@
   used(RainbowKitProvider)
 
   onMount(async () => {
-    // TODO: load any token prices necessary and assign to store
+    getTokenPrice(prizePool.prizeToken)
     getPrizeDistribution().then(prizeDistribution.set)
   })
 </script>

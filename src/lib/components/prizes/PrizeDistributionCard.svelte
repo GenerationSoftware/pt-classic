@@ -15,11 +15,12 @@
     {#each prizesToDisplay as prize}
       {@const prizeSize = parseFloat(formatUnits(prize.size, prizePool.prizeToken.decimals))}
       {@const prizeValue = prizeSize * prizeTokenPrice}
-      {@const formattedPrizeValue = prizeValue.toLocaleString('en', { maximumFractionDigits: prizeValue >= 10 ? 0 : 2 })}
+      {@const formattedPrizeValue = prizeValue.toLocaleString('en', { maximumFractionDigits: prizeValue >= 1 ? 0 : 2 })}
       {@const formattedFrequency = formatPrizeFrequency(prize.drawFrequency)}
 
       <div class="prize-row">
-        <span class="prize-value">{formattedPrizeValue}</span>
+        <!-- TODO: should display underlying value if clicked/hovered -->
+        <span class="prize-value">${formattedPrizeValue}</span>
         <div class="prize-freq">
           <span>awarded on average</span>
           <span>{formattedFrequency}</span>
