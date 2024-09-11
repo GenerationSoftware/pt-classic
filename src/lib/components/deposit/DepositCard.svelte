@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { formatUnits, parseUnits } from 'viem'
   import { userAddress, userBalances } from '$lib/stores'
+  import { formatUnits, parseUnits } from 'viem'
   import { prizeVault } from '$lib/config'
   import { lower } from '$lib/utils'
   import DepositButton from './DepositButton.svelte'

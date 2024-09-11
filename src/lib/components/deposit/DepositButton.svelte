@@ -1,7 +1,7 @@
 <script lang="ts">
   import { userAddress, userBalances, userTransferEvents, walletClient } from '$lib/stores'
-  import { chain, prizeVault } from '$lib/config'
   import { getTokenBalances, getTransferEvents } from '$lib/utils'
+  import { chain, prizeVault } from '$lib/config'
   import { publicClient } from '$lib/constants'
   import { vaultABI } from '$lib/abis/vaultABI'
   import { erc20Abi } from 'viem'
