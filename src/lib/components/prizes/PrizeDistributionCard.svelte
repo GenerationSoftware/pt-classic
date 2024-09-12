@@ -21,12 +21,13 @@
       <div class="prize-row">
         <!-- TODO: should display underlying value if clicked/hovered -->
         <span class="prize-value">${formattedPrizeValue}</span>
-        <div class="prize-freq">
-          <span>awarded on average</span>
-          <span>{formattedFrequency}</span>
-        </div>
+        <span class="prize-freq">{formattedFrequency}</span>
       </div>
     {/each}
+    <p class="description">
+      These are the best probabilistic estimates we can provide. Each tier's prize size grows over time until awarded, and their frequency
+      is random.
+    </p>
   {:else}
     <Loading />
   {/if}
@@ -35,6 +36,7 @@
 <style>
   div.content-wrapper {
     width: calc(100% - 2rem);
+    max-width: 22rem;
     display: flex;
     flex-direction: column;
   }
@@ -53,20 +55,17 @@
     line-height: 150%;
   }
 
-  div.prize-freq {
-    display: flex;
-    flex-direction: column;
-    align-items: end;
+  span.prize-freq {
     text-align: right;
-  }
-
-  div.prize-freq > span:nth-child(1) {
     color: var(--pt-purple-100);
-    font-size: 0.75rem;
+    font-size: 1.125rem;
   }
 
-  div.prize-freq > span:nth-child(2) {
+  p.description {
+    text-align: center;
     color: var(--pt-purple-300);
-    font-size: 1.125rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 150%;
   }
 </style>
