@@ -23,4 +23,10 @@ export const prizeVault = {
 
 export const prizeHookAddress: Lowercase<Address> = '0x24857c8da1a89d06f5e37dc42094969621385a50' // TODO: get actual hook address
 
+export const twabRewardsAddress: Lowercase<Address> = '0x86f0923d20810441efc593eb0f2825c6bff2dc09'
+
+export const twabRewardsTokenOptions: Token[] = [
+  { address: '0xd652C5425aea2Afd5fb142e120FeCf79e18fafc3', decimals: 18, name: 'PoolTogether', symbol: 'POOL' }
+]
+
 export const zapInTokenOptions: Token[] = []

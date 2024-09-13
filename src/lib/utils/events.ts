@@ -1,4 +1,4 @@
-import { prizeHookAddress, prizeVault } from '$lib/config'
+import { prizeHookAddress, prizeVault, twabRewardsAddress, twabRewardsTokenOptions } from '$lib/config'
 import { publicClient } from '$lib/constants'
 import type { Address } from 'viem'
 
@@ -7,20 +7,22 @@ export const getTransferEvents = async (
   tokenAddress: Address,
   options?: { filter?: 'from' | 'to'; fromBlock?: bigint }
 ) => {
+  const transferEvent = {
+    type: 'event',
+    name: 'Transfer',
+    inputs: [
+      { indexed: true, name: 'from', type: 'address' },
+      { indexed: true, name: 'to', type: 'address' },
+      { indexed: false, name: 'value', type: 'uint256' }
+    ]
+  } as const
+
   const fromTransferEvents =
     options?.filter === 'to'
       ? []
       : await publicClient.getLogs({
           address: tokenAddress,
-          event: {
-            type: 'event',
-            name: 'Transfer',
-            inputs: [
-              { indexed: true, name: 'from', type: 'address' },
-              { indexed: true, name: 'to', type: 'address' },
-              { indexed: false, name: 'value', type: 'uint256' }
-            ]
-          },
+          event: transferEvent,
           args: { from: address },
           fromBlock: options?.fromBlock ?? prizeVault.deployedAtBlock,
           toBlock: 'latest',
@@ -32,15 +34,7 @@ export const getTransferEvents = async (
       ? []
       : await publicClient.getLogs({
           address: tokenAddress,
-          event: {
-            type: 'event',
-            name: 'Transfer',
-            inputs: [
-              { indexed: true, name: 'from', type: 'address' },
-              { indexed: true, name: 'to', type: 'address' },
-              { indexed: false, name: 'value', type: 'uint256' }
-            ]
-          },
+          event: transferEvent,
           args: { to: address },
           fromBlock: options?.fromBlock ?? prizeVault.deployedAtBlock,
           toBlock: 'latest',
@@ -116,4 +110,58 @@ export const getSetSwapperEvents = async (userAddress: Address, tokenOut?: Addre
   })
 
   return setSwapperEvents
+}
+
+export const getPromotionCreatedEvents = async () => {
+  const promotionCreatedEvents = await publicClient.getLogs({
+    address: twabRewardsAddress,
+    event: {
+      anonymous: false,
+      inputs: [
+        { indexed: true, internalType: 'uint256', name: 'promotionId', type: 'uint256' },
+        { indexed: true, internalType: 'address', name: 'vault', type: 'address' },
+        { indexed: true, internalType: 'contract IERC20', name: 'token', type: 'address' },
+        { indexed: false, internalType: 'uint64', name: 'startTimestamp', type: 'uint64' },
+        { indexed: false, internalType: 'uint256', name: 'tokensPerEpoch', type: 'uint256' },
+        { indexed: false, internalType: 'uint48', name: 'epochDuration', type: 'uint48' },
+        { indexed: false, internalType: 'uint8', name: 'initialNumberOfEpochs', type: 'uint8' }
+      ],
+      name: 'PromotionCreated',
+      type: 'event'
+    },
+    args: {
+      vault: prizeVault.address,
+      token: twabRewardsTokenOptions.map((t) => t.address)
+    },
+    fromBlock: prizeVault.deployedAtBlock,
+    toBlock: 'latest',
+    strict: true
+  })
+
+  return promotionCreatedEvents
+}
+
+export const getRewardsClaimedEvents = async (userAddress: Address) => {
+  const rewardsClaimedEvents = await publicClient.getLogs({
+    address: twabRewardsAddress,
+    event: {
+      anonymous: false,
+      inputs: [
+        { indexed: true, internalType: 'uint256', name: 'promotionId', type: 'uint256' },
+        { indexed: false, internalType: 'uint8[]', name: 'epochIds', type: 'uint8[]' },
+        { indexed: true, internalType: 'address', name: 'user', type: 'address' },
+        { indexed: false, internalType: 'uint256', name: 'amount', type: 'uint256' }
+      ],
+      name: 'RewardsClaimed',
+      type: 'event'
+    },
+    args: {
+      user: userAddress
+    },
+    fromBlock: prizeVault.deployedAtBlock,
+    toBlock: 'latest',
+    strict: true
+  })
+
+  return rewardsClaimedEvents
 }

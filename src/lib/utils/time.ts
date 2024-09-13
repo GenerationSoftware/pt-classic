@@ -12,3 +12,7 @@ export const getBlockTimestamp = async (blockNumber: bigint) => {
 
   return Number(block.timestamp)
 }
+
+export const getCurrentTimestamp = () => {
+  return Number((Date.now() / 1_000).toFixed(0))
+}

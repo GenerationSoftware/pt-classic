@@ -1,51 +1,59 @@
 <script lang="ts">
-  import { isFetchedUserFlashEvents, isFetchedUserTransferEvents, userAddress, userFlashEvents, userTransferEvents } from '$lib/stores'
+  import { tokenPrices, userAddress, userClaimedRewards, userFlashEvents, userTransferEvents } from '$lib/stores'
   import { formatPrize, formatShareAmount, lower } from '$lib/utils'
+  import { formatUnits } from 'viem'
   import Loading from '../Loading.svelte'
 
   // TODO: this needs to only display checked prizes
-  $: totalPrizesWon = $userFlashEvents.map((flashEvent) => formatPrize(flashEvent)).reduce((a, b) => a + b.amount, 0n)
-  $: formattedTotalPrizesWon = totalPrizesWon !== undefined ? formatShareAmount(totalPrizesWon) : '?'
+  $: totalPrizesWon = $userFlashEvents?.map((flashEvent) => formatPrize(flashEvent)).reduce((a, b) => a + b.amount, 0n) ?? 0n
+  $: formattedTotalPrizesWon = formatShareAmount(totalPrizesWon)
 
-  $: aggregatedTransferAmount = !!$userAddress
-    ? $userTransferEvents.reduce(
-        (a, b) =>
-          lower(b.args.to) === lower($userAddress) ? a + b.args.value : lower(b.args.from) === lower($userAddress) ? a - b.args.value : a,
-        0n
-      )
-    : 0n
+  $: aggregatedTransferAmount =
+    !!$userTransferEvents && !!$userAddress
+      ? $userTransferEvents.reduce(
+          (a, b) =>
+            lower(b.args.to) === lower($userAddress) ? a + b.args.value : lower(b.args.from) === lower($userAddress) ? a - b.args.value : a,
+          0n
+        )
+      : 0n
   $: totalDepositedAmount = aggregatedTransferAmount - totalPrizesWon
   $: formattedTotalDepositedAmount = totalDepositedAmount >= 0n ? formatShareAmount(totalDepositedAmount) : '?'
 
-  // TODO: get total won as bonus rewards
-  // TODO: convert to $ value
-  $: bonusRewardsClaimed = 0n
-  $: formattedBonusRewardsClaimed = '0.00'
+  $: aggregatedBonusRewardsClaimed =
+    $userClaimedRewards?.reduce((a, b) => {
+      const tokenAmount = parseFloat(formatUnits(b.amount, b.token.decimals))
+      const tokenPrice = $tokenPrices[lower(b.token.address)] ?? 0
+      return a + tokenAmount * tokenPrice
+    }, 0) ?? 0
+  $: formattedBonusRewardsClaimed = aggregatedBonusRewardsClaimed.toLocaleString('en', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })
 </script>
 
 <div class="wrapper">
   <div class="stat">
     <h3>Total Deposited</h3>
-    {#if isFetchedUserTransferEvents && isFetchedUserFlashEvents}
+    {#if !!$userTransferEvents && !!$userFlashEvents}
       <span>${formattedTotalDepositedAmount}</span>
     {:else}
-      <Loading />
+      <Loading height=".75rem" />
     {/if}
   </div>
   <div class="stat">
     <h3>Total Prizes Won</h3>
-    {#if isFetchedUserFlashEvents}
+    {#if !!$userFlashEvents}
       <span>+${formattedTotalPrizesWon}</span>
     {:else}
-      <Loading />
+      <Loading height=".75rem" />
     {/if}
   </div>
   <div class="stat">
     <h3>Total Bonus Rewards Claimed</h3>
-    {#if bonusRewardsClaimed !== undefined}
+    {#if !!$userClaimedRewards}
       <span>+${formattedBonusRewardsClaimed}</span>
     {:else}
-      <Loading />
+      <Loading height=".75rem" />
     {/if}
   </div>
 </div>

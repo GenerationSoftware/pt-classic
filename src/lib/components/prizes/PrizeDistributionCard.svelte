@@ -1,6 +1,6 @@
 <script>
-  import { formatPrizeFrequency, lower } from '$lib/utils'
   import { prizeDistribution, tokenPrices } from '$lib/stores'
+  import { formatPrizeFrequency, lower } from '$lib/utils'
   import { prizePool } from '$lib/config'
   import { formatUnits } from 'viem'
   import Loading from '../Loading.svelte'

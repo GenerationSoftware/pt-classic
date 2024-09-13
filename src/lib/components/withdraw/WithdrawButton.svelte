@@ -19,12 +19,12 @@
   }
 
   const updateTransferEvents = async () => {
-    if (!!$userAddress) {
+    if (!!$userTransferEvents && !!$userAddress) {
       const lastTransferEvent = $userTransferEvents.at(-1)
       const newTransferEvents = await getTransferEvents($userAddress, prizeVault.address, {
         fromBlock: !!lastTransferEvent ? lastTransferEvent.blockNumber + 1n : undefined
       })
-      userTransferEvents.update((oldTransferEvents) => [...oldTransferEvents, ...newTransferEvents])
+      userTransferEvents.update((oldTransferEvents) => [...(oldTransferEvents ?? []), ...newTransferEvents])
     }
   }
 

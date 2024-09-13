@@ -1,8 +1,15 @@
-import { getFlashEvents, getPrizeHookStatus, getTokenBalances, getTransferEvents } from './utils'
+import {
+  getFlashEvents,
+  getPrizeHookStatus,
+  getTokenBalances,
+  getTransferEvents,
+  getUserClaimableRewards,
+  getUserClaimedRewards
+} from './utils'
 import { prizeVault, zapInTokenOptions } from './config'
 import { dolphinAddress } from './constants'
-import { writable } from 'svelte/store'
-import type { FlashEvent, PrizeDistribution, PrizeHookStatus, TransferEvent } from './types'
+import { get, writable } from 'svelte/store'
+import type { ClaimableReward, ClaimedReward, FlashEvent, PrizeDistribution, PrizeHookStatus, PromotionInfo, TransferEvent } from './types'
 import type { Address, WalletClient } from 'viem'
 
 export const walletClient = writable<WalletClient | undefined>(undefined)
@@ -16,16 +23,23 @@ export const userBalances = writable<{ [tokenAddress: Lowercase<Address>]: bigin
 export const userPrizeHookStatus = writable<PrizeHookStatus | undefined>(undefined)
 
 // TODO: cache these somehow (save results, only query past X block next load, etc.)
-export const userTransferEvents = writable<TransferEvent[]>([])
-export const userFlashEvents = writable<FlashEvent[]>([])
+export const userTransferEvents = writable<TransferEvent[] | undefined>(undefined)
+export const userFlashEvents = writable<FlashEvent[] | undefined>(undefined)
 
-export const isFetchedUserTransferEvents = writable<boolean>(false)
-export const isFetchedUserFlashEvents = writable<boolean>(false)
+export const userClaimedRewards = writable<ClaimedReward[] | undefined>(undefined)
+export const userClaimableRewards = writable<ClaimableReward[] | undefined>(undefined)
 
 // TODO: cache this somehow (careful with potential future network overlaps)
 export const blockTimestamps = writable<{ [blockNumber: number]: number }>({})
 
 userAddress.subscribe(async (address) => {
+  userBalances.set({})
+  userPrizeHookStatus.set(undefined)
+  userTransferEvents.set(undefined)
+  userFlashEvents.set(undefined)
+  userClaimedRewards.set(undefined)
+  userClaimableRewards.set(undefined)
+
   if (!!address) {
     userBalances.set(
       await getTokenBalances(address, [
@@ -36,27 +50,38 @@ userAddress.subscribe(async (address) => {
       ])
     )
 
-    userTransferEvents.set(await getTransferEvents(address, prizeVault.address))
-    isFetchedUserTransferEvents.set(true)
-
     const prizeHookStatus = await getPrizeHookStatus(address)
     userPrizeHookStatus.set(prizeHookStatus)
+
+    userTransferEvents.set(await getTransferEvents(address, prizeVault.address))
 
     const swapperAddresses = !!prizeHookStatus.isSwapperSet
       ? [prizeHookStatus.swapperAddress, ...prizeHookStatus.pastSwapperAddresses]
       : prizeHookStatus.pastSwapperAddresses
     userFlashEvents.set(await getFlashEvents(address, swapperAddresses))
-    isFetchedUserFlashEvents.set(true)
-  } else {
-    userBalances.set({})
-    userTransferEvents.set([])
-    isFetchedUserTransferEvents.set(false)
-    userPrizeHookStatus.set(undefined)
-    userFlashEvents.set([])
-    isFetchedUserFlashEvents.set(false)
   }
 })
 
 export const tokenPrices = writable<{ [tokenAddress: Lowercase<Address>]: number }>({})
 
 export const prizeDistribution = writable<PrizeDistribution | undefined>(undefined)
+
+export const promotionInfo = writable<PromotionInfo | undefined>(undefined)
+
+promotionInfo.subscribe(async (info) => {
+  const address = get(userAddress)
+
+  if (!!info && !!address) {
+    userClaimedRewards.set(await getUserClaimedRewards(info, address))
+    userClaimableRewards.set(await getUserClaimableRewards(info, address))
+  }
+})
+
+userAddress.subscribe(async (address) => {
+  const info = get(promotionInfo)
+
+  if (!!address && !!info) {
+    userClaimedRewards.set(await getUserClaimedRewards(info, address))
+    userClaimableRewards.set(await getUserClaimableRewards(info, address))
+  }
+})

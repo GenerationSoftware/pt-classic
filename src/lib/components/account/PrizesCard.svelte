@@ -1,14 +1,15 @@
 <script lang="ts">
-  import { isFetchedUserFlashEvents, userFlashEvents } from '$lib/stores'
   import { formatPrize, getBlockTimestamp } from '$lib/utils'
+  import { userFlashEvents } from '$lib/stores'
   import Loading from '../Loading.svelte'
 
   let isExpanded = false
 
   // TODO: this needs to only display checked prizes
-  $: prizesWon = $userFlashEvents.map((flashEvent) => formatPrize(flashEvent))
+  $: prizesWon = $userFlashEvents?.map((flashEvent) => formatPrize(flashEvent)) ?? []
 
   // TODO: also include bonus rewards (show underlying tokens on hover or click)
+  // TODO: also include prizes that were claimed but not compounded
   $: rows = [...prizesWon]
 
   const getBlockDate = async (blockNumber: bigint) => {
@@ -23,7 +24,7 @@
   </div>
   <div class="content-wrapper">
     <div class="rows">
-      {#if !$isFetchedUserFlashEvents}
+      {#if !$userFlashEvents}
         <Loading height="1rem" />
       {:else if !rows.length}
         <span>No prizes... yet</span>

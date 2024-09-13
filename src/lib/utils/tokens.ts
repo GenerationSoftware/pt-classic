@@ -34,4 +34,6 @@ export const getTokenPrice = async (token: { address: Address; decimals: number 
   const tokenPrice = await dskit.price.ofToken({ token, tokenDenominator: prizeVault.asset })
 
   tokenPrices.update((oldTokenPrices) => ({ ...oldTokenPrices, [lower(token.address)]: tokenPrice }))
+
+  return tokenPrice
 }

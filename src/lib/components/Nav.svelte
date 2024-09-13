@@ -1,9 +1,9 @@
 <script>
   import { ConnectButton } from '@rainbow-me/rainbowkit'
   import { hooks, used } from 'svelte-preprocess-react'
-  import NavPageLink from './NavPageLink.svelte'
-  import { useWalletClient } from 'wagmi'
   import { walletClient } from '$lib/stores'
+  import { useWalletClient } from 'wagmi'
+  import NavPageLink from './NavPageLink.svelte'
 
   const wagmiStore = hooks(() => useWalletClient())
 
