@@ -1,7 +1,7 @@
+import { formatUnits, parseUnits, type Address } from 'viem'
 import { prizePool, prizeVault } from '$lib/config'
-import { formatUnits, type Address } from 'viem'
 import { seconds } from '$lib/constants'
-import type { FlashEvent, TimeUnit } from '$lib/types'
+import type { ClaimedReward, FlashEvent, TimeUnit } from '$lib/types'
 
 export const lower = (address: Address) => {
   return address.toLowerCase() as Lowercase<Address>
@@ -11,6 +11,26 @@ export const formatPrize = (flashEvent: FlashEvent) => {
   const amount = flashEvent.args.amountsToBeneficiary.reduce((a, b) => a + b, 0n) + flashEvent.args.excessToBeneficiary
 
   return { txHash: flashEvent.transactionHash, blockNumber: flashEvent.blockNumber, amount, formattedAmount: formatShareAmount(amount) }
+}
+
+export const formatClaimedReward = (claimedReward: ClaimedReward, tokenPrice: number) => {
+  const tokenAmount = parseFloat(formatUnits(claimedReward.amount, claimedReward.token.decimals))
+  const tokenValue = tokenAmount * tokenPrice
+
+  const amount = parseUnits(`${tokenValue}`, prizeVault.decimals)
+
+  return {
+    txHash: claimedReward.txHash,
+    blockNumber: claimedReward.blockNumber,
+    amount,
+    formattedAmount: formatShareAmount(amount),
+    token: {
+      ...claimedReward.token,
+      price: tokenPrice,
+      amount: claimedReward.amount,
+      formattedAmount: tokenAmount.toLocaleString('en', { maximumFractionDigits: 4 })
+    }
+  }
 }
 
 export const formatShareAmount = (amount: bigint) => {

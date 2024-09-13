@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { formatPrize, getBlockTimestamp } from '$lib/utils'
-  import { userFlashEvents } from '$lib/stores'
+  import { formatClaimedReward, formatPrize, getBlockTimestamp, lower } from '$lib/utils'
+  import { tokenPrices, userClaimedRewards, userFlashEvents } from '$lib/stores'
   import Loading from '../Loading.svelte'
 
   let isExpanded = false
@@ -8,9 +8,16 @@
   // TODO: this needs to only display checked prizes
   $: prizesWon = $userFlashEvents?.map((flashEvent) => formatPrize(flashEvent)) ?? []
 
-  // TODO: also include bonus rewards (show underlying tokens on hover or click)
+  $: rewardsClaimed =
+    $userClaimedRewards?.map((claimedReward) =>
+      formatClaimedReward(claimedReward, $tokenPrices[lower(claimedReward.token.address)] ?? 0)
+    ) ?? []
+
   // TODO: also include prizes that were claimed but not compounded
-  $: rows = [...prizesWon]
+  $: rows = [...prizesWon, ...rewardsClaimed].sort((a, b) => {
+    const x = b.blockNumber - a.blockNumber
+    return x === 0n ? 0 : x > 0n ? 1 : -1
+  }) as (ReturnType<typeof formatPrize> & { token?: ReturnType<typeof formatClaimedReward>['token'] })[]
 
   const getBlockDate = async (blockNumber: bigint) => {
     return new Date((await getBlockTimestamp(blockNumber)) * 1e3).toLocaleDateString('en', { day: '2-digit', month: '2-digit' })
@@ -29,19 +36,20 @@
       {:else if !rows.length}
         <span>No prizes... yet</span>
       {:else}
-        {#each prizesWon.slice(0, isExpanded ? undefined : 3) as prize}
-          <div class="prize-row">
-            <div class="prize-info">
-              {#await getBlockDate(prize.blockNumber)}
+        {#each rows.slice(0, isExpanded ? undefined : 3) as row}
+          <div class="row">
+            <div class="row-info">
+              {#await getBlockDate(row.blockNumber)}
                 <Loading height="1rem" />
               {:then date}
                 <!-- TODO: need a monospace font for this -->
                 <span>{date}</span>
               {/await}
               <span>•</span>
-              <span>Prize</span>
+              <span>{!!row.token ? 'Bonus Reward' : 'Prize'}</span>
             </div>
-            <span class="prize-amount">+${prize.formattedAmount}</span>
+            <!-- show underlying token (for bonus rewards or uncompounded prizes) on hover or click -->
+            <span>+${row.formattedAmount}</span>
           </div>
         {/each}
       {/if}
@@ -117,13 +125,13 @@
     overflow-y: auto;
   }
 
-  div.prize-row {
+  div.row {
     display: flex;
     justify-content: space-between;
     gap: 1rem;
   }
 
-  div.prize-info > span:first-child {
+  div.row-info > span:first-child {
     color: var(--pt-purple-200);
   }
 
