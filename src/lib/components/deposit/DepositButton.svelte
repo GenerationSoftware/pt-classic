@@ -1,14 +1,14 @@
 <script lang="ts">
   import { userAddress, userBalances, userTransferEvents, walletClient } from '$lib/stores'
-  import { getTokenBalances, getTransferEvents } from '$lib/utils'
+  import { decodeEventLog, erc20Abi, type TransactionReceipt } from 'viem'
+  import { getTokenBalances, getTransferEvents, lower } from '$lib/utils'
   import { chain, prizeVault } from '$lib/config'
   import { publicClient } from '$lib/constants'
   import { vaultABI } from '$lib/abis'
-  import { erc20Abi } from 'viem'
 
   export let amount: bigint
   export let disabled: boolean = false
-  export let onSuccess: () => void = () => {}
+  export let onSuccess: (txReceipt: TransactionReceipt, amount: bigint) => void = () => {}
   let allowance: bigint | undefined = undefined
   let isApproving: boolean = false
   let isDepositing: boolean = false
@@ -81,7 +81,11 @@
 
         if (txReceipt.status === 'success') {
           updateTransferEvents()
-          onSuccess()
+
+          const encodedEvent = txReceipt.logs.filter((log) => lower(log.address) === lower(prizeVault.address))[1]
+          const event = decodeEventLog({ abi: vaultABI, eventName: 'Deposit', topics: encodedEvent.topics, strict: true })
+
+          onSuccess(txReceipt, event.args.assets)
         } else {
           throw new Error(`deposit tx reverted: ${hash}`)
         }
@@ -97,9 +101,9 @@
 </script>
 
 {#if !$walletClient || !$userAddress || !amount || allowance === undefined}
-  <button disabled={true}>Deposit</button>
+  <button class="teal-button" disabled={true}>Deposit</button>
 {:else if allowance < amount}
-  <button type="submit" on:click={approve} disabled={isApproving || disabled}>Approve</button>
+  <button type="submit" on:click={approve} class="teal-button" disabled={isApproving || disabled}>Approve</button>
 {:else}
-  <button type="submit" on:click={deposit} disabled={isDepositing || disabled}>Deposit</button>
+  <button type="submit" on:click={deposit} class="teal-button" disabled={isDepositing || disabled}>Deposit</button>
 {/if}
