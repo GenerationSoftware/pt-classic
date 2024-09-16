@@ -15,7 +15,7 @@ const argv = yargs(hideBin(process.argv)).option('deploy-dir', {
 
 // const ARWEAVE_BASE_64_JWK = process.env.ARWEAVE_BASE_64_JWK
 
-const run = async () => {
+const runDeploy = async () => {
   if (argv.deployDir.length == 0) {
     console.error('deploy directory must not be an empty string')
     return
@@ -56,12 +56,15 @@ const run = async () => {
     // console.log(fileResponses)
 
     console.log(`Deployed!`)
-    console.log(`Transaction id: [${manifestResponse.id}]`)
     console.log(``)
-    console.log(`__Make sure to update ENS contentHash with this new ID__`)
+
+    console.log(`Transaction id:`)
+    console.log(manifestResponse.id)
+    console.log(``)
+    console.log(`__Make sure to update ENS contentHash with this new ID!__`)
   } catch (e) {
     console.error(e)
   }
 }
 
-run()
+runDeploy()
