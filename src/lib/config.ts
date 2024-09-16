@@ -1,4 +1,5 @@
 import { base, type Chain } from 'viem/chains'
+import type { SwapRouteConfig } from 'dskit-eth'
 import type { Token } from './types'
 import type { Address } from 'viem'
 
@@ -30,3 +31,9 @@ export const twabRewardsTokenOptions: Token[] = [
 ]
 
 export const zapInTokenOptions: Token[] = []
+
+export const tokenSwapRouteConfigs: { [address: Lowercase<Address>]: SwapRouteConfig } = {
+  '0xd652c5425aea2afd5fb142e120fecf79e18fafc3': {
+    exchanges: { includeOnly: ['velodrome'], includeRoutesThroughTokens: ['0x368181499736d0c0CC614DBB145E2EC1AC86b8c6'] }
+  }
+}
