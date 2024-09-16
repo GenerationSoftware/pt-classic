@@ -13,9 +13,10 @@ export const formatPrize = (flashEvent: FlashEvent) => {
   return { txHash: flashEvent.transactionHash, blockNumber: flashEvent.blockNumber, amount, formattedAmount: formatShareAmount(amount) }
 }
 
-export const formatClaimedReward = (claimedReward: ClaimedReward, tokenPrice: number) => {
+export const formatClaimedReward = (claimedReward: ClaimedReward, tokenPrices: { [tokenAddress: `0x${Lowercase<string>}`]: number }) => {
   const tokenAmount = parseFloat(formatUnits(claimedReward.amount, claimedReward.token.decimals))
-  const tokenValue = tokenAmount * tokenPrice
+  const tokenPrice = tokenPrices[lower(claimedReward.token.address)] as number | undefined
+  const tokenValue = tokenAmount * (tokenPrice ?? 0)
 
   const amount = parseUnits(`${tokenValue}`, prizeVault.decimals)
 

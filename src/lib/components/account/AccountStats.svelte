@@ -29,6 +29,7 @@
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   })
+  $: isFetchedBonusRewardsTokenPrices = $userClaimedRewards?.every((reward) => $tokenPrices[lower(reward.token.address)] !== undefined)
 </script>
 
 <div class="wrapper">
@@ -50,7 +51,7 @@
   </div>
   <div class="stat">
     <h3>Total Bonus Rewards Claimed</h3>
-    {#if !!$userClaimedRewards}
+    {#if !!$userClaimedRewards && !!isFetchedBonusRewardsTokenPrices}
       <span>+${formattedBonusRewardsClaimed}</span>
     {:else}
       <Loading height=".75rem" />

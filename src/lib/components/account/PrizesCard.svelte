@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { formatClaimedReward, formatPrize, getBlockTimestamp, lower } from '$lib/utils'
+  import { formatClaimedReward, formatPrize, getBlockTimestamp } from '$lib/utils'
   import { tokenPrices, userClaimedRewards, userFlashEvents } from '$lib/stores'
   import Loading from '../Loading.svelte'
 
@@ -8,10 +8,7 @@
   // TODO: this needs to only display checked prizes
   $: prizesWon = $userFlashEvents?.map((flashEvent) => formatPrize(flashEvent)) ?? []
 
-  $: rewardsClaimed =
-    $userClaimedRewards?.map((claimedReward) =>
-      formatClaimedReward(claimedReward, $tokenPrices[lower(claimedReward.token.address)] ?? 0)
-    ) ?? []
+  $: rewardsClaimed = $userClaimedRewards?.map((claimedReward) => formatClaimedReward(claimedReward, $tokenPrices)) ?? []
 
   // TODO: also include prizes that were claimed but not compounded
   $: rows = [...prizesWon, ...rewardsClaimed].sort((a, b) => {
@@ -32,7 +29,7 @@
   <div class="content-wrapper">
     <div class="rows">
       {#if !$userFlashEvents}
-        <Loading height="1rem" />
+        <Loading height=".75rem" />
       {:else if !rows.length}
         <span>No prizes... yet</span>
       {:else}
@@ -48,8 +45,12 @@
               <span>•</span>
               <span>{!!row.token ? 'Bonus Reward' : 'Prize'}</span>
             </div>
-            <!-- show underlying token (for bonus rewards or uncompounded prizes) on hover or click -->
-            <span>+${row.formattedAmount}</span>
+            {#if !row.token || row.token.price !== undefined}
+              <!-- show underlying token (for bonus rewards or uncompounded prizes) on hover or click -->
+              <span>+${row.formattedAmount}</span>
+            {:else}
+              <Loading height=".75rem" />
+            {/if}
           </div>
         {/each}
       {/if}
@@ -128,6 +129,7 @@
   div.row {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     gap: 1rem;
   }
 
