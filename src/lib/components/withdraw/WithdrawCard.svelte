@@ -12,6 +12,8 @@
   let successfullyWithdrawnAmount: bigint = 0n
 
   $: vaultBalance = $userBalances[lower(prizeVault.address)]
+  $: flooredVaultBalance = Math.floor(parseFloat(formatUnits(226862n, prizeVault.decimals)) * 100) / 100
+  $: formattedVaultBalance = flooredVaultBalance.toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
   const getErrorMsg = () => {
     if (!!formInput && vaultBalance !== undefined) {
@@ -55,7 +57,7 @@
         <label class:placeholder-color={!formInput}>
           $<input bind:value={formInput} placeholder="0.00" style={`width: ${getInputChars(formInput || '0.00')}ch`} />
         </label>
-        <span>of ${formatShareAmount(vaultBalance)} available</span>
+        <span>of ${formattedVaultBalance} available</span>
       {:else}
         <Loading height="1rem" />
       {/if}
