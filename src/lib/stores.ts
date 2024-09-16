@@ -18,6 +18,7 @@ import type {
   PrizeDistribution,
   PrizeHookStatus,
   PromotionInfo,
+  TokenPrices,
   TransferEvent
 } from './types'
 import type { Address, WalletClient } from 'viem'
@@ -73,11 +74,11 @@ userAddress.subscribe(async (address) => {
 
     userFlashEvents.set(await getFlashEvents(address, swapperAddresses))
 
-    userClaimedPrizeEvents.set(await getClaimedPrizeEvents(address, swapperAddresses))
+    userClaimedPrizeEvents.set(await getClaimedPrizeEvents(address))
   }
 })
 
-export const tokenPrices = writable<{ [tokenAddress: Lowercase<Address>]: number }>({})
+export const tokenPrices = writable<TokenPrices>({})
 
 export const prizeDistribution = writable<PrizeDistribution | undefined>(undefined)
 

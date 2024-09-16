@@ -16,6 +16,10 @@ export interface Token {
   symbol: string
 }
 
+export interface TokenPrices {
+  [tokenAddress: Lowercase<Address>]: number
+}
+
 export type PrizeHookStatus = Awaited<ReturnType<typeof getPrizeHookStatus>>
 
 export type TransferEvent = Awaited<ReturnType<typeof getTransferEvents>>[number]

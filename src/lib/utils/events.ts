@@ -165,7 +165,7 @@ export const getRewardsClaimedEvents = async (userAddress: Address) => {
   return rewardsClaimedEvents
 }
 
-export const getClaimedPrizeEvents = async (userAddress: Address, swapperAddresses: Address[]) => {
+export const getClaimedPrizeEvents = async (userAddress: Address) => {
   const claimedPrizeEvents = await publicClient.getLogs({
     address: prizePool.address,
     event: {
@@ -187,7 +187,7 @@ export const getClaimedPrizeEvents = async (userAddress: Address, swapperAddress
     args: {
       vault: prizeVault.address,
       winner: userAddress,
-      recipient: [userAddress, ...swapperAddresses]
+      recipient: userAddress
     },
     fromBlock: prizeVault.deployedAtBlock,
     toBlock: 'latest',
