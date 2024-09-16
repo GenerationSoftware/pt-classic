@@ -3,9 +3,8 @@ import * as path from 'path'
 
 const __dirname = process.cwd()
 
-export default async function TurboDeploy(argv, jwk) {
+export const turboDeployDirectory = async function (deployDir, jwk) {
   const turbo = TurboFactory.authenticated({ privateKey: jwk })
-  const deployDir = argv.deployDir
 
   const folderPath = path.resolve(`${__dirname}/${deployDir}`)
   console.log(`Deploying: ${folderPath} to Arweave ...`)
