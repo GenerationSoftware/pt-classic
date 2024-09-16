@@ -24,7 +24,7 @@ export const getPrizeHookStatus = async (
     isPrizeHookSet = true
   }
 
-  const setSwapperEvents = await getSetSwapperEvents(userAddress, prizeVault.address)
+  const setSwapperEvents = await getSetSwapperEvents(userAddress)
 
   if (!!setSwapperEvents.length) {
     const swapperAddresses = [...new Set<Address>(setSwapperEvents.map((e) => e.args.newSwapper))]

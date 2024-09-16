@@ -89,21 +89,20 @@ export const getFlashEvents = async (beneficiary: Address, swapperAddresses: Add
   return flashEvents
 }
 
-export const getSetSwapperEvents = async (userAddress: Address, tokenOut?: Address) => {
+export const getSetSwapperEvents = async (userAddress: Address) => {
   const setSwapperEvents = await publicClient.getLogs({
     address: prizeHookAddress,
     event: {
       anonymous: false,
       inputs: [
         { indexed: true, internalType: 'address', name: 'account', type: 'address' },
-        { indexed: true, internalType: 'address', name: 'newTokenOut', type: 'address' },
-        { indexed: true, internalType: 'contract ISwapper', name: 'newSwapper', type: 'address' },
-        { indexed: false, internalType: 'address', name: 'previousSwapper', type: 'address' }
+        { indexed: true, internalType: 'address', name: 'newSwapper', type: 'address' },
+        { indexed: true, internalType: 'address', name: 'previousSwapper', type: 'address' }
       ],
       name: 'SetSwapper',
       type: 'event'
     },
-    args: { account: userAddress, newTokenOut: tokenOut },
+    args: { account: userAddress },
     fromBlock: prizeVault.deployedAtBlock,
     toBlock: 'latest',
     strict: true
