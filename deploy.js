@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import fs from 'fs'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
@@ -13,25 +11,25 @@ const argv = yargs(hideBin(process.argv)).option('deploy-dir', {
   default: './dist'
 }).argv
 
-const DEPLOY_KEY = process.env.DEPLOY_KEY
+// const ARWEAVE_BASE_64_JWK = process.env.ARWEAVE_BASE_64_JWK
 
 const run = async () => {
-  if (!DEPLOY_KEY) {
-    console.error('DEPLOY_KEY not configured')
+  if (argv.deployDir.length == 0) {
+    console.error('deploy directory must not be an empty string')
     return
   }
 
-  if (argv.deployFolder.length == 0) {
-    console.error('deploy folder must not be an empty string')
+  if (!fs.existsSync(argv.deployDir)) {
+    console.error(`deploy directory [${argv.deployDir}] does not exist`)
     return
   }
 
-  if (!fs.existsSync(argv.deployFolder)) {
-    console.error(`deploy folder [${argv.deployFolder}] does not exist`)
-    return
-  }
+  // if (!ARWEAVE_BASE_64_JWK) {
+  //   console.error('ARWEAVE_BASE_64_JWK is missing')
+  //   return
+  // }
 
-  // let jwk = JSON.parse(Buffer.from(DEPLOY_KEY, 'base64').toString('utf-8'))
+  // let jwk = JSON.parse(Buffer.from(ARWEAVE_BASE_64_JWK, 'base64').toString('utf-8'))
   const jwk = JSON.parse(fs.readFileSync('./wallet.json'))
   try {
     const manifestResponse = await TurboDeploy(argv, jwk)

@@ -5,14 +5,11 @@ const __dirname = process.cwd()
 
 export default async function TurboDeploy(argv, jwk) {
   const turbo = TurboFactory.authenticated({ privateKey: jwk })
-  const deployFolder = argv.deployFolder
+  const deployDir = argv.deployDir
 
-  console.log('deployFolder')
-  console.log(deployFolder)
-
-  const folderPath = path.resolve(`${__dirname}/${deployFolder}`)
-  console.log('folderPath')
-  console.log(folderPath)
+  const folderPath = path.resolve(`${__dirname}/${deployDir}`)
+  console.log(`Deploying: ${folderPath} to Arweave ...`)
+  console.log()
 
   const { manifest, fileResponses, manifestResponse } = await turbo.uploadFolder({
     folderPath
