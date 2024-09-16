@@ -1,9 +1,8 @@
 import fs from 'fs'
 import yargs from 'yargs'
-import { hideBin } from 'yargs/helpers'
 import * as path from 'path'
-
-import { turboDeployDirectory } from './turboDeployDirectory.js'
+import { hideBin } from 'yargs/helpers'
+import { TurboFactory } from '@ardrive/turbo-sdk'
 
 const __dirname = process.cwd()
 
@@ -40,9 +39,21 @@ const run = async () => {
 
   // let jwk = JSON.parse(Buffer.from(ARWEAVE_BASE_64_JWK, 'base64').toString('utf-8'))
   const jwk = JSON.parse(fs.readFileSync(walletFile))
+  const turbo = TurboFactory.authenticated({ privateKey: jwk })
+
+  const folderPath = path.resolve(`${__dirname}/${argv.deployDir}`)
+  console.log(`Deploying: ${folderPath} to Arweave ...`)
+  console.log()
 
   try {
-    const manifestResponse = await turboDeployDirectory(argv.deployDir, jwk)
+    const { manifest, fileResponses, manifestResponse } = await turbo.uploadFolder({
+      folderPath
+    })
+
+    // console.log('manifest')
+    // console.log(manifest)
+    // console.log('fileResponses')
+    // console.log(fileResponses)
 
     console.log(`Deployed!`)
     console.log(`Transaction id: [${manifestResponse.id}]`)
