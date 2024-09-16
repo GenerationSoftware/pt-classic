@@ -10,7 +10,7 @@ const argv = yargs(hideBin(process.argv)).option('deploy-dir', {
   alias: 'd',
   type: 'string',
   description: 'Directory to deploy.',
-  default: './dist'
+  default: './build'
 }).argv
 
 // const ARWEAVE_BASE_64_JWK = process.env.ARWEAVE_BASE_64_JWK
