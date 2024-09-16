@@ -1,4 +1,4 @@
-import { prizeHookAddress, prizeVault, twabRewardsAddress, twabRewardsTokenOptions } from '$lib/config'
+import { prizeHookAddress, prizePool, prizeVault, twabRewardsAddress, twabRewardsTokenOptions } from '$lib/config'
 import { publicClient } from '$lib/constants'
 import type { Address } from 'viem'
 
@@ -163,4 +163,36 @@ export const getRewardsClaimedEvents = async (userAddress: Address) => {
   })
 
   return rewardsClaimedEvents
+}
+
+export const getClaimedPrizeEvents = async (userAddress: Address, swapperAddresses: Address[]) => {
+  const claimedPrizeEvents = await publicClient.getLogs({
+    address: prizePool.address,
+    event: {
+      anonymous: false,
+      inputs: [
+        { indexed: true, internalType: 'address', name: 'vault', type: 'address' },
+        { indexed: true, internalType: 'address', name: 'winner', type: 'address' },
+        { indexed: true, internalType: 'address', name: 'recipient', type: 'address' },
+        { indexed: false, internalType: 'uint24', name: 'drawId', type: 'uint24' },
+        { indexed: false, internalType: 'uint8', name: 'tier', type: 'uint8' },
+        { indexed: false, internalType: 'uint32', name: 'prizeIndex', type: 'uint32' },
+        { indexed: false, internalType: 'uint152', name: 'payout', type: 'uint152' },
+        { indexed: false, internalType: 'uint96', name: 'claimReward', type: 'uint96' },
+        { indexed: false, internalType: 'address', name: 'claimRewardRecipient', type: 'address' }
+      ],
+      name: 'ClaimedPrize',
+      type: 'event'
+    },
+    args: {
+      vault: prizeVault.address,
+      winner: userAddress,
+      recipient: [userAddress, ...swapperAddresses]
+    },
+    fromBlock: prizeVault.deployedAtBlock,
+    toBlock: 'latest',
+    strict: true
+  })
+
+  return claimedPrizeEvents
 }
