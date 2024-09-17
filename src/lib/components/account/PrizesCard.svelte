@@ -1,6 +1,7 @@
 <script lang="ts">
   import { tokenPrices, userAddress, userClaimedPrizeEvents, userClaimedRewards, userFlashEvents } from '$lib/stores'
-  import { formatClaimedReward, formatFallbackPrize, formatPrize, getBlockTimestamp } from '$lib/utils'
+  import { formatClaimedReward, formatFallbackPrize, formatPrize, getBlockDate } from '$lib/utils'
+  import PrizeDetailsModal from './PrizeDetailsModal.svelte'
   import Loading from '../Loading.svelte'
 
   let isExpanded = false
@@ -14,18 +15,10 @@
 
   $: rewardsClaimed = $userClaimedRewards?.map((claimedReward) => formatClaimedReward(claimedReward, $tokenPrices)) ?? []
 
-  interface Row extends ReturnType<typeof formatPrize> {
-    token?: ReturnType<typeof formatFallbackPrize>['token'] | ReturnType<typeof formatClaimedReward>['token']
-  }
-
   $: rows = [...prizesWon, ...fallbackPrizesWon, ...rewardsClaimed].sort((a, b) => {
     const x = b.blockNumber - a.blockNumber
     return x === 0n ? 0 : x > 0n ? 1 : -1
-  }) as Row[]
-
-  const getBlockDate = async (blockNumber: bigint) => {
-    return new Date((await getBlockTimestamp(blockNumber)) * 1e3).toLocaleDateString('en', { day: '2-digit', month: '2-digit' })
-  }
+  })
 </script>
 
 <div class="card">
@@ -47,19 +40,23 @@
           <div class="row">
             <div class="row-info">
               {#await getBlockDate(row.blockNumber)}
-                <Loading height="1rem" />
+                <Loading height=".75rem" />
               {:then date}
-                <!-- TODO: need a monospace font for this -->
-                <span>{date}</span>
+                <span class="monospace">{date}</span>
               {/await}
               <span>•</span>
-              <span>{!!row.token ? 'Bonus Reward' : 'Prize'}</span>
+              <span>{row.type === 'bonusReward' ? 'Bonus Reward' : 'Prize'}</span>
             </div>
-            {#if !row.token || row.token.price !== undefined}
-              <!-- show underlying token (for bonus rewards or uncompounded prizes) on hover or click -->
-              <span>+${row.formattedAmount}</span>
+            {#if row.type === 'fallbackPrize' || row.type === 'bonusReward'}
+              {#if row.token.price !== undefined}
+                <PrizeDetailsModal prize={row}>
+                  <span slot="button-content" class="value-with-underlying">+${row.formattedAmount}</span>
+                </PrizeDetailsModal>
+              {:else}
+                <Loading height=".75rem" />
+              {/if}
             {:else}
-              <Loading height=".75rem" />
+              <span>+${row.formattedAmount}</span>
             {/if}
           </div>
         {/each}
@@ -145,6 +142,10 @@
 
   div.row-info > span:first-child {
     color: var(--pt-purple-200);
+  }
+
+  span.value-with-underlying {
+    text-decoration: var(--pt-teal-light) wavy underline;
   }
 
   button.expand {

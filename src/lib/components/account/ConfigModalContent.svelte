@@ -36,5 +36,6 @@
 <style>
   p {
     margin-bottom: 0.5rem;
+    color: var(--pt-purple-100);
   }
 </style>

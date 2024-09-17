@@ -37,3 +37,5 @@ export const tokenSwapRouteConfigs: { [address: Lowercase<Address>]: SwapRouteCo
     exchanges: { includeOnly: ['velodrome'], includeRoutesThroughTokens: ['0x368181499736d0c0CC614DBB145E2EC1AC86b8c6'] }
   }
 }
+
+export const blockExplorerUrl = 'https://basescan.org/' satisfies `https://${string}/`
