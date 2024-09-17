@@ -1,4 +1,9 @@
-<div>Click here to finish setting up your account</div>
+<script>
+  import { fly } from 'svelte/transition'
+</script>
+
+<!-- TODO: different animations for desktop -->
+<div in:fly={{ x: -100 }} out:fly={{ x: 100 }}>Click here to finish setting up your account</div>
 
 <style>
   div {
