@@ -17,8 +17,8 @@
 <div class="top-nav-wrapper">
   <div class="top-nav-content">
     <a href="/">
-      <img src="pooltogether.svg" alt="PoolTogether" class="desktop-only" />
-      <img src="pooltogether-small.svg" alt="PoolTogether" class="mobile-only" />
+      <img src="/pooltogether.svg" alt="PoolTogether" class="desktop-only" />
+      <img src="/pooltogether-small.svg" alt="PoolTogether" class="mobile-only" />
     </a>
     <react:ConnectButton />
   </div>

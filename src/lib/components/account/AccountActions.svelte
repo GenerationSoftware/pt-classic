@@ -1,5 +1,5 @@
 <script>
-  import { userAddress } from '$lib/stores'
+  import { userAddress, userClaimableRewards } from '$lib/stores'
   import { prizePool } from '$lib/config'
   import { formatUnits } from 'viem'
 
@@ -11,22 +11,27 @@
           maximumFractionDigits: 0
         })
       : ''
+  $: isCheckPrizesEnabled = !!totalAwardedSinceLastChecked && formattedTotalAwardedSinceLastChecked !== '0'
 </script>
 
 {#if !!$userAddress}
-  <div class="wrapper">
+  <div class="content-wrapper">
     <div class="buttons">
-      <a href="/account/prizes" class="teal-button">Check Prizes</a>
-      <a href="/account/bonus" class="teal-button">Claim Bonus</a>
+      {#if isCheckPrizesEnabled}
+        <a href="/account/prizes" class="teal-button">Check Prizes</a>
+      {/if}
+      {#if !!$userClaimableRewards?.length}
+        <a href="/account/bonus" class="teal-button">Claim Bonuses</a>
+      {/if}
     </div>
-    {#if !!totalAwardedSinceLastChecked && formattedTotalAwardedSinceLastChecked !== '0'}
+    {#if isCheckPrizesEnabled}
       <span><strong>${formattedTotalAwardedSinceLastChecked}</strong> in prizes awarded since you last checked!</span>
     {/if}
   </div>
 {/if}
 
 <style>
-  div.wrapper {
+  div.content-wrapper {
     width: calc(100% - 2rem);
     display: flex;
     flex-direction: column;

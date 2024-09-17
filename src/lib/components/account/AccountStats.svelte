@@ -37,7 +37,7 @@
   $: isFetchedBonusRewardsTokenPrices = $userClaimedRewards?.every((reward) => $tokenPrices[lower(reward.token.address)] !== undefined)
 </script>
 
-<div class="wrapper">
+<div class="stats">
   <div class="stat">
     <h3>Total Deposited</h3>
     {#if !!$userTransferEvents && !!$userFlashEvents}
@@ -71,7 +71,7 @@
 </div>
 
 <style>
-  div.wrapper {
+  div.stats {
     width: calc(100% - 3rem);
     display: flex;
     flex-direction: column;

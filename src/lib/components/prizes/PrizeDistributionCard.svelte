@@ -19,7 +19,6 @@
       {@const formattedFrequency = formatPrizeFrequency(prize.drawFrequency)}
 
       <div class="prize-row">
-        <!-- TODO: should display underlying value if clicked/hovered -->
         <span class="prize-value">${formattedPrizeValue}</span>
         <span class="prize-freq">{formattedFrequency}</span>
       </div>
