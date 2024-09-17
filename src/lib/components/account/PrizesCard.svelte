@@ -1,23 +1,27 @@
 <script lang="ts">
-  import { formatClaimedReward, formatPrize, getBlockTimestamp, lower } from '$lib/utils'
-  import { tokenPrices, userClaimedRewards, userFlashEvents } from '$lib/stores'
+  import { tokenPrices, userClaimedPrizeEvents, userClaimedRewards, userFlashEvents } from '$lib/stores'
+  import { formatClaimedReward, formatFallbackPrize, formatPrize, getBlockTimestamp } from '$lib/utils'
   import Loading from '../Loading.svelte'
 
   let isExpanded = false
 
-  // TODO: this needs to only display checked prizes
-  $: prizesWon = $userFlashEvents?.map((flashEvent) => formatPrize(flashEvent)) ?? []
+  // TODO: these needs to only display checked prizes
+  $: prizesWon = $userFlashEvents?.map(formatPrize) ?? []
+  $: fallbackPrizesWon =
+    $userClaimedPrizeEvents
+      ?.filter((e) => !!e.args.payout)
+      .map((claimedPrizeEvent) => formatFallbackPrize(claimedPrizeEvent, $tokenPrices)) ?? []
 
-  $: rewardsClaimed =
-    $userClaimedRewards?.map((claimedReward) =>
-      formatClaimedReward(claimedReward, $tokenPrices[lower(claimedReward.token.address)] ?? 0)
-    ) ?? []
+  $: rewardsClaimed = $userClaimedRewards?.map((claimedReward) => formatClaimedReward(claimedReward, $tokenPrices)) ?? []
 
-  // TODO: also include prizes that were claimed but not compounded
-  $: rows = [...prizesWon, ...rewardsClaimed].sort((a, b) => {
+  interface Row extends ReturnType<typeof formatPrize> {
+    token?: ReturnType<typeof formatFallbackPrize>['token'] | ReturnType<typeof formatClaimedReward>['token']
+  }
+
+  $: rows = [...prizesWon, ...fallbackPrizesWon, ...rewardsClaimed].sort((a, b) => {
     const x = b.blockNumber - a.blockNumber
     return x === 0n ? 0 : x > 0n ? 1 : -1
-  }) as (ReturnType<typeof formatPrize> & { token?: ReturnType<typeof formatClaimedReward>['token'] })[]
+  }) as Row[]
 
   const getBlockDate = async (blockNumber: bigint) => {
     return new Date((await getBlockTimestamp(blockNumber)) * 1e3).toLocaleDateString('en', { day: '2-digit', month: '2-digit' })
@@ -31,8 +35,8 @@
   </div>
   <div class="content-wrapper">
     <div class="rows">
-      {#if !$userFlashEvents}
-        <Loading height="1rem" />
+      {#if !$userFlashEvents || !$userClaimedPrizeEvents || !$userClaimedRewards}
+        <Loading height=".75rem" />
       {:else if !rows.length}
         <span>No prizes... yet</span>
       {:else}
@@ -48,8 +52,12 @@
               <span>•</span>
               <span>{!!row.token ? 'Bonus Reward' : 'Prize'}</span>
             </div>
-            <!-- show underlying token (for bonus rewards or uncompounded prizes) on hover or click -->
-            <span>+${row.formattedAmount}</span>
+            {#if !row.token || row.token.price !== undefined}
+              <!-- show underlying token (for bonus rewards or uncompounded prizes) on hover or click -->
+              <span>+${row.formattedAmount}</span>
+            {:else}
+              <Loading height=".75rem" />
+            {/if}
           </div>
         {/each}
       {/if}
@@ -128,6 +136,7 @@
   div.row {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     gap: 1rem;
   }
 

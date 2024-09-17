@@ -1,11 +1,16 @@
 <script lang="ts">
-  import { tokenPrices, userAddress, userClaimedRewards, userFlashEvents, userTransferEvents } from '$lib/stores'
-  import { formatPrize, formatShareAmount, lower } from '$lib/utils'
+  import { tokenPrices, userAddress, userClaimedPrizeEvents, userClaimedRewards, userFlashEvents, userTransferEvents } from '$lib/stores'
+  import { formatFallbackPrize, formatPrize, formatShareAmount, lower } from '$lib/utils'
   import { formatUnits } from 'viem'
   import Loading from '../Loading.svelte'
 
-  // TODO: this needs to only display checked prizes
-  $: totalPrizesWon = $userFlashEvents?.map((flashEvent) => formatPrize(flashEvent)).reduce((a, b) => a + b.amount, 0n) ?? 0n
+  // TODO: these needs to only display checked prizes
+  $: prizesWon = $userFlashEvents?.map(formatPrize) ?? []
+  $: fallbackPrizesWon =
+    $userClaimedPrizeEvents
+      ?.filter((e) => !!e.args.payout)
+      .map((claimedPrizeEvent) => formatFallbackPrize(claimedPrizeEvent, $tokenPrices)) ?? []
+  $: totalPrizesWon = [...prizesWon, ...fallbackPrizesWon].reduce((a, b) => a + b.amount, 0n) ?? 0n
   $: formattedTotalPrizesWon = formatShareAmount(totalPrizesWon)
 
   $: aggregatedTransferAmount =
@@ -29,6 +34,7 @@
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   })
+  $: isFetchedBonusRewardsTokenPrices = $userClaimedRewards?.every((reward) => $tokenPrices[lower(reward.token.address)] !== undefined)
 </script>
 
 <div class="wrapper">
@@ -42,7 +48,7 @@
   </div>
   <div class="stat">
     <h3>Total Prizes Won</h3>
-    {#if !!$userFlashEvents}
+    {#if !!$userFlashEvents && !!$userClaimedPrizeEvents}
       <span>+${formattedTotalPrizesWon}</span>
     {:else}
       <Loading height=".75rem" />
@@ -50,7 +56,7 @@
   </div>
   <div class="stat">
     <h3>Total Bonus Rewards Claimed</h3>
-    {#if !!$userClaimedRewards}
+    {#if !!$userClaimedRewards && !!isFetchedBonusRewardsTokenPrices}
       <span>+${formattedBonusRewardsClaimed}</span>
     {:else}
       <Loading height=".75rem" />

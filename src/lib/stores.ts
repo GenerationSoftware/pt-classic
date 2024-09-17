@@ -1,4 +1,5 @@
 import {
+  getClaimedPrizeEvents,
   getFlashEvents,
   getPrizeHookStatus,
   getTokenBalances,
@@ -9,7 +10,17 @@ import {
 import { prizeVault, zapInTokenOptions } from './config'
 import { dolphinAddress } from './constants'
 import { get, writable } from 'svelte/store'
-import type { ClaimableReward, ClaimedReward, FlashEvent, PrizeDistribution, PrizeHookStatus, PromotionInfo, TransferEvent } from './types'
+import type {
+  ClaimableReward,
+  ClaimedPrizeEvent,
+  ClaimedReward,
+  FlashEvent,
+  PrizeDistribution,
+  PrizeHookStatus,
+  PromotionInfo,
+  TokenPrices,
+  TransferEvent
+} from './types'
 import type { Address, WalletClient } from 'viem'
 
 export const walletClient = writable<WalletClient | undefined>(undefined)
@@ -25,6 +36,7 @@ export const userPrizeHookStatus = writable<PrizeHookStatus | undefined>(undefin
 // TODO: cache these somehow (save results, only query past X block next load, etc.)
 export const userTransferEvents = writable<TransferEvent[] | undefined>(undefined)
 export const userFlashEvents = writable<FlashEvent[] | undefined>(undefined)
+export const userClaimedPrizeEvents = writable<ClaimedPrizeEvent[] | undefined>(undefined)
 
 export const userClaimedRewards = writable<ClaimedReward[] | undefined>(undefined)
 export const userClaimableRewards = writable<ClaimableReward[] | undefined>(undefined)
@@ -37,6 +49,7 @@ userAddress.subscribe(async (address) => {
   userPrizeHookStatus.set(undefined)
   userTransferEvents.set(undefined)
   userFlashEvents.set(undefined)
+  userClaimedPrizeEvents.set(undefined)
   userClaimedRewards.set(undefined)
   userClaimableRewards.set(undefined)
 
@@ -58,11 +71,14 @@ userAddress.subscribe(async (address) => {
     const swapperAddresses = !!prizeHookStatus.isSwapperSet
       ? [prizeHookStatus.swapperAddress, ...prizeHookStatus.pastSwapperAddresses]
       : prizeHookStatus.pastSwapperAddresses
+
     userFlashEvents.set(await getFlashEvents(address, swapperAddresses))
+
+    userClaimedPrizeEvents.set(await getClaimedPrizeEvents(address))
   }
 })
 
-export const tokenPrices = writable<{ [tokenAddress: Lowercase<Address>]: number }>({})
+export const tokenPrices = writable<TokenPrices>({})
 
 export const prizeDistribution = writable<PrizeDistribution | undefined>(undefined)
 

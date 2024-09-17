@@ -29,10 +29,13 @@
   used(RainbowKitProvider)
 
   onMount(async () => {
-    getTokenPrice(prizePool.prizeToken)
-    getPrizeDistribution().then(prizeDistribution.set)
-    getPromotionInfo().then(promotionInfo.set)
-    twabRewardsTokenOptions.forEach(getTokenPrice)
+    await getTokenPrice(prizePool.prizeToken)
+    await getPrizeDistribution().then(prizeDistribution.set)
+    await getPromotionInfo().then(promotionInfo.set)
+
+    for (const token of twabRewardsTokenOptions) {
+      await getTokenPrice(token)
+    }
   })
 </script>
 

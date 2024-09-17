@@ -1,7 +1,7 @@
 import { dolphinAddress, dskit, publicClient } from '$lib/constants'
+import { prizeVault, tokenSwapRouteConfigs } from '$lib/config'
 import { erc20Abi, type Address } from 'viem'
 import { tokenPrices } from '$lib/stores'
-import { prizeVault } from '$lib/config'
 import { lower } from './formatting'
 import { get } from 'svelte/store'
 
@@ -31,7 +31,7 @@ export const getTokenPrice = async (token: { address: Address; decimals: number 
   const existingTokenPrice = get(tokenPrices)[lower(token.address)]
   if (existingTokenPrice !== undefined) return existingTokenPrice
 
-  const tokenPrice = await dskit.price.ofToken({ token, tokenDenominator: prizeVault.asset })
+  const tokenPrice = await dskit.price.ofToken({ token, tokenDenominator: prizeVault.asset }, tokenSwapRouteConfigs[lower(token.address)])
 
   tokenPrices.update((oldTokenPrices) => ({ ...oldTokenPrices, [lower(token.address)]: tokenPrice }))
 

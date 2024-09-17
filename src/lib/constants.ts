@@ -9,7 +9,8 @@ import { DSKit } from 'dskit-eth'
 export const wagmiConfig = getDefaultConfig({
   appName,
   projectId: 'test', // TODO: get wallet id
-  chains: [chain]
+  chains: [chain],
+  batch: { multicall: { batchSize: 1_024 * 1_024 } }
 })
 
 export const queryClient = new QueryClient()

@@ -1,4 +1,4 @@
-import { prizeHookAddress, prizeVault } from '$lib/config'
+import { prizeHook, prizeVault } from '$lib/config'
 import { zeroAddress, type Address } from 'viem'
 import { getSetSwapperEvents } from './events'
 import { publicClient } from '$lib/constants'
@@ -20,11 +20,11 @@ export const getPrizeHookStatus = async (
     args: [userAddress]
   })
 
-  if (lower(hook.implementation) === prizeHookAddress && !!hook.useBeforeClaimPrize) {
+  if (lower(hook.implementation) === prizeHook.address && !!hook.useBeforeClaimPrize) {
     isPrizeHookSet = true
   }
 
-  const setSwapperEvents = await getSetSwapperEvents(userAddress, prizeVault.address)
+  const setSwapperEvents = await getSetSwapperEvents(userAddress)
 
   if (!!setSwapperEvents.length) {
     const swapperAddresses = [...new Set<Address>(setSwapperEvents.map((e) => e.args.newSwapper))]
