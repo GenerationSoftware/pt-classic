@@ -50,11 +50,6 @@ const runDeploy = async () => {
       folderPath
     })
 
-    // console.log('manifest')
-    // console.log(manifest)
-    // console.log('fileResponses')
-    // console.log(fileResponses)
-
     console.log(`Deployed!`)
     console.log(``)
 
