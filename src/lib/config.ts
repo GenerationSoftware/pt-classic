@@ -1,7 +1,7 @@
 import { base, type Chain } from 'viem/chains'
 import type { SwapRouteConfig } from 'dskit-eth'
 import type { Token } from './types'
-import type { Address } from 'viem'
+import { parseUnits, type Address } from 'viem'
 
 export const appName: string = 'PT Classic'
 
@@ -21,7 +21,10 @@ export const prizeVault = {
   deployedAtBlock: 19_862_159n
 } satisfies Token & { asset: Token; deployedAtBlock: bigint }
 
-export const prizeHookAddress: Lowercase<Address> = '0x253c1c4c8600425c4ef00773b5943cdc0dd216f2'
+export const prizeHook = {
+  address: '0x253c1c4c8600425c4ef00773b5943cdc0dd216f2',
+  minPrizeSize: parseUnits('1', prizeVault.decimals)
+} satisfies { address: Lowercase<Address>; minPrizeSize: bigint }
 
 export const twabRewardsAddress: Lowercase<Address> = '0x86f0923d20810441efc593eb0f2825c6bff2dc09'
 

@@ -46,8 +46,8 @@
     return value.split('').reduce((a, b) => a + (b === '.' || b === ',' ? 0.5 : 1), 0)
   }
 
-  const onSuccess = (_t: any, shares: bigint) => {
-    successfullyDepositedAmount = shares
+  const onSuccess = (depositedAmount: bigint) => {
+    successfullyDepositedAmount = depositedAmount
     formInput = ''
   }
 </script>

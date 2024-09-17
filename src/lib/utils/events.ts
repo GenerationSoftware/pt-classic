@@ -1,4 +1,4 @@
-import { prizeHookAddress, prizePool, prizeVault, twabRewardsAddress, twabRewardsTokenOptions } from '$lib/config'
+import { prizeHook, prizePool, prizeVault, twabRewardsAddress, twabRewardsTokenOptions } from '$lib/config'
 import { publicClient } from '$lib/constants'
 import type { Address } from 'viem'
 
@@ -91,7 +91,7 @@ export const getFlashEvents = async (beneficiary: Address, swapperAddresses: Add
 
 export const getSetSwapperEvents = async (userAddress: Address) => {
   const setSwapperEvents = await publicClient.getLogs({
-    address: prizeHookAddress,
+    address: prizeHook.address,
     event: {
       anonymous: false,
       inputs: [
