@@ -47,8 +47,9 @@
 
 <style>
   button {
+    margin-top: 0.375rem;
     color: var(--pt-purple-100);
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     font-weight: 500;
     line-height: 150%;
     text-decoration: underline;

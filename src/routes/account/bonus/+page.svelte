@@ -1,15 +1,7 @@
 <script>
-  import { userAddress } from '$lib/stores'
   import { goto } from '$app/navigation'
-  import { onMount } from 'svelte'
   import RewardsCard from '$lib/components/account/RewardsCard.svelte'
   import BackButton from '$lib/components/BackButton.svelte'
-
-  onMount(() => {
-    if (!$userAddress) {
-      goto('/account')
-    }
-  })
 </script>
 
 <h2>Claim Bonus Rewards</h2>

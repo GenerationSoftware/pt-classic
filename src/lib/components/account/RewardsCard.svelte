@@ -2,6 +2,7 @@
   import { tokenPrices, userClaimableRewards } from '$lib/stores'
   import { formatUnits } from 'viem'
   import { lower } from '$lib/utils'
+  import type { ClaimableReward } from '$lib/types'
   import ClaimRewardsButton from './ClaimRewardsButton.svelte'
   import ZapRewardsButton from './ZapRewardsButton.svelte'
   import SuccessPooly from '../SuccessPooly.svelte'
@@ -10,14 +11,18 @@
   let isSuccessfulRewardsClaim = false
   let isSuccessfulRewardsZap = false
 
+  const getPromotionRewardAmount = (reward: ClaimableReward) => {
+    return parseFloat(
+      formatUnits(
+        Object.values(reward.epochs).reduce((a, b) => a + b, 0n),
+        reward.token.decimals
+      )
+    )
+  }
+
   $: totalClaimableBonusRewards =
     $userClaimableRewards?.reduce((a, b) => {
-      const tokenAmount = parseFloat(
-        formatUnits(
-          Object.values(b.epochs).reduce((c, d) => c + d, 0n),
-          b.token.decimals
-        )
-      )
+      const tokenAmount = getPromotionRewardAmount(b)
       const tokenPrice = $tokenPrices[lower(b.token.address)] ?? 0
       return a + tokenAmount * tokenPrice
     }, 0) ?? 0
@@ -33,7 +38,17 @@
     {#if !!$userClaimableRewards && isFetchedBonusRewardsTokenPrices}
       {#if $userClaimableRewards.length > 0}
         <span class="rewards-title">You have <strong>${formattedTotalClaimableBonusRewards}</strong> in bonus rewards to claim</span>
-        <!-- TODO: display bonus rewards -->
+        <div class="rewards-list">
+          {#each $userClaimableRewards as reward}
+            {@const rewardAmount = getPromotionRewardAmount(reward)}
+            {@const formattedRewardAmount = rewardAmount.toLocaleString('en', { maximumFractionDigits: 4 })}
+
+            <div class="reward-item">
+              <span>Unclaimed Reward</span>
+              <span>{formattedRewardAmount} {reward.token.symbol}</span>
+            </div>
+          {/each}
+        </div>
         <ZapRewardsButton onSuccess={() => (isSuccessfulRewardsZap = true)} />
         <ClaimRewardsButton onSuccess={() => (isSuccessfulRewardsClaim = true)} />
       {:else}
@@ -73,6 +88,28 @@
   }
 
   span.rewards-title > strong {
+    color: var(--pt-teal-light);
+  }
+
+  div.rewards-list {
+    margin: 1rem 0;
+  }
+
+  div.reward-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem 0.75rem;
+    background-color: var(--pt-transparent);
+    border-radius: 0.5rem;
+  }
+
+  div.reward-item > span:first-child {
+    color: var(--pt-purple-300);
+  }
+
+  div.reward-item > span:last-child {
     color: var(--pt-teal-light);
   }
 
