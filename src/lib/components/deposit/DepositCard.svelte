@@ -13,6 +13,7 @@
   let successfullyDepositedAmount: bigint = 0n
 
   // TODO: this should allow for zapping anything in the user's wallet
+  // TODO: card should prompt user to configure their hooks after depositing if not done yet
 
   $: assetBalance = $userBalances[lower(prizeVault.asset.address)] as bigint | undefined
   $: flooredAssetBalance = Math.floor(parseFloat(formatUnits(assetBalance ?? 0n, prizeVault.decimals)) * 100) / 100

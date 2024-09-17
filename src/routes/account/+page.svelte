@@ -6,6 +6,7 @@
   import PrizesCard from '$lib/components/account/PrizesCard.svelte'
 </script>
 
+<!-- TODO: need state for no wallets connected -->
 {#if $userAddress}
   <AccountBalance />
   <AccountStats />
