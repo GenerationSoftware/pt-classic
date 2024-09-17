@@ -11,8 +11,6 @@
   }
 </script>
 
-<!-- TODO: offer fix if delegated to another wallet -->
-
 {#if !!$userPrizeHookStatus}
   <p>
     Finish setting up your account to have the best possible prize experience with <strong>built-in prize compounding</strong>, while also

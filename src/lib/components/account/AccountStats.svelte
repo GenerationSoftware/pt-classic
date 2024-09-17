@@ -42,6 +42,8 @@
     <h3>Total Deposited</h3>
     {#if !!$userTransferEvents && !!$userFlashEvents}
       <span>${formattedTotalDepositedAmount}</span>
+    {:else if !$userAddress}
+      <span>-</span>
     {:else}
       <Loading height=".75rem" />
     {/if}
@@ -50,6 +52,8 @@
     <h3>Total Prizes Won</h3>
     {#if !!$userFlashEvents && !!$userClaimedPrizeEvents}
       <span>+${formattedTotalPrizesWon}</span>
+    {:else if !$userAddress}
+      <span>-</span>
     {:else}
       <Loading height=".75rem" />
     {/if}
@@ -58,6 +62,8 @@
     <h3>Total Bonus Rewards Claimed</h3>
     {#if !!$userClaimedRewards && !!isFetchedBonusRewardsTokenPrices}
       <span>+${formattedBonusRewardsClaimed}</span>
+    {:else if !$userAddress}
+      <span>-</span>
     {:else}
       <Loading height=".75rem" />
     {/if}

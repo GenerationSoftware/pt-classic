@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { tokenPrices, userClaimedPrizeEvents, userClaimedRewards, userFlashEvents } from '$lib/stores'
+  import { tokenPrices, userAddress, userClaimedPrizeEvents, userClaimedRewards, userFlashEvents } from '$lib/stores'
   import { formatClaimedReward, formatFallbackPrize, formatPrize, getBlockTimestamp } from '$lib/utils'
   import Loading from '../Loading.svelte'
 
@@ -35,7 +35,10 @@
   </div>
   <div class="content-wrapper">
     <div class="rows">
-      {#if !$userFlashEvents || !$userClaimedPrizeEvents || !$userClaimedRewards}
+      {#if !$userAddress}
+        <!-- TODO: allow clicking "connect your wallet" to connect -->
+        <span>Connect your wallet to continue...</span>
+      {:else if !$userFlashEvents || !$userClaimedPrizeEvents || !$userClaimedRewards}
         <Loading height=".75rem" />
       {:else if !rows.length}
         <span>No prizes... yet</span>

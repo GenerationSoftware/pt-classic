@@ -62,6 +62,7 @@
   }
 
   p.description {
+    margin-top: 1rem;
     text-align: center;
     color: var(--pt-purple-300);
     font-size: 0.875rem;

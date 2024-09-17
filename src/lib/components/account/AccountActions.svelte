@@ -1,4 +1,5 @@
 <script>
+  import { userAddress } from '$lib/stores'
   import { prizePool } from '$lib/config'
   import { formatUnits } from 'viem'
 
@@ -12,15 +13,17 @@
       : ''
 </script>
 
-<div class="wrapper">
-  <div class="buttons">
-    <a href="/account/prizes" class="teal-button">Check Prizes</a>
-    <a href="/account/bonus" class="teal-button">Claim Bonus</a>
+{#if !!$userAddress}
+  <div class="wrapper">
+    <div class="buttons">
+      <a href="/account/prizes" class="teal-button">Check Prizes</a>
+      <a href="/account/bonus" class="teal-button">Claim Bonus</a>
+    </div>
+    {#if !!totalAwardedSinceLastChecked && formattedTotalAwardedSinceLastChecked !== '0'}
+      <span><strong>${formattedTotalAwardedSinceLastChecked}</strong> in prizes awarded since you last checked!</span>
+    {/if}
   </div>
-  {#if !!totalAwardedSinceLastChecked && formattedTotalAwardedSinceLastChecked !== '0'}
-    <span><strong>${formattedTotalAwardedSinceLastChecked}</strong> in prizes awarded since you last checked!</span>
-  {/if}
-</div>
+{/if}
 
 <style>
   div.wrapper {

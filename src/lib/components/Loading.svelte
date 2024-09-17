@@ -1,8 +1,9 @@
 <script lang="ts">
   export let height: string = '30px'
+  export let style: string = ''
 </script>
 
-<svg {height} viewBox="0 0 120 30" xmlns="http://www.w3.org/2000/svg" fill="#fff">
+<svg {height} viewBox="0 0 120 30" xmlns="http://www.w3.org/2000/svg" fill="#fff" {style}>
   <circle cx="15" cy="15" r="15">
     <animate attributeName="r" from="15" to="15" begin="0s" dur="0.8s" values="15;9;15" calcMode="linear" repeatCount="indefinite" />
     <animate
