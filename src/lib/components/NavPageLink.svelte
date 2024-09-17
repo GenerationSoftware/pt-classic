@@ -1,17 +1,15 @@
 <script lang="ts">
-  import { page } from '$app/stores'
+  import { active } from 'tinro'
   import type { SVGAttributes } from 'svelte/elements'
 
   export let href: string
   export let name: string
   export let viewBox: string
 
-  $: currentPage = '/' + $page.url.pathname.split('/')[1]
-
   const svgIconParams: SVGAttributes<any> = { height: 24, width: 24, xmlns: 'http://www.w3.org/2000/svg' }
 </script>
 
-<a {href} class:active={currentPage === href}>
+<a {href} use:active exact>
   <svg {viewBox} {...svgIconParams} class="mobile-only">
     <slot />
   </svg>

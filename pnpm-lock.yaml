@@ -29,9 +29,6 @@ importers:
       react-dom:
         specifier: 18.3.1
         version: 18.3.1(react@18.3.1)
-      sveltejs-adapter-ipfs:
-        specifier: ^0.4.12
-        version: 0.4.12(@sveltejs/kit@2.5.25(@sveltejs/vite-plugin-svelte@3.1.2(svelte@4.2.19)(vite@5.4.3(@types/node@22.5.4)(terser@5.32.0)))(svelte@4.2.19)(vite@5.4.3(@types/node@22.5.4)(terser@5.32.0)))
       viem:
         specifier: 2.20.0
         version: 2.20.0(bufferutil@4.0.8)(typescript@5.5.4)(utf-8-validate@5.0.10)
@@ -63,6 +60,9 @@ importers:
       svelte-preprocess-react:
         specifier: 0.17.1
         version: 0.17.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(svelte@4.2.19)
+      tinro:
+        specifier: ^0.6.12
+        version: 0.6.12
       typescript:
         specifier: 5.5.4
         version: 5.5.4
@@ -4466,11 +4466,6 @@ packages:
     resolution: {integrity: sha512-IY1rnGr6izd10B0A8LqsBfmlT5OILVuZ7XsI0vdGPEvuonFV7NYEUK4dAkm9Zg2q0Um92kYjTpS1CAP3Nh/KWw==}
     engines: {node: '>=16'}
 
-  sveltejs-adapter-ipfs@0.4.12:
-    resolution: {integrity: sha512-XltyQ63yYcX01MEbCZESHlW+wrNOkBmbFvy1NbHJYSrN18OFvUl8rdJZFFTvHJlI4pyidP57eSed/PXvmhH3Mw==}
-    peerDependencies:
-      '@sveltejs/kit': ^1.5.0
-
   symbol-observable@2.0.3:
     resolution: {integrity: sha512-sQV7phh2WCYAn81oAkakC5qjq2Ml0g8ozqz03wOGnx9dDlG1de6yrF+0RAzSJD8fPUow3PTSMf2SAbOGxb93BA==}
     engines: {node: '>=0.10'}
@@ -4505,6 +4500,9 @@ packages:
 
   through@2.3.8:
     resolution: {integrity: sha512-w89qg7PI8wAdvX60bMDP+bFoD5Dvhm9oLheFp5O4a2QF0cSBGsBX4qZmadPMvVqlLJBBci+WqGGOAPvcDeNSVg==}
+
+  tinro@0.6.12:
+    resolution: {integrity: sha512-YYLh0a21GXXpS66ilZbywfXcPTKQQ+bv3tihoqKqSFQP6/F11N7ZmtRbFWcyZXXPFRSzNxmPJBB8ZhP0GkoS0Q==}
 
   tiny-glob@0.2.9:
     resolution: {integrity: sha512-g/55ssRPUjShh+xkfx9UPDXqhckHEsHr4Vd9zX55oSdGZc/MD0m3sferOkwWtp98bv+kcVfEHtRJgBVJzelrzg==}
@@ -10650,10 +10648,6 @@ snapshots:
       magic-string: 0.30.11
       periscopic: 3.1.0
 
-  sveltejs-adapter-ipfs@0.4.12(@sveltejs/kit@2.5.25(@sveltejs/vite-plugin-svelte@3.1.2(svelte@4.2.19)(vite@5.4.3(@types/node@22.5.4)(terser@5.32.0)))(svelte@4.2.19)(vite@5.4.3(@types/node@22.5.4)(terser@5.32.0))):
-    dependencies:
-      '@sveltejs/kit': 2.5.25(@sveltejs/vite-plugin-svelte@3.1.2(svelte@4.2.19)(vite@5.4.3(@types/node@22.5.4)(terser@5.32.0)))(svelte@4.2.19)(vite@5.4.3(@types/node@22.5.4)(terser@5.32.0))
-
   symbol-observable@2.0.3: {}
 
   system-architecture@0.1.0: {}
@@ -10685,6 +10679,8 @@ snapshots:
       xtend: 4.0.2
 
   through@2.3.8: {}
+
+  tinro@0.6.12: {}
 
   tiny-glob@0.2.9:
     dependencies:

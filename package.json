@@ -7,6 +7,7 @@
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
+    "deploy": "node deploy.js",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "lint": "prettier --check .",
@@ -20,7 +21,6 @@
     "dskit-eth": "0.1.7",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "sveltejs-adapter-ipfs": "^0.4.12",
     "viem": "2.20.0",
     "wagmi": "2.12.8"
   },
@@ -33,6 +33,7 @@
     "svelte": "4.2.19",
     "svelte-check": "3.8.6",
     "svelte-preprocess-react": "0.17.1",
+    "tinro": "^0.6.12",
     "typescript": "5.5.4",
     "vite": "5.4.3",
     "yargs": "^17.7.2"

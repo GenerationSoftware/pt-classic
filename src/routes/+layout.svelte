@@ -1,4 +1,5 @@
 <script>
+  import { router } from 'tinro'
   import { getPrizeDistribution, getPromotionInfo, getTokenPrice } from '$lib/utils'
   import { prizeDistribution, promotionInfo } from '$lib/stores'
   import { QueryClientProvider } from '@tanstack/react-query'
@@ -13,6 +14,8 @@
   import Nav from '$lib/components/Nav.svelte'
   import '@rainbow-me/rainbowkit/styles.css'
   import '../app.css'
+
+  router.mode.hash() // enables hash navigation method
 
   export let data
   const transitionDuration = 100

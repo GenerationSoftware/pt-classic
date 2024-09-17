@@ -1,6 +1,6 @@
 <script>
-  import { goto } from '$app/navigation'
   import BackButton from '$lib/components/BackButton.svelte'
+  import { router } from 'tinro'
 </script>
 
 <!-- TODO: how bonus rewards available to be claimed -->
@@ -8,4 +8,4 @@
 <!-- TODO: button to just claim -->
 
 <span>WE BUIDLING</span>
-<BackButton onClick={() => goto('/account')} />
+<BackButton onClick={() => router.goto('/account')} />

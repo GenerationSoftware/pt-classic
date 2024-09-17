@@ -12,3 +12,7 @@
   <PrizesCard />
   <AccountActions />
 {/if}
+
+{#if !$userAddress}
+  <h1>Connect wallet!</h1>
+{/if}
