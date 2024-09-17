@@ -103,6 +103,10 @@ input::placeholder {
   color: var(--pt-placeholder);
 }
 
+p {
+  margin: 0;
+}
+
 .desktop-only {
   display: none;
 }

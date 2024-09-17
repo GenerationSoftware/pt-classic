@@ -76,7 +76,7 @@
 <style>
   div.card {
     --padding: 1.5rem;
-    width: calc(100% - 2rem - calc(2 * var(--padding)));
+    width: calc(100% - 2rem - (2 * var(--padding)));
     display: flex;
     flex-direction: column;
     padding: var(--padding);
@@ -95,8 +95,8 @@
     margin: 3rem 0 2rem;
     padding: 1rem 0.75rem;
     background-color: var(--pt-transparent);
-    border-radius: 1rem;
     border: 1px solid var(--pt-transparent);
+    border-radius: 1rem;
   }
 
   div.input > label {
