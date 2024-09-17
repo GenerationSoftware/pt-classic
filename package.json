@@ -18,6 +18,7 @@
     "dskit-eth": "0.1.7",
     "react": "18.3.1",
     "react-dom": "18.3.1",
+    "sveltejs-adapter-ipfs": "^0.4.12",
     "viem": "2.20.0",
     "wagmi": "2.12.8"
   },
