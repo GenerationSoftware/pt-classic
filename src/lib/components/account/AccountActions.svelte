@@ -1,7 +1,10 @@
-<script>
+<script lang="ts">
   import { userAddress, userClaimableRewards } from '$lib/stores'
   import { prizePool } from '$lib/config'
   import { formatUnits } from 'viem'
+
+  export let onClickCheckPrizes: () => {}
+  export let onClickClaimBonusRewards: () => {}
 
   // TODO: get amount of prizes awarded since user last checked
   $: totalAwardedSinceLastChecked = 0n
@@ -18,10 +21,10 @@
   <div class="content-wrapper">
     <div class="buttons">
       {#if isCheckPrizesEnabled}
-        <a href="/account/prizes" class="teal-button">Check Prizes</a>
+        <button on:click={onClickCheckPrizes} class="teal-button">Check Prizes</button>
       {/if}
       {#if !!$userClaimableRewards?.length}
-        <a href="/account/bonus" class="teal-button">Claim Bonuses</a>
+        <button on:click={onClickClaimBonusRewards} class="teal-button">Claim Bonuses</button>
       {/if}
     </div>
     {#if isCheckPrizesEnabled}
