@@ -8,7 +8,7 @@
   $: prizesWon = $userFlashEvents?.map(formatPrize) ?? []
   $: fallbackPrizesWon =
     $userClaimedPrizeEvents
-      ?.filter((e) => !!e.args.payout)
+      ?.filter((e) => !!BigInt(e.args.payout))
       .map((claimedPrizeEvent) => formatFallbackPrize(claimedPrizeEvent, $tokenPrices)) ?? []
   $: totalPrizesWon = [...prizesWon, ...fallbackPrizesWon].reduce((a, b) => a + b.amount, 0n) ?? 0n
   $: formattedTotalPrizesWon = formatShareAmount(totalPrizesWon)
@@ -17,7 +17,11 @@
     !!$userTransferEvents && !!$userAddress
       ? $userTransferEvents.reduce(
           (a, b) =>
-            lower(b.args.to) === lower($userAddress) ? a + b.args.value : lower(b.args.from) === lower($userAddress) ? a - b.args.value : a,
+            lower(b.args.to) === lower($userAddress)
+              ? a + BigInt(b.args.value)
+              : lower(b.args.from) === lower($userAddress)
+                ? a - BigInt(b.args.value)
+                : a,
           0n
         )
       : 0n

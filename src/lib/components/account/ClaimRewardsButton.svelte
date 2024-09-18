@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { promotionInfo, userAddress, userBalances, userClaimableRewards, userClaimedRewards, walletClient } from '$lib/stores'
-  import { claimBonusRewards, getTokenBalances, getUserClaimableRewards, getUserClaimedRewards } from '$lib/utils'
+  import { claimBonusRewards, getUserClaimableRewards, getUserClaimedRewards, updateUserTokenBalances } from '$lib/utils'
+  import { promotionInfo, userAddress, userClaimableRewards, userClaimedRewards, walletClient } from '$lib/stores'
+  import { dolphinAddress } from '$lib/constants'
   import { prizeVault } from '$lib/config'
 
   export let disabled: boolean = false
@@ -11,13 +12,6 @@
     if (!!$promotionInfo && !!$userAddress) {
       userClaimableRewards.set(await getUserClaimableRewards($promotionInfo, $userAddress))
       userClaimedRewards.set(await getUserClaimedRewards($promotionInfo, $userAddress))
-    }
-  }
-
-  const updateBalances = async () => {
-    if (!!$userAddress) {
-      const updatedBalances = await getTokenBalances($userAddress, [prizeVault.address, prizeVault.asset.address])
-      userBalances.update((oldBalances) => ({ ...oldBalances, ...updatedBalances }))
     }
   }
 </script>
@@ -38,7 +32,7 @@
         },
         onSettled: () => {
           isClaiming = false
-          updateBalances()
+          updateUserTokenBalances($userAddress, [dolphinAddress, prizeVault.address, prizeVault.asset.address])
         }
       })}
     disabled={isClaiming || disabled}>Only Claim Bonuses</button

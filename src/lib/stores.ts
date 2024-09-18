@@ -1,19 +1,21 @@
 import {
-  getClaimedPrizeEvents,
-  getFlashEvents,
   getPrizeHookStatus,
   getTokenBalances,
-  getTransferEvents,
   getUserClaimableRewards,
-  getUserClaimedRewards
+  getUserClaimedRewards,
+  lower,
+  updateUserClaimedPrizeEvents,
+  updateUserFlashEvents,
+  updateUserTransferEvents
 } from './utils'
-import { prizeVault, zapInTokenOptions } from './config'
-import { dolphinAddress } from './constants'
+import { chain, prizeVault, zapInTokenOptions } from './config'
+import { dolphinAddress, localStorageKeys } from './constants'
 import { get, writable } from 'svelte/store'
 import type {
   ClaimableReward,
   ClaimedPrizeEvent,
   ClaimedReward,
+  EventCache,
   FlashEvent,
   PrizeDistribution,
   PrizeHookStatus,
@@ -33,7 +35,6 @@ walletClient.subscribe(async (client) => {
 export const userBalances = writable<{ [tokenAddress: Lowercase<Address>]: bigint }>({})
 export const userPrizeHookStatus = writable<PrizeHookStatus | undefined>(undefined)
 
-// TODO: cache these somehow (save results, only query past X block next load, etc.)
 export const userTransferEvents = writable<TransferEvent[] | undefined>(undefined)
 export const userFlashEvents = writable<FlashEvent[] | undefined>(undefined)
 export const userClaimedPrizeEvents = writable<ClaimedPrizeEvent[] | undefined>(undefined)
@@ -66,15 +67,56 @@ userAddress.subscribe(async (address) => {
     const prizeHookStatus = await getPrizeHookStatus(address)
     userPrizeHookStatus.set(prizeHookStatus)
 
-    userTransferEvents.set(await getTransferEvents(address, prizeVault.address))
+    const cachedTransferEvents: EventCache<TransferEvent> = JSON.parse(localStorage.getItem(localStorageKeys.transferEvents) ?? '{}')
+    await updateUserTransferEvents(address, cachedTransferEvents[lower(address)]?.[chain.id] ?? [])
 
     const swapperAddresses = !!prizeHookStatus.isSwapperSet
       ? [prizeHookStatus.swapperAddress, ...prizeHookStatus.pastSwapperAddresses]
       : prizeHookStatus.pastSwapperAddresses
 
-    userFlashEvents.set(await getFlashEvents(address, swapperAddresses))
+    const cachedFlashEvents: EventCache<FlashEvent> = JSON.parse(localStorage.getItem(localStorageKeys.flashEvents) ?? '{}')
+    await updateUserFlashEvents(address, swapperAddresses, cachedFlashEvents[lower(address)]?.[chain.id] ?? [])
 
-    userClaimedPrizeEvents.set(await getClaimedPrizeEvents(address))
+    const cachedClaimedPrizeEvents: EventCache<ClaimedPrizeEvent> = JSON.parse(
+      localStorage.getItem(localStorageKeys.claimedPrizeEvents) ?? '{}'
+    )
+    await updateUserClaimedPrizeEvents(address, cachedClaimedPrizeEvents[lower(address)]?.[chain.id] ?? [])
+  }
+})
+
+userTransferEvents.subscribe((transferEvents) => {
+  const address = get(userAddress)
+
+  if (!!transferEvents && !!address) {
+    const newStorage: EventCache<TransferEvent> = JSON.parse(localStorage.getItem(localStorageKeys.transferEvents) ?? '{}')
+    if (newStorage[lower(address)] === undefined) newStorage[lower(address)] = {}
+    newStorage[lower(address)][chain.id] = transferEvents
+
+    localStorage.setItem(localStorageKeys.transferEvents, JSON.stringify(newStorage))
+  }
+})
+
+userFlashEvents.subscribe((flashEvents) => {
+  const address = get(userAddress)
+
+  if (!!flashEvents && !!address) {
+    const newStorage: EventCache<FlashEvent> = JSON.parse(localStorage.getItem(localStorageKeys.flashEvents) ?? '{}')
+    if (newStorage[lower(address)] === undefined) newStorage[lower(address)] = {}
+    newStorage[lower(address)][chain.id] = flashEvents
+
+    localStorage.setItem(localStorageKeys.flashEvents, JSON.stringify(newStorage))
+  }
+})
+
+userClaimedPrizeEvents.subscribe((claimedPrizeEvents) => {
+  const address = get(userAddress)
+
+  if (!!claimedPrizeEvents && !!address) {
+    const newStorage: EventCache<ClaimedPrizeEvent> = JSON.parse(localStorage.getItem(localStorageKeys.claimedPrizeEvents) ?? '{}')
+    if (newStorage[lower(address)] === undefined) newStorage[lower(address)] = {}
+    newStorage[lower(address)][chain.id] = claimedPrizeEvents
+
+    localStorage.setItem(localStorageKeys.claimedPrizeEvents, JSON.stringify(newStorage))
   }
 })
 

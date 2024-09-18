@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { userAddress, userBalances, userTransferEvents, walletClient } from '$lib/stores'
-  import { approve, deposit, getTokenBalances, getTransferEvents } from '$lib/utils'
-  import { publicClient } from '$lib/constants'
+  import { approve, deposit, updateUserTokenBalances, updateUserTransferEvents } from '$lib/utils'
+  import { userAddress, userTransferEvents, walletClient } from '$lib/stores'
+  import { dolphinAddress, publicClient } from '$lib/constants'
   import { prizeVault } from '$lib/config'
   import { erc20Abi } from 'viem'
 
@@ -24,23 +24,6 @@
   }
 
   $: $userAddress, updateAllowance()
-
-  const updateBalances = async () => {
-    if (!!$userAddress) {
-      const updatedBalances = await getTokenBalances($userAddress, [prizeVault.address, prizeVault.asset.address])
-      userBalances.update((oldBalances) => ({ ...oldBalances, ...updatedBalances }))
-    }
-  }
-
-  const updateTransferEvents = async () => {
-    if (!!$userTransferEvents && !!$userAddress) {
-      const lastTransferEvent = $userTransferEvents.at(-1)
-      const newTransferEvents = await getTransferEvents($userAddress, prizeVault.address, {
-        fromBlock: !!lastTransferEvent ? lastTransferEvent.blockNumber + 1n : undefined
-      })
-      userTransferEvents.update((oldTransferEvents) => [...(oldTransferEvents ?? []), ...newTransferEvents])
-    }
-  }
 </script>
 
 {#if !$walletClient || !$userAddress || !amount || allowance === undefined}
@@ -70,13 +53,13 @@
           isDepositing = true
         },
         onSuccess: (_t, depositEvent) => {
-          updateTransferEvents()
+          updateUserTransferEvents($userAddress, $userTransferEvents ?? [])
           onSuccess(depositEvent.args.assets)
         },
         onSettled: () => {
           isDepositing = false
           updateAllowance()
-          updateBalances()
+          updateUserTokenBalances($userAddress, [dolphinAddress, prizeVault.address, prizeVault.asset.address])
         }
       })}
     class="teal-button"

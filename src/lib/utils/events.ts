@@ -1,5 +1,8 @@
 import { prizeHook, prizePool, prizeVault, twabRewardsAddress, twabRewardsTokenOptions } from '$lib/config'
+import { formatClaimedPrizeEvent, formatFlashEvent, formatTransferEvent } from './formatting'
+import { userClaimedPrizeEvents, userFlashEvents, userTransferEvents } from '$lib/stores'
 import { publicClient } from '$lib/constants'
+import type { ClaimedPrizeEvent, FlashEvent, TransferEvent } from '$lib/types'
 import type { Address } from 'viem'
 
 export const getTransferEvents = async (
@@ -44,7 +47,7 @@ export const getTransferEvents = async (
   return [...fromTransferEvents, ...toTransferEvents]
 }
 
-export const getFlashEvents = async (beneficiary: Address, swapperAddresses: Address[]) => {
+export const getFlashEvents = async (beneficiary: Address, swapperAddresses: Address[], options?: { fromBlock?: bigint }) => {
   if (!swapperAddresses.length) return []
 
   const flashEvents = await publicClient.getLogs({
@@ -81,7 +84,7 @@ export const getFlashEvents = async (beneficiary: Address, swapperAddresses: Add
       type: 'event'
     },
     args: { beneficiary },
-    fromBlock: prizeVault.deployedAtBlock,
+    fromBlock: options?.fromBlock ?? prizeVault.deployedAtBlock,
     toBlock: 'latest',
     strict: true
   })
@@ -165,7 +168,7 @@ export const getRewardsClaimedEvents = async (userAddress: Address) => {
   return rewardsClaimedEvents
 }
 
-export const getClaimedPrizeEvents = async (userAddress: Address) => {
+export const getClaimedPrizeEvents = async (userAddress: Address, options?: { fromBlock?: bigint }) => {
   const claimedPrizeEvents = await publicClient.getLogs({
     address: prizePool.address,
     event: {
@@ -189,10 +192,46 @@ export const getClaimedPrizeEvents = async (userAddress: Address) => {
       winner: userAddress,
       recipient: userAddress
     },
-    fromBlock: prizeVault.deployedAtBlock,
+    fromBlock: options?.fromBlock ?? prizeVault.deployedAtBlock,
     toBlock: 'latest',
     strict: true
   })
 
   return claimedPrizeEvents
+}
+
+export const updateUserTransferEvents = async (userAddress: Address, oldTransferEvents: TransferEvent[]) => {
+  const lastTransferEvent = oldTransferEvents.at(-1) // TODO: make sure this is accurate
+
+  const newTransferEvents = (
+    await getTransferEvents(userAddress, prizeVault.address, {
+      fromBlock: !!lastTransferEvent ? BigInt(lastTransferEvent.blockNumber) + 1n : undefined
+    })
+  ).map(formatTransferEvent)
+
+  userTransferEvents.set([...oldTransferEvents, ...newTransferEvents])
+}
+
+export const updateUserFlashEvents = async (userAddress: Address, swapperAddresses: Address[], oldFlashEvents: FlashEvent[]) => {
+  const lastFlashEvent = oldFlashEvents.at(-1) // TODO: make sure this is accurate
+
+  const newFlashEvents = (
+    await getFlashEvents(userAddress, swapperAddresses, {
+      fromBlock: !!lastFlashEvent ? BigInt(lastFlashEvent.blockNumber) + 1n : undefined
+    })
+  ).map(formatFlashEvent)
+
+  userFlashEvents.set([...oldFlashEvents, ...newFlashEvents])
+}
+
+export const updateUserClaimedPrizeEvents = async (userAddress: Address, oldClaimedPrizeEvents: ClaimedPrizeEvent[]) => {
+  const lastClaimedPrizeEvent = oldClaimedPrizeEvents.at(-1) // TODO: make sure this is accurate
+
+  const newClaimedPrizeEvents = (
+    await getClaimedPrizeEvents(userAddress, {
+      fromBlock: !!lastClaimedPrizeEvent ? BigInt(lastClaimedPrizeEvent.blockNumber) + 1n : undefined
+    })
+  ).map(formatClaimedPrizeEvent)
+
+  userClaimedPrizeEvents.set([...oldClaimedPrizeEvents, ...newClaimedPrizeEvents])
 }

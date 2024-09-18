@@ -22,3 +22,9 @@ export const dskit = new DSKit({ viemPublicClient: publicClient as PublicClient 
 export const dolphinAddress = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
 
 export const seconds = { day: 86_400, week: 604_800, month: 2_628_000, year: 31_536_000 }
+
+export enum localStorageKeys {
+  transferEvents = 'transferEvents',
+  flashEvents = 'flashEvents',
+  claimedPrizeEvents = 'claimedPrizeEvents'
+}

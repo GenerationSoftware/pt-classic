@@ -1,7 +1,6 @@
 <script lang="ts">
-  import { promotionInfo, userAddress, userBalances, userClaimableRewards, userClaimedRewards, walletClient } from '$lib/stores'
-  import { getTokenBalances, getUserClaimableRewards, getUserClaimedRewards } from '$lib/utils'
-  import { prizeVault } from '$lib/config'
+  import { promotionInfo, userAddress, userClaimableRewards, userClaimedRewards, walletClient } from '$lib/stores'
+  import { getUserClaimableRewards, getUserClaimedRewards } from '$lib/utils'
 
   export let disabled: boolean = false
   export let onSuccess: () => void = () => {}
@@ -11,13 +10,6 @@
     if (!!$promotionInfo && !!$userAddress) {
       userClaimableRewards.set(await getUserClaimableRewards($promotionInfo, $userAddress))
       userClaimedRewards.set(await getUserClaimedRewards($promotionInfo, $userAddress))
-    }
-  }
-
-  const updateBalances = async () => {
-    if (!!$userAddress) {
-      const updatedBalances = await getTokenBalances($userAddress, [prizeVault.address, prizeVault.asset.address])
-      userBalances.update((oldBalances) => ({ ...oldBalances, ...updatedBalances }))
     }
   }
 </script>

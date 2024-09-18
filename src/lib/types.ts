@@ -1,10 +1,10 @@
 import type {
-  getClaimedPrizeEvents,
-  getFlashEvents,
+  formatClaimedPrizeEvent,
+  formatFlashEvent,
+  formatTransferEvent,
   getPrizeDistribution,
   getPrizeHookStatus,
   getPromotionInfo,
-  getTransferEvents,
   getUserClaimableRewards,
   getUserClaimedRewards
 } from './utils'
@@ -22,9 +22,9 @@ export interface TokenPrices {
 
 export type PrizeHookStatus = Awaited<ReturnType<typeof getPrizeHookStatus>>
 
-export type TransferEvent = Awaited<ReturnType<typeof getTransferEvents>>[number]
-export type FlashEvent = Awaited<ReturnType<typeof getFlashEvents>>[number]
-export type ClaimedPrizeEvent = Awaited<ReturnType<typeof getClaimedPrizeEvents>>[number]
+export type TransferEvent = ReturnType<typeof formatTransferEvent>
+export type FlashEvent = ReturnType<typeof formatFlashEvent>
+export type ClaimedPrizeEvent = ReturnType<typeof formatClaimedPrizeEvent>
 
 export type PrizeDistribution = Awaited<ReturnType<typeof getPrizeDistribution>>
 
@@ -33,3 +33,7 @@ export type ClaimedReward = Awaited<ReturnType<typeof getUserClaimedRewards>>[nu
 export type ClaimableReward = Awaited<ReturnType<typeof getUserClaimableRewards>>[number]
 
 export type TimeUnit = 'day' | 'week' | 'month' | 'year'
+
+export interface EventCache<EventType> {
+  [userAddress: Lowercase<Address>]: { [chainId: number]: EventType[] }
+}

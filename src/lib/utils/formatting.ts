@@ -2,25 +2,26 @@ import { formatUnits, parseUnits, type Address } from 'viem'
 import { prizePool, prizeVault } from '$lib/config'
 import { seconds } from '$lib/constants'
 import type { ClaimedPrizeEvent, ClaimedReward, FlashEvent, TimeUnit, TokenPrices } from '$lib/types'
+import type { getClaimedPrizeEvents, getFlashEvents, getTransferEvents } from './events'
 
 export const lower = (address: Address) => {
   return address.toLowerCase() as Lowercase<Address>
 }
 
 export const formatPrize = (flashEvent: FlashEvent) => {
-  const amount = flashEvent.args.amountsToBeneficiary.reduce((a, b) => a + b, 0n) + flashEvent.args.excessToBeneficiary
+  const amount = BigInt(flashEvent.args.amount)
 
   return {
     type: 'prize',
     txHash: flashEvent.transactionHash,
-    blockNumber: flashEvent.blockNumber,
+    blockNumber: BigInt(flashEvent.blockNumber),
     amount,
     formattedAmount: formatShareAmount(amount)
   } as const
 }
 
 export const formatFallbackPrize = (claimedPrizeEvent: ClaimedPrizeEvent, tokenPrices: TokenPrices) => {
-  const prizeTokenAmount = parseFloat(formatUnits(claimedPrizeEvent.args.payout, prizePool.prizeToken.decimals))
+  const prizeTokenAmount = parseFloat(formatUnits(BigInt(claimedPrizeEvent.args.payout), prizePool.prizeToken.decimals))
   const prizeTokenPrice = tokenPrices[lower(prizePool.prizeToken.address)] as number | undefined
   const prizeTokenValue = prizeTokenAmount * (prizeTokenPrice ?? 0)
 
@@ -29,13 +30,13 @@ export const formatFallbackPrize = (claimedPrizeEvent: ClaimedPrizeEvent, tokenP
   return {
     type: 'fallbackPrize',
     txHash: claimedPrizeEvent.transactionHash,
-    blockNumber: claimedPrizeEvent.blockNumber,
+    blockNumber: BigInt(claimedPrizeEvent.blockNumber),
     amount,
     formattedAmount: formatShareAmount(amount),
     token: {
       ...prizePool.prizeToken,
       price: prizeTokenPrice,
-      amount: claimedPrizeEvent.args.payout,
+      amount: BigInt(claimedPrizeEvent.args.payout),
       formattedAmount: prizeTokenAmount.toLocaleString('en', { maximumFractionDigits: 4 })
     }
   } as const
@@ -120,5 +121,60 @@ export const formatPrizeFrequency = (drawFrequency: number) => {
     } else {
       return `every ${x} years`
     }
+  }
+}
+
+export const formatTransferEvent = (rawTransferEvent: Awaited<ReturnType<typeof getTransferEvents>>[number]) => {
+  const { address, args, blockNumber, eventName, transactionHash } = rawTransferEvent
+
+  return {
+    address,
+    args: {
+      from: args.from,
+      to: args.to,
+      value: args.value.toString()
+    },
+    blockNumber: blockNumber.toString(),
+    eventName,
+    transactionHash
+  }
+}
+
+export const formatFlashEvent = (rawFlashEvent: Awaited<ReturnType<typeof getFlashEvents>>[number]) => {
+  const { address, args, blockNumber, eventName, transactionHash } = rawFlashEvent
+
+  return {
+    address,
+    args: {
+      beneficiary: args.beneficiary,
+      trader: args.trader,
+      token: args.tokenToBeneficiary,
+      amount: (args.amountsToBeneficiary.reduce((a, b) => a + b, 0n) + args.excessToBeneficiary).toString()
+    },
+    blockNumber: blockNumber.toString(),
+    eventName,
+    transactionHash
+  }
+}
+
+export const formatClaimedPrizeEvent = (rawClaimedPrizeEvent: Awaited<ReturnType<typeof getClaimedPrizeEvents>>[number]) => {
+  const { address, args, blockNumber, eventName, transactionHash } = rawClaimedPrizeEvent
+
+  return {
+    address,
+    args: {
+      vault: args.vault,
+      winner: args.winner,
+      recipient: args.recipient,
+      drawId: args.drawId,
+      tier: args.tier,
+      prizeIndex: args.prizeIndex,
+      payout: args.payout.toString(),
+      claimReward: args.claimReward.toString(),
+      claimRewardRecipient: args.claimRewardRecipient
+    },
+    blockNumber: blockNumber.toString(),
+    eventName,
+    transactionHash
   }
 }

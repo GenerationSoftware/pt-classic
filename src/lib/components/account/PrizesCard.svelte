@@ -10,7 +10,7 @@
   $: prizesWon = $userFlashEvents?.map(formatPrize) ?? []
   $: fallbackPrizesWon =
     $userClaimedPrizeEvents
-      ?.filter((e) => !!e.args.payout)
+      ?.filter((e) => !!BigInt(e.args.payout))
       .map((claimedPrizeEvent) => formatFallbackPrize(claimedPrizeEvent, $tokenPrices)) ?? []
 
   $: rewardsClaimed = $userClaimedRewards?.map((claimedReward) => formatClaimedReward(claimedReward, $tokenPrices)) ?? []
