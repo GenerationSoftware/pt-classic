@@ -3,5 +3,5 @@
   import { onMount } from 'svelte'
 
   // TODO: if user has a wallet connected, go to account page instead
-  onMount(() => goto('/deposit'))
+  onMount(() => goto('deposit'))
 </script>

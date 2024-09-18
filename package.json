@@ -7,6 +7,7 @@
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
+    "deploy": "vite build && node scripts/deploy.js",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "lint": "prettier --check .",
@@ -22,16 +23,19 @@
     "wagmi": "2.12.8"
   },
   "devDependencies": {
+    "@ardrive/turbo-sdk": "^1.16.0",
     "@sveltejs/adapter-static": "3.0.4",
     "@sveltejs/kit": "2.5.25",
     "@sveltejs/vite-plugin-svelte": "3.1.2",
+    "arweave": "^1.15.1",
     "prettier": "3.3.3",
     "prettier-plugin-svelte": "3.2.6",
     "svelte": "4.2.19",
     "svelte-check": "3.8.6",
     "svelte-preprocess-react": "0.17.1",
     "typescript": "5.5.4",
-    "vite": "5.4.3"
+    "vite": "5.4.3",
+    "yargs": "^17.7.2"
   },
   "packageManager": "pnpm@8.12.1"
 }
