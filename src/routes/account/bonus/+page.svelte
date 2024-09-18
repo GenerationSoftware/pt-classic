@@ -6,7 +6,7 @@
 
 <h2>Claim Bonus Rewards</h2>
 <RewardsCard />
-<BackButton onClick={() => goto('/account')} />
+<BackButton onClick={() => goto('account')} />
 
 <style>
   h2 {

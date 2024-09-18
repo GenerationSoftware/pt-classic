@@ -6,7 +6,7 @@
   export let name: string
   export let viewBox: string
 
-  $: currentPage = '/' + $page.url.pathname.split('/')[1]
+  $: currentPage = $page.url.pathname.split('/')[1]
 
   const svgIconParams: SVGAttributes<any> = { height: 24, width: 24, xmlns: 'http://www.w3.org/2000/svg' }
 </script>

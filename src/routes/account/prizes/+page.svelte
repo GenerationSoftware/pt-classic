@@ -7,4 +7,4 @@
 <!-- TODO: show prizes won -->
 
 <span>WE BUIDLING</span>
-<BackButton onClick={() => goto('/account')} />
+<BackButton onClick={() => goto('account')} />
