@@ -1,7 +1,7 @@
+import { parseUnits, type Address } from 'viem'
 import { base, type Chain } from 'viem/chains'
 import type { SwapRouteConfig } from 'dskit-eth'
 import type { Token } from './types'
-import { parseUnits, type Address } from 'viem'
 
 export const appName: string = 'PT Classic'
 

@@ -17,7 +17,7 @@
 
 {#if isAccountSetupNecessary}
   <Modal title="Account Setup">
-    <ConfigModalBanner slot="button-content" />
+    <ConfigModalBanner slot="button-content" animate={true} />
     <ConfigModalContent slot="modal-content" />
   </Modal>
 {/if}

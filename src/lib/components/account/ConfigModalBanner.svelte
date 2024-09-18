@@ -1,9 +1,13 @@
-<script>
+<script lang="ts">
   import { fly } from 'svelte/transition'
+
+  export let animate: boolean = false
+
+  $: duration = animate ? undefined : 0
 </script>
 
 <!-- TODO: different animations for desktop -->
-<div in:fly={{ x: -100 }} out:fly={{ x: 100 }}>Click here to finish setting up your account</div>
+<div in:fly={{ x: -100, duration }} out:fly={{ x: 100, duration }}>Click here to finish setting up your account</div>
 
 <style>
   div {

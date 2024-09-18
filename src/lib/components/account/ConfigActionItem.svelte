@@ -45,6 +45,7 @@
   }
 
   p {
+    text-align: left;
     font-size: 0.75rem;
   }
 </style>

@@ -20,8 +20,8 @@
     <span slot="name-not-done">Configure Prize Hook</span>
     <span slot="name-done">Prize Hook Configured</span>
     <em slot="description">
-      This transaction creates a "Swapper" contract that incentivizes others to swap and re-deposit your prizes for you. It also votes to
-      keep prize sizes above a certain level (without preventing you from winning any prizes).
+      This transaction creates a "Swapper" contract that swaps and re-deposits your prizes for you. It also votes to keep prize sizes above
+      a certain level.
     </em>
   </ConfigActionItem>
   <ConfigActionItem action={() => setPrizeHook({ onSuccess: updateUserPrizeHookStatus })} isDone={$userPrizeHookStatus.isPrizeHookSet}>
@@ -35,6 +35,7 @@
 
 <style>
   p {
+    text-align: left;
     margin-bottom: 0.5rem;
     color: var(--pt-purple-100);
   }

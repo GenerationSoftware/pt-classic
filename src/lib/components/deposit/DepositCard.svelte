@@ -1,19 +1,21 @@
 <script lang="ts">
-  import { userAddress, userBalances } from '$lib/stores'
+  import { userAddress, userBalances, userPrizeHookStatus } from '$lib/stores'
   import { formatShareAmount, lower } from '$lib/utils'
   import { formatUnits, parseUnits } from 'viem'
   import { prizeVault } from '$lib/config'
+  import ConfigModalContent from '../account/ConfigModalContent.svelte'
+  import ConfigModalBanner from '../account/ConfigModalBanner.svelte'
   import DepositButton from './DepositButton.svelte'
   import SuccessPooly from '../SuccessPooly.svelte'
   import BackButton from '../BackButton.svelte'
   import Loading from '../Loading.svelte'
+  import Modal from '../Modal.svelte'
 
   let formInput: string
   let error: string = ''
   let successfullyDepositedAmount: bigint = 0n
 
   // TODO: this should allow for zapping anything in the user's wallet
-  // TODO: card should prompt user to configure their hooks after depositing if not done yet
 
   $: assetBalance = $userBalances[lower(prizeVault.asset.address)] as bigint | undefined
   $: flooredAssetBalance = Math.floor(parseFloat(formatUnits(assetBalance ?? 0n, prizeVault.decimals)) * 100) / 100
@@ -51,6 +53,8 @@
     successfullyDepositedAmount = depositedAmount
     formInput = ''
   }
+
+  $: isAccountSetupNecessary = !!$userPrizeHookStatus && (!$userPrizeHookStatus.isPrizeHookSet || !$userPrizeHookStatus.isSwapperSet)
 </script>
 
 <div class="card">
@@ -72,6 +76,14 @@
     <h3 class="success-title">Success!</h3>
     <span class="success-info">You deposited {formatShareAmount(successfullyDepositedAmount)} {prizeVault.asset.symbol}</span>
     <SuccessPooly style="max-height: 7.5rem; margin: 2rem 0;" />
+    {#if isAccountSetupNecessary}
+      <Modal title="Account Setup">
+        <div slot="button-content" class="account-setup-prompt">
+          <ConfigModalBanner />
+        </div>
+        <ConfigModalContent slot="modal-content" />
+      </Modal>
+    {/if}
     <BackButton onClick={() => (successfullyDepositedAmount = 0n)} />
   {/if}
 </div>
@@ -146,5 +158,9 @@
     font-size: 1.25rem;
     font-weight: 600;
     line-height: 150%;
+  }
+
+  div.account-setup-prompt {
+    margin-bottom: 1rem;
   }
 </style>
