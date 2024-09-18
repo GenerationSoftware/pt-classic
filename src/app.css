@@ -1,17 +1,5 @@
 @font-face {
   font-family: 'Inter';
-  font-weight: 200;
-  src: url('/fonts/inter/inter-extralight.woff') format('woff');
-}
-
-@font-face {
-  font-family: 'Inter';
-  font-weight: 300;
-  src: url('/fonts/inter/inter-light.woff') format('woff');
-}
-
-@font-face {
-  font-family: 'Inter';
   font-weight: 400;
   src: url('/fonts/inter/inter-regular.woff') format('woff');
 }
@@ -32,12 +20,6 @@
   font-family: 'Inter';
   font-weight: 700;
   src: url('/fonts/inter/inter-bold.woff') format('woff');
-}
-
-@font-face {
-  font-family: 'Inter';
-  font-weight: 800;
-  src: url('/fonts/inter/inter-extrabold.woff') format('woff');
 }
 
 :root {
