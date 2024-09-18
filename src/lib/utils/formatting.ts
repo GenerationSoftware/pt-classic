@@ -10,7 +10,13 @@ export const lower = (address: Address) => {
 export const formatPrize = (flashEvent: FlashEvent) => {
   const amount = flashEvent.args.amountsToBeneficiary.reduce((a, b) => a + b, 0n) + flashEvent.args.excessToBeneficiary
 
-  return { txHash: flashEvent.transactionHash, blockNumber: flashEvent.blockNumber, amount, formattedAmount: formatShareAmount(amount) }
+  return {
+    type: 'prize',
+    txHash: flashEvent.transactionHash,
+    blockNumber: flashEvent.blockNumber,
+    amount,
+    formattedAmount: formatShareAmount(amount)
+  } as const
 }
 
 export const formatFallbackPrize = (claimedPrizeEvent: ClaimedPrizeEvent, tokenPrices: TokenPrices) => {
@@ -21,6 +27,7 @@ export const formatFallbackPrize = (claimedPrizeEvent: ClaimedPrizeEvent, tokenP
   const amount = parseUnits(`${prizeTokenValue}`, prizeVault.decimals)
 
   return {
+    type: 'fallbackPrize',
     txHash: claimedPrizeEvent.transactionHash,
     blockNumber: claimedPrizeEvent.blockNumber,
     amount,
@@ -31,7 +38,7 @@ export const formatFallbackPrize = (claimedPrizeEvent: ClaimedPrizeEvent, tokenP
       amount: claimedPrizeEvent.args.payout,
       formattedAmount: prizeTokenAmount.toLocaleString('en', { maximumFractionDigits: 4 })
     }
-  }
+  } as const
 }
 
 export const formatClaimedReward = (claimedReward: ClaimedReward, tokenPrices: TokenPrices) => {
@@ -42,6 +49,7 @@ export const formatClaimedReward = (claimedReward: ClaimedReward, tokenPrices: T
   const amount = parseUnits(`${tokenValue}`, prizeVault.decimals)
 
   return {
+    type: 'bonusReward',
     txHash: claimedReward.txHash,
     blockNumber: claimedReward.blockNumber,
     amount,
@@ -52,7 +60,7 @@ export const formatClaimedReward = (claimedReward: ClaimedReward, tokenPrices: T
       amount: claimedReward.amount,
       formattedAmount: tokenAmount.toLocaleString('en', { maximumFractionDigits: 4 })
     }
-  }
+  } as const
 }
 
 export const formatShareAmount = (amount: bigint) => {

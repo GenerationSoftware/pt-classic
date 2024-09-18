@@ -13,6 +13,10 @@ export const getBlockTimestamp = async (blockNumber: bigint) => {
   return Number(block.timestamp)
 }
 
+export const getBlockDate = async (blockNumber: bigint) => {
+  return new Date((await getBlockTimestamp(blockNumber)) * 1e3).toLocaleDateString('en', { day: '2-digit', month: '2-digit' })
+}
+
 export const getCurrentTimestamp = () => {
   return Number((Date.now() / 1_000).toFixed(0))
 }

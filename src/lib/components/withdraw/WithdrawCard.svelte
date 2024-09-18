@@ -54,7 +54,7 @@
   {#if !successfullyWithdrawnAmount}
     <span>How much do you want to withdraw?</span>
     <div class="input">
-      {#if vaultBalance !== undefined}
+      {#if !$userAddress || vaultBalance !== undefined}
         <label class:placeholder-color={!formInput}>
           $<input bind:value={formInput} placeholder="0.00" style={`width: ${getInputChars(formInput || '0.00')}ch`} />
         </label>

@@ -16,10 +16,9 @@
 
 <div class="top-nav-wrapper">
   <div class="top-nav-content">
-    <!-- // TODO: if user has a wallet connected, go to account page instead -->
-    <a href="/#/deposit">
-      <img src="pooltogether.svg" alt="PoolTogether" class="desktop-only" />
-      <img src="pooltogether-small.svg" alt="PoolTogether" class="mobile-only" />
+    <a href="/#/">
+      <img src="/pooltogether.svg" alt="PoolTogether" class="desktop-only" />
+      <img src="/pooltogether-small.svg" alt="PoolTogether" class="mobile-only" />
     </a>
     <react:ConnectButton />
   </div>

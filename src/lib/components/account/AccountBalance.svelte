@@ -1,19 +1,21 @@
 <script>
+  import { userAddress, userBalances } from '$lib/stores'
   import { formatShareAmount, lower } from '$lib/utils'
-  import { userBalances } from '$lib/stores'
   import { prizeVault } from '$lib/config'
   import Loading from '../Loading.svelte'
 
   $: vaultBalance = $userBalances[lower(prizeVault.address)]
-  $: formattedVaultBalance = vaultBalance !== undefined ? formatShareAmount(vaultBalance) : ''
+  $: formattedVaultBalance = vaultBalance !== undefined ? formatShareAmount(vaultBalance) : '0.00'
 </script>
 
 <div>
   <h2>Total Saved</h2>
   {#if vaultBalance !== undefined}
-    <span>${formattedVaultBalance}</span>
+    <span class="balance">${formattedVaultBalance}</span>
+  {:else if !$userAddress}
+    <span>-</span>
   {:else}
-    <Loading />
+    <Loading height="1rem" style="margin: 0.8125rem 0;" />
   {/if}
 </div>
 
@@ -32,9 +34,12 @@
   }
 
   span {
-    color: var(--pt-teal-dark);
     font-size: 1.75rem;
     font-weight: 700;
     line-height: 150%;
+  }
+
+  span.balance {
+    color: var(--pt-teal-dark);
   }
 </style>

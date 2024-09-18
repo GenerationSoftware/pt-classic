@@ -11,8 +11,6 @@
   }
 </script>
 
-<!-- TODO: offer fix if delegated to another wallet -->
-
 {#if !!$userPrizeHookStatus}
   <p>
     Finish setting up your account to have the best possible prize experience with <strong>built-in prize compounding</strong>, while also
@@ -38,5 +36,6 @@
 <style>
   p {
     margin-bottom: 0.5rem;
+    color: var(--pt-purple-100);
   }
 </style>
