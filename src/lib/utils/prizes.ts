@@ -1,10 +1,13 @@
+import { userClaimedPrizeEvents, userFlashEvents, userLastCheckedBlockNumber, userTransferEvents } from '$lib/stores'
 import { formatEther, formatUnits, type Address, type ContractFunctionParameters } from 'viem'
+import { prizeHook, prizePool, prizeVault } from '$lib/config'
 import { prizePoolABI, twabControllerABI } from '$lib/abis'
 import { publicClient, seconds } from '$lib/constants'
-import { prizePool, prizeVault } from '$lib/config'
 import { getBlockTimestamp } from './time'
+import { getTokenPrice } from './tokens'
 import { lower } from './formatting'
-import type { ClaimedPrizeEvent, FlashEvent, TransferEvent, UncheckedPrize } from '$lib/types'
+import { get } from 'svelte/store'
+import type { UncheckedPrize } from '$lib/types'
 
 export const getPrizeDistribution = async () => {
   const prizeDistribution: { tier: number; size: bigint; drawFrequency: number }[] = []
@@ -45,20 +48,16 @@ export const getPrizeDistribution = async () => {
   return prizeDistribution
 }
 
-export const getUserUncheckedPrizes = async (
-  userAddress: Address,
-  lastCheckedBlockNumber: bigint,
-  transferEvents: TransferEvent[],
-  flashEvents: FlashEvent[],
-  claimedPrizeEvents: ClaimedPrizeEvent[],
-  options?: { checkBlockNumber?: bigint }
-) => {
+export const getUserUncheckedPrizes = async (userAddress: Address, options?: { checkBlockNumber?: bigint }) => {
   const uncheckedPrizes: { list: UncheckedPrize[]; queriedAtBlockNumber: bigint } = { list: [], queriedAtBlockNumber: 0n }
 
-  const firstDepositEvent = transferEvents.find((e) => lower(e.args.to) === lower(userAddress)) // TODO: make sure this is the first event
+  // TODO: make sure this is the first event
+  const firstDepositEvent = get(userTransferEvents)?.find(
+    (e) => lower(e.args.to) === lower(userAddress) && lower(e.args.from) !== prizeHook.address
+  )
 
   const minBlockNumber =
-    lastCheckedBlockNumber || (!!firstDepositEvent ? BigInt(firstDepositEvent.blockNumber) : prizeVault.deployedAtBlock)
+    get(userLastCheckedBlockNumber) || (!!firstDepositEvent ? BigInt(firstDepositEvent.blockNumber) : prizeVault.deployedAtBlock)
   const maxBlockNumber = options?.checkBlockNumber ?? (await publicClient.getBlockNumber())
 
   uncheckedPrizes.queriedAtBlockNumber = maxBlockNumber
@@ -70,8 +69,8 @@ export const getUserUncheckedPrizes = async (
 
   if (minTimestamp >= maxTimestamp) return uncheckedPrizes
 
-  const relevantFlashEvents = flashEvents.filter((e) => BigInt(e.blockNumber) > minBlockNumber)
-  const relevantClaimedPrizeEvents = claimedPrizeEvents.filter((e) => BigInt(e.blockNumber) > minBlockNumber)
+  const relevantFlashEvents = get(userFlashEvents)?.filter((e) => BigInt(e.blockNumber) > minBlockNumber) ?? []
+  const relevantClaimedPrizeEvents = get(userClaimedPrizeEvents)?.filter((e) => BigInt(e.blockNumber) > minBlockNumber) ?? []
 
   const numUncheckedDraws = Math.floor((maxTimestamp - minTimestamp) / seconds.day)
 
@@ -85,7 +84,10 @@ export const getUserUncheckedPrizes = async (
 
   if (!lastAwardedDrawId) return uncheckedPrizes
 
+  const prizeTokenPrice = await getTokenPrice(prizePool.prizeToken)
   const prizeTierInfo = await getPrizeTierInfo()
+
+  if (!prizeTokenPrice || !Object.keys(prizeTierInfo).length) return uncheckedPrizes
 
   const lastTwabPeriodEndedAt = BigInt(Math.floor(maxTimestamp / seconds.hour))
   const lastTwabPeriodStartedAt = lastTwabPeriodEndedAt - BigInt(seconds.hour)
@@ -134,8 +136,11 @@ export const getUserUncheckedPrizes = async (
   // Adding prizes won
   relevantFlashEvents.forEach((flashEvent) => {
     const size = parseFloat(formatUnits(BigInt(flashEvent.args.amount), prizeVault.decimals))
-    const nearestPrizeTier = Object.values(prizeTierInfo).reduce((a, b) => (Math.abs(b.size - size) < Math.abs(a.size - size) ? b : a))
-    const userOdds = (nearestPrizeTier.size / size) * nearestPrizeTier.odds
+    const sizeInPrizeToken = size / prizeTokenPrice
+    const nearestPrizeTier = Object.values(prizeTierInfo).reduce((a, b) =>
+      Math.abs(b.size - sizeInPrizeToken) < Math.abs(a.size - sizeInPrizeToken) ? b : a
+    )
+    const userOdds = (nearestPrizeTier.size / sizeInPrizeToken) * nearestPrizeTier.odds
 
     uncheckedPrizes.list.push({ size, count: 1, userOdds, userWon: 1 })
   })
@@ -150,12 +155,13 @@ export const getUserUncheckedPrizes = async (
   })
 
   // Adding other estimated prizes awarded but not won
-  Object.values(prizeTierInfo).forEach(({ size, count, odds }) => {
+  Object.values(prizeTierInfo).forEach((tier) => {
+    const size = tier.size * prizeTokenPrice
     const numDraws = numUncheckedDraws > 0 ? numUncheckedDraws : 1
-    const aggregateCount = count * numDraws
-    const userOdds = odds * oddsMultiplier * aggregateCount
+    const count = oddsMultiplier === 1 ? tier.count : tier.count * numDraws // TODO: check logic
+    const userOdds = oddsMultiplier === 1 ? tier.odds : tier.odds * oddsMultiplier * count // TODO: check logic
 
-    uncheckedPrizes.list.push({ size, count: aggregateCount, userOdds, userWon: 0 })
+    uncheckedPrizes.list.push({ size, count, userOdds, userWon: 0 })
   })
 
   return uncheckedPrizes

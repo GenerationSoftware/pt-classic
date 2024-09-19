@@ -77,26 +77,19 @@ userAddress.subscribe(async (address) => {
     const currentBlockNumber = await publicClient.getBlockNumber()
 
     const cachedTransferEvents: KeyedCache<TransferEvent[]> = JSON.parse(localStorage.getItem(localStorageKeys.transferEvents) ?? '{}')
-    const updatedUserTransferEvents = await updateUserTransferEvents(address, cachedTransferEvents[lower(address)]?.[chain.id] ?? [])
+    await updateUserTransferEvents(address, cachedTransferEvents[lower(address)]?.[chain.id] ?? [])
 
     const swapperAddresses = !!prizeHookStatus.isSwapperSet
       ? [prizeHookStatus.swapperAddress, ...prizeHookStatus.pastSwapperAddresses]
       : prizeHookStatus.pastSwapperAddresses
 
     const cachedFlashEvents: KeyedCache<FlashEvent[]> = JSON.parse(localStorage.getItem(localStorageKeys.flashEvents) ?? '{}')
-    const updatedUserFlashEvents = await updateUserFlashEvents(
-      address,
-      swapperAddresses,
-      cachedFlashEvents[lower(address)]?.[chain.id] ?? []
-    )
+    await updateUserFlashEvents(address, swapperAddresses, cachedFlashEvents[lower(address)]?.[chain.id] ?? [])
 
     const cachedClaimedPrizeEvents: KeyedCache<ClaimedPrizeEvent[]> = JSON.parse(
       localStorage.getItem(localStorageKeys.claimedPrizeEvents) ?? '{}'
     )
-    const updatedUserClaimedPrizeEvents = await updateUserClaimedPrizeEvents(
-      address,
-      cachedClaimedPrizeEvents[lower(address)]?.[chain.id] ?? []
-    )
+    await updateUserClaimedPrizeEvents(address, cachedClaimedPrizeEvents[lower(address)]?.[chain.id] ?? [])
 
     const cachedLastCheckedBlockNumber: KeyedCache<string> = JSON.parse(
       localStorage.getItem(localStorageKeys.lastCheckedBlockNumber) ?? '{}'
@@ -104,16 +97,7 @@ userAddress.subscribe(async (address) => {
     const lastCheckedBlockNumber = BigInt(cachedLastCheckedBlockNumber[lower(address)]?.[chain.id] ?? '0')
     userLastCheckedBlockNumber.set(lastCheckedBlockNumber)
 
-    userUncheckedPrizes.set(
-      await getUserUncheckedPrizes(
-        address,
-        lastCheckedBlockNumber,
-        updatedUserTransferEvents,
-        updatedUserFlashEvents,
-        updatedUserClaimedPrizeEvents,
-        { checkBlockNumber: currentBlockNumber }
-      )
-    )
+    userUncheckedPrizes.set(await getUserUncheckedPrizes(address, { checkBlockNumber: currentBlockNumber }))
   }
 })
 
