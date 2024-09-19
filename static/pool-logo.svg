@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="224"
+   height="224"
+   viewBox="0 0 224 224"
+   fill="none"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="pool-logo.svg"
+   inkscape:version="1.3 (0e150ed6c4, 2023-07-21)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#505050"
+     showgrid="false"
+     inkscape:zoom="1.2832094"
+     inkscape:cx="51.04389"
+     inkscape:cy="188.97929"
+     inkscape:window-width="1920"
+     inkscape:window-height="1009"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1" />
+  <g
+     clip-path="url(#clip0_81_379)"
+     id="g1"
+     transform="translate(50.52198)">
+    <path
+       d="m 65.4128,0.503418 c 36.0842,0 65.3362,29.740282 65.3362,66.426882 v 38.1957 c 0,36.686 -29.252,66.427 -65.3362,66.427 -5.6681,0 -11.1675,-0.734 -16.4115,-2.113 l 6e-4,4.509 c 0,26.837 -21.5023,48.644 -48.191539,49.078 L 0,223.033 V 76.8943 L 0.0748859,76.8926 0.0768772,66.9303 C 0.0768772,30.2437 29.3288,0.503418 65.4128,0.503418 Z m 0,49.820182 c -9.021,0 -16.334,7.435 -16.334,16.6067 v 38.1957 c 0,9.171 7.313,16.606 16.334,16.606 9.021,0 16.334,-7.435 16.334,-16.606 V 66.9303 c 0,-9.1717 -7.313,-16.6067 -16.334,-16.6067 z"
+       fill="#ffffff"
+       id="path1" />
+  </g>
+  <defs
+     id="defs1">
+    <clipPath
+       id="clip0_81_379">
+      <rect
+         width="131"
+         height="224"
+         fill="#ffffff"
+         id="rect1"
+         x="0"
+         y="0" />
+    </clipPath>
+  </defs>
+</svg>
