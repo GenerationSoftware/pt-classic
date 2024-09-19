@@ -77,7 +77,7 @@ userAddress.subscribe(async (address) => {
     const currentBlockNumber = await publicClient.getBlockNumber()
 
     const cachedTransferEvents: KeyedCache<TransferEvent[]> = JSON.parse(localStorage.getItem(localStorageKeys.transferEvents) ?? '{}')
-    await updateUserTransferEvents(address, cachedTransferEvents[lower(address)]?.[chain.id] ?? [])
+    const updatedUserTransferEvents = await updateUserTransferEvents(address, cachedTransferEvents[lower(address)]?.[chain.id] ?? [])
 
     const swapperAddresses = !!prizeHookStatus.isSwapperSet
       ? [prizeHookStatus.swapperAddress, ...prizeHookStatus.pastSwapperAddresses]
@@ -105,9 +105,14 @@ userAddress.subscribe(async (address) => {
     userLastCheckedBlockNumber.set(lastCheckedBlockNumber)
 
     userUncheckedPrizes.set(
-      await getUserUncheckedPrizes(address, lastCheckedBlockNumber, updatedUserFlashEvents, updatedUserClaimedPrizeEvents, {
-        checkBlockNumber: currentBlockNumber
-      })
+      await getUserUncheckedPrizes(
+        address,
+        lastCheckedBlockNumber,
+        updatedUserTransferEvents,
+        updatedUserFlashEvents,
+        updatedUserClaimedPrizeEvents,
+        { checkBlockNumber: currentBlockNumber }
+      )
     )
   }
 })

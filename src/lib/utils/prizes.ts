@@ -3,7 +3,8 @@ import { prizePoolABI, twabControllerABI } from '$lib/abis'
 import { publicClient, seconds } from '$lib/constants'
 import { prizePool, prizeVault } from '$lib/config'
 import { getBlockTimestamp } from './time'
-import type { ClaimedPrizeEvent, FlashEvent, UncheckedPrize } from '$lib/types'
+import { lower } from './formatting'
+import type { ClaimedPrizeEvent, FlashEvent, TransferEvent, UncheckedPrize } from '$lib/types'
 
 export const getPrizeDistribution = async () => {
   const prizeDistribution: { tier: number; size: bigint; drawFrequency: number }[] = []
@@ -47,14 +48,17 @@ export const getPrizeDistribution = async () => {
 export const getUserUncheckedPrizes = async (
   userAddress: Address,
   lastCheckedBlockNumber: bigint,
+  transferEvents: TransferEvent[],
   flashEvents: FlashEvent[],
   claimedPrizeEvents: ClaimedPrizeEvent[],
   options?: { checkBlockNumber?: bigint }
 ) => {
   const uncheckedPrizes: { list: UncheckedPrize[]; queriedAtBlockNumber: bigint } = { list: [], queriedAtBlockNumber: 0n }
 
-  // TODO: fall back to first deposit event first, if not available then prize vault deploy block
-  const minBlockNumber = lastCheckedBlockNumber || prizeVault.deployedAtBlock
+  const firstDepositEvent = transferEvents.find((e) => lower(e.args.to) === lower(userAddress)) // TODO: make sure this is the first event
+
+  const minBlockNumber =
+    lastCheckedBlockNumber || (!!firstDepositEvent ? BigInt(firstDepositEvent.blockNumber) : prizeVault.deployedAtBlock)
   const maxBlockNumber = options?.checkBlockNumber ?? (await publicClient.getBlockNumber())
 
   uncheckedPrizes.queriedAtBlockNumber = maxBlockNumber
