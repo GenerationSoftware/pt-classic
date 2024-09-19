@@ -63,7 +63,7 @@
     <div class="input">
       {#if !$userAddress || assetBalance !== undefined}
         <label class:placeholder-color={!formInput}>
-          $<input bind:value={formInput} placeholder="0.00" style={`width: ${getInputChars(formInput || '0.00')}ch`} />
+          $<input bind:value={formInput} placeholder="0.00" style:width={`${getInputChars(formInput || '0.00')}ch`} />
         </label>
         <span>of ${formattedAssetBalance} available</span>
       {:else}

@@ -1,12 +1,12 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte'
-  import { VectorMath } from './vectorMath'
-  import type { PlinkoState, Prize, PrizeRowTile } from './types'
+  import { VectorMath } from '$lib/utils'
+  import type { PlinkoPrizeRowTile, PlinkoState, UncheckedPrize } from '$lib/types'
 
   export let width: number
   export let height: number
   export let columns = 4
-  export let prizes: Prize[] = []
+  export let prizes: UncheckedPrize[] = []
 
   let canvas: HTMLCanvasElement
   let plinko: HTMLDivElement
@@ -64,7 +64,7 @@
   // Prize Info
   const maxPrizeSize = Math.max(...prizes.map((x) => x.size))
   let endPrizeRowIndex = 0
-  let prizeRows: PrizeRowTile[][] = []
+  let prizeRows: PlinkoPrizeRowTile[][] = []
   let prizeRowPathOffset: number[] = []
   const defaultPrizeRow = Array(columns).fill('^') // spikes
   defaultPrizeRow[0] = ' ' // gap
@@ -517,7 +517,7 @@
     <div class="start-btn-container">
       {#each new Array(columns).fill(0) as _, position}
         <button class="start-btn" on:click={() => start(position)}>
-          <img src="../icons/down.svg" alt="" />
+          <img src="icons/down.svg" alt="" />
         </button>
       {/each}
     </div>
@@ -529,7 +529,7 @@
       <div>Prize Total: <span class="prizes-total">{prizesTotalMessage}</span></div>
     </div>
   </div>
-  <img src="../pool-logo.svg" alt="" bind:this={poolLogo} style:display="none" />
+  <img src="pooltogether-square.svg" alt="" bind:this={poolLogo} style:display="none" />
 </div>
 
 <style>

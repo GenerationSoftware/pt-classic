@@ -6,7 +6,8 @@ import type {
   getPrizeHookStatus,
   getPromotionInfo,
   getUserClaimableRewards,
-  getUserClaimedRewards
+  getUserClaimedRewards,
+  VectorMath
 } from './utils'
 import type { Address } from 'viem'
 
@@ -31,6 +32,22 @@ export interface UncheckedPrize {
   userWon: number
 }
 
+export interface PlinkoState {
+  state: 'ready' | 'playing' | 'done' | 'paused'
+  frame: number
+  ms: number
+  ball: {
+    pos: VectorMath.Vector2
+    rot: number
+    rotVel: number
+    vel: VectorMath.Vector2
+    acc: VectorMath.Vector2
+  }
+  nextPrizeRow: number
+  prizesWon: number
+  prizesTotal: number
+}
+
 export type PrizeHookStatus = Awaited<ReturnType<typeof getPrizeHookStatus>>
 
 export type TransferEvent = ReturnType<typeof formatTransferEvent>
@@ -44,3 +61,5 @@ export type ClaimedReward = Awaited<ReturnType<typeof getUserClaimedRewards>>[nu
 export type ClaimableReward = Awaited<ReturnType<typeof getUserClaimableRewards>>[number]
 
 export type TimeUnit = 'day' | 'week' | 'month' | 'year'
+
+export type PlinkoPrizeRowTile = number | '^' | ' '
