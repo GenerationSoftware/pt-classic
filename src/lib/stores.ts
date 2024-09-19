@@ -9,8 +9,8 @@ import {
   updateUserFlashEvents,
   updateUserTransferEvents
 } from './utils'
+import { dolphinAddress, localStorageKeys, publicClient } from './constants'
 import { chain, prizeVault, zapInTokenOptions } from './config'
-import { dolphinAddress, localStorageKeys } from './constants'
 import { get, writable } from 'svelte/store'
 import type {
   ClaimableReward,
@@ -44,9 +44,8 @@ export const userClaimedPrizeEvents = writable<ClaimedPrizeEvent[] | undefined>(
 export const userClaimedRewards = writable<ClaimedReward[] | undefined>(undefined)
 export const userClaimableRewards = writable<ClaimableReward[] | undefined>(undefined)
 
-export const userLastDrawChecked = writable<number | undefined>(undefined)
-export const userLastCheckedPrizeBlockNumber = writable<bigint | undefined>(undefined)
-export const userUncheckedPrizes = writable<UncheckedPrize[] | undefined>(undefined)
+export const userLastCheckedBlockNumber = writable<bigint | undefined>(undefined)
+export const userUncheckedPrizes = writable<{ list: UncheckedPrize[]; queriedAtBlockNumber: bigint } | undefined>(undefined)
 
 // TODO: cache this somehow (careful with potential future network overlaps)
 export const blockTimestamps = writable<{ [blockNumber: number]: number }>({})
@@ -59,8 +58,7 @@ userAddress.subscribe(async (address) => {
   userClaimedPrizeEvents.set(undefined)
   userClaimedRewards.set(undefined)
   userClaimableRewards.set(undefined)
-  userLastDrawChecked.set(undefined)
-  userLastCheckedPrizeBlockNumber.set(undefined)
+  userLastCheckedBlockNumber.set(undefined)
   userUncheckedPrizes.set(undefined)
 
   if (!!address) {
@@ -75,6 +73,8 @@ userAddress.subscribe(async (address) => {
 
     const prizeHookStatus = await getPrizeHookStatus(address)
     userPrizeHookStatus.set(prizeHookStatus)
+
+    const currentBlockNumber = await publicClient.getBlockNumber()
 
     const cachedTransferEvents: KeyedCache<TransferEvent[]> = JSON.parse(localStorage.getItem(localStorageKeys.transferEvents) ?? '{}')
     await updateUserTransferEvents(address, cachedTransferEvents[lower(address)]?.[chain.id] ?? [])
@@ -98,24 +98,16 @@ userAddress.subscribe(async (address) => {
       cachedClaimedPrizeEvents[lower(address)]?.[chain.id] ?? []
     )
 
-    const cachedLastDrawChecked: KeyedCache<number> = JSON.parse(localStorage.getItem(localStorageKeys.lastDrawChecked) ?? '{}')
-    const lastDrawChecked = cachedLastDrawChecked[lower(address)]?.[chain.id] ?? 0
-    userLastDrawChecked.set(lastDrawChecked)
-
-    const cachedLastCheckedPrizeBlockNumber: KeyedCache<string> = JSON.parse(
-      localStorage.getItem(localStorageKeys.lastCheckedPrizeBlockNumber) ?? '{}'
+    const cachedLastCheckedBlockNumber: KeyedCache<string> = JSON.parse(
+      localStorage.getItem(localStorageKeys.lastCheckedBlockNumber) ?? '{}'
     )
-    const lastCheckedPrizeBlockNumber = BigInt(cachedLastCheckedPrizeBlockNumber[lower(address)]?.[chain.id] ?? '0')
-    userLastCheckedPrizeBlockNumber.set(lastCheckedPrizeBlockNumber)
+    const lastCheckedBlockNumber = BigInt(cachedLastCheckedBlockNumber[lower(address)]?.[chain.id] ?? '0')
+    userLastCheckedBlockNumber.set(lastCheckedBlockNumber)
 
     userUncheckedPrizes.set(
-      await getUserUncheckedPrizes(
-        address,
-        lastDrawChecked,
-        updatedUserFlashEvents,
-        updatedUserClaimedPrizeEvents,
-        lastCheckedPrizeBlockNumber
-      )
+      await getUserUncheckedPrizes(address, lastCheckedBlockNumber, updatedUserFlashEvents, updatedUserClaimedPrizeEvents, {
+        checkBlockNumber: currentBlockNumber
+      })
     )
   }
 })
@@ -156,15 +148,15 @@ userClaimedPrizeEvents.subscribe((claimedPrizeEvents) => {
   }
 })
 
-userLastDrawChecked.subscribe((lastDrawChecked) => {
+userLastCheckedBlockNumber.subscribe((lastCheckedBlockNumber) => {
   const address = get(userAddress)
 
-  if (!!lastDrawChecked && !!address) {
-    const newStorage: KeyedCache<number> = JSON.parse(localStorage.getItem(localStorageKeys.lastDrawChecked) ?? '{}')
+  if (!!lastCheckedBlockNumber && !!address) {
+    const newStorage: KeyedCache<string> = JSON.parse(localStorage.getItem(localStorageKeys.lastCheckedBlockNumber) ?? '{}')
     if (newStorage[lower(address)] === undefined) newStorage[lower(address)] = {}
-    newStorage[lower(address)][chain.id] = lastDrawChecked
+    newStorage[lower(address)][chain.id] = lastCheckedBlockNumber.toString()
 
-    localStorage.setItem(localStorageKeys.lastDrawChecked, JSON.stringify(newStorage))
+    localStorage.setItem(localStorageKeys.lastCheckedBlockNumber, JSON.stringify(newStorage))
   }
 })
 

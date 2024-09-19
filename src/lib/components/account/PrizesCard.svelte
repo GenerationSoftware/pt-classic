@@ -1,21 +1,34 @@
 <script lang="ts">
-  import { tokenPrices, userAddress, userClaimedPrizeEvents, userClaimedRewards, userFlashEvents } from '$lib/stores'
+  import {
+    tokenPrices,
+    userAddress,
+    userClaimedPrizeEvents,
+    userClaimedRewards,
+    userFlashEvents,
+    userLastCheckedBlockNumber
+  } from '$lib/stores'
   import { formatClaimedReward, formatFallbackPrize, formatPrize, getBlockDate } from '$lib/utils'
   import PrizeDetailsModal from './PrizeDetailsModal.svelte'
   import Loading from '../Loading.svelte'
 
   let isExpanded = false
 
-  // TODO: these needs to only display checked prizes (both flash and fallback)
   $: prizesWon = $userFlashEvents?.map(formatPrize) ?? []
+  $: checkedPrizesWon = prizesWon.filter(
+    (prize) => $userLastCheckedBlockNumber !== undefined && prize.blockNumber <= $userLastCheckedBlockNumber
+  )
+
   $: fallbackPrizesWon =
     $userClaimedPrizeEvents
       ?.filter((e) => !!BigInt(e.args.payout))
       .map((claimedPrizeEvent) => formatFallbackPrize(claimedPrizeEvent, $tokenPrices)) ?? []
+  $: checkedFallbackPrizesWon = fallbackPrizesWon.filter(
+    (fallbackPrize) => $userLastCheckedBlockNumber !== undefined && fallbackPrize.blockNumber <= $userLastCheckedBlockNumber
+  )
 
   $: rewardsClaimed = $userClaimedRewards?.map((claimedReward) => formatClaimedReward(claimedReward, $tokenPrices)) ?? []
 
-  $: rows = [...prizesWon, ...fallbackPrizesWon, ...rewardsClaimed].sort((a, b) => {
+  $: rows = [...checkedPrizesWon, ...checkedFallbackPrizesWon, ...rewardsClaimed].sort((a, b) => {
     const x = b.blockNumber - a.blockNumber
     return x === 0n ? 0 : x > 0n ? 1 : -1
   })

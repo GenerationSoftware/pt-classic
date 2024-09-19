@@ -27,6 +27,5 @@ export enum localStorageKeys {
   transferEvents = 'transferEvents',
   flashEvents = 'flashEvents',
   claimedPrizeEvents = 'claimedPrizeEvents',
-  lastDrawChecked = 'lastDrawChecked',
-  lastCheckedPrizeBlockNumber = 'lastCheckedPrizeBlockNumber'
+  lastCheckedBlockNumber = 'lastCheckedBlockNumber'
 }

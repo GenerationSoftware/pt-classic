@@ -6,7 +6,7 @@
 </script>
 
 <div>
-  {#if !!$userUncheckedPrizes?.length}
+  {#if !!$userUncheckedPrizes?.list.length}
     <button on:click={onClickCheckPrizes} class="teal-button">Check Prizes</button>
   {/if}
   {#if !!$userClaimableRewards?.length}

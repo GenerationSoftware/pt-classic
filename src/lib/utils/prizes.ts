@@ -2,7 +2,7 @@ import { formatEther, formatUnits, type Address, type ContractFunctionParameters
 import { prizePoolABI, twabControllerABI } from '$lib/abis'
 import { publicClient, seconds } from '$lib/constants'
 import { prizePool, prizeVault } from '$lib/config'
-import { getCurrentTimestamp } from './time'
+import { getBlockTimestamp } from './time'
 import type { ClaimedPrizeEvent, FlashEvent, UncheckedPrize } from '$lib/types'
 
 export const getPrizeDistribution = async () => {
@@ -46,106 +46,113 @@ export const getPrizeDistribution = async () => {
 
 export const getUserUncheckedPrizes = async (
   userAddress: Address,
-  lastDrawChecked: number,
+  lastCheckedBlockNumber: bigint,
   flashEvents: FlashEvent[],
   claimedPrizeEvents: ClaimedPrizeEvent[],
-  lastCheckedPrizeBlockNumber: bigint
+  options?: { checkBlockNumber?: bigint }
 ) => {
-  const uncheckedPrizes: UncheckedPrize[] = []
+  const uncheckedPrizes: { list: UncheckedPrize[]; queriedAtBlockNumber: bigint } = { list: [], queriedAtBlockNumber: 0n }
 
-  const relevantFlashEvents = flashEvents.filter((e) => BigInt(e.blockNumber) > lastCheckedPrizeBlockNumber)
-  const relevantClaimedPrizeEvents = claimedPrizeEvents.filter((e) => BigInt(e.blockNumber) > lastCheckedPrizeBlockNumber)
+  // TODO: fall back to first deposit event first, if not available then prize vault deploy block
+  const minBlockNumber = lastCheckedBlockNumber || prizeVault.deployedAtBlock
+  const maxBlockNumber = options?.checkBlockNumber ?? (await publicClient.getBlockNumber())
 
-  const lastAwardedDraw = await publicClient.readContract({
+  uncheckedPrizes.queriedAtBlockNumber = maxBlockNumber
+
+  if (minBlockNumber >= maxBlockNumber) return uncheckedPrizes
+
+  const minTimestamp = await getBlockTimestamp(minBlockNumber)
+  const maxTimestamp = await getBlockTimestamp(maxBlockNumber)
+
+  if (minTimestamp >= maxTimestamp) return uncheckedPrizes
+
+  const relevantFlashEvents = flashEvents.filter((e) => BigInt(e.blockNumber) > minBlockNumber)
+  const relevantClaimedPrizeEvents = claimedPrizeEvents.filter((e) => BigInt(e.blockNumber) > minBlockNumber)
+
+  const numUncheckedDraws = Math.floor((maxTimestamp - minTimestamp) / seconds.day)
+
+  if (!relevantFlashEvents.length && !relevantClaimedPrizeEvents.length && numUncheckedDraws < 1) return uncheckedPrizes
+
+  const lastAwardedDrawId = await publicClient.readContract({
     address: prizePool.address,
     abi: prizePoolABI,
     functionName: 'getLastAwardedDrawId'
   })
 
-  // TODO: what if user wasn't deposited before draw X? should not count as unchecked (maybe use blocknumber of first deposit instead?)
-  const numUncheckedDraws = lastAwardedDraw - lastDrawChecked
+  if (!lastAwardedDrawId) return uncheckedPrizes
 
-  if (!!relevantFlashEvents.length || !!relevantClaimedPrizeEvents.length || numUncheckedDraws > 0) {
-    const firstDraw = prizePool.grandPrizePeriodDraws >= lastAwardedDraw ? 1 : lastAwardedDraw - prizePool.grandPrizePeriodDraws + 1
+  const prizeTierInfo = await getPrizeTierInfo()
 
-    const firstDrawClosesAt = await publicClient.readContract({
-      address: prizePool.address,
-      abi: prizePoolABI,
-      functionName: 'drawClosesAt',
-      args: [firstDraw]
-    })
+  const lastTwabPeriodEndedAt = BigInt(Math.floor(maxTimestamp / seconds.hour))
+  const lastTwabPeriodStartedAt = lastTwabPeriodEndedAt - BigInt(seconds.hour)
 
-    const lastTwabPeriodEndedAt = BigInt(Math.floor(getCurrentTimestamp() / seconds.hour))
-    let firstDrawFinalizesAt = BigInt(firstDrawClosesAt + prizePool.drawPeriodSeconds)
-
-    while (firstDrawFinalizesAt > lastTwabPeriodEndedAt) {
-      firstDrawFinalizesAt -= BigInt(seconds.hour)
-    }
-
-    const twabMulticall = await publicClient.multicall({
-      contracts: [
-        {
-          address: prizePool.address,
-          abi: prizePoolABI,
-          functionName: 'getVaultPortion',
-          args: [prizeVault.address, firstDraw, lastAwardedDraw]
-        },
-        {
-          address: prizePool.twabController.address,
-          abi: twabControllerABI,
-          functionName: 'getTotalSupplyTwabBetween',
-          args: [prizeVault.address, firstDrawFinalizesAt, lastTwabPeriodEndedAt]
-        },
-        {
-          address: prizePool.twabController.address,
-          abi: twabControllerABI,
-          functionName: 'getTwabBetween',
-          args: [prizeVault.address, userAddress, firstDrawFinalizesAt, lastTwabPeriodEndedAt]
-        }
-      ]
-    })
-
-    if (twabMulticall.every((call) => call.status === 'success' && typeof call.result === 'bigint')) {
-      const vaultPortion = parseFloat(formatEther(twabMulticall[0].result!))
-      const vaultSupply = parseFloat(formatEther(twabMulticall[1].result!))
-      const userSupply = parseFloat(formatEther(twabMulticall[2].result!))
-
-      const userPortion = vaultPortion * (userSupply / vaultSupply)
-
-      if (!!userPortion) {
-        const prizeTierInfo = await getPrizeTierInfo()
-
-        const prizeTiers = Object.keys(prizeTierInfo).map(Number)
-
-        prizeTiers.forEach((prizeTier) => {
-          const { size, count, odds } = prizeTierInfo[prizeTier]
-
-          const numDraws = numUncheckedDraws > 0 ? numUncheckedDraws : 1
-          const aggregateCount = count * numDraws
-
-          // TODO: double check that `aggregateCount` can be used for `userOdds` here without breaking plinko
-          uncheckedPrizes.push({ size, count: aggregateCount, userOdds: odds * aggregateCount * userPortion, userWon: 0 })
-        })
-
-        const userPrizesWon: UncheckedPrize[] = relevantFlashEvents.map((e) => ({
-          size: parseFloat(formatUnits(BigInt(e.args.amount), prizeVault.decimals)),
-          count: 1,
-          userOdds: 0.1, // TODO: discuss this value - it essentially determines the minimum number of rows in plinko (1/x) - maybe x is smaller as size grows?
-          userWon: 1
-        }))
-
-        const userFallbackPrizesWon: UncheckedPrize[] = relevantClaimedPrizeEvents.map((e) => ({
-          size: parseFloat(formatUnits(BigInt(e.args.payout), prizeVault.decimals)),
-          count: 1,
-          userOdds: 0.1, // TODO: emulate logic from above
-          userWon: 1
-        }))
-
-        userPrizesWon.forEach((prize) => uncheckedPrizes.push(prize))
-        userFallbackPrizesWon.forEach((prize) => uncheckedPrizes.push(prize))
+  const multicall = await publicClient.multicall({
+    contracts: [
+      {
+        address: prizePool.address,
+        abi: prizePoolABI,
+        functionName: 'getVaultPortion',
+        args: [prizeVault.address, lastAwardedDrawId, lastAwardedDrawId]
+      },
+      {
+        address: prizePool.twabController.address,
+        abi: twabControllerABI,
+        functionName: 'getTotalSupplyTwabBetween',
+        args: [prizeVault.address, lastTwabPeriodStartedAt, lastTwabPeriodEndedAt]
+      },
+      {
+        address: prizePool.twabController.address,
+        abi: twabControllerABI,
+        functionName: 'getTwabBetween',
+        args: [prizeVault.address, userAddress, lastTwabPeriodStartedAt, lastTwabPeriodEndedAt]
       }
-    }
-  }
+    ]
+  })
+
+  const vaultPortion = parseFloat(
+    formatEther(multicall[0].status === 'success' && typeof multicall[0].result === 'bigint' ? multicall[0].result : 0n)
+  )
+  const vaultTwab = parseFloat(
+    formatUnits(
+      multicall[1].status === 'success' && typeof multicall[1].result === 'bigint' ? multicall[1].result : 0n,
+      prizeVault.decimals
+    )
+  )
+  const userTwab = parseFloat(
+    formatUnits(
+      multicall[2].status === 'success' && typeof multicall[2].result === 'bigint' ? multicall[2].result : 0n,
+      prizeVault.decimals
+    )
+  )
+
+  const oddsMultiplier = (vaultPortion || 1) * (!!userTwab && !!vaultTwab ? userTwab / vaultTwab : 1)
+
+  // Adding prizes won
+  relevantFlashEvents.forEach((flashEvent) => {
+    const size = parseFloat(formatUnits(BigInt(flashEvent.args.amount), prizeVault.decimals))
+    const nearestPrizeTier = Object.values(prizeTierInfo).reduce((a, b) => (Math.abs(b.size - size) < Math.abs(a.size - size) ? b : a))
+    const userOdds = (nearestPrizeTier.size / size) * nearestPrizeTier.odds
+
+    uncheckedPrizes.list.push({ size, count: 1, userOdds, userWon: 1 })
+  })
+
+  // Adding fallback prizes won
+  relevantClaimedPrizeEvents.forEach((claimedPrizeEvent) => {
+    const size = parseFloat(formatUnits(BigInt(claimedPrizeEvent.args.payout), prizeVault.decimals))
+    const tierOdds = prizeTierInfo[claimedPrizeEvent.args.tier]?.odds ?? 1
+    const userOdds = tierOdds * oddsMultiplier
+
+    uncheckedPrizes.list.push({ size, count: 1, userOdds, userWon: 1 })
+  })
+
+  // Adding other estimated prizes awarded but not won
+  Object.values(prizeTierInfo).forEach(({ size, count, odds }) => {
+    const numDraws = numUncheckedDraws > 0 ? numUncheckedDraws : 1
+    const aggregateCount = count * numDraws
+    const userOdds = odds * oddsMultiplier * aggregateCount
+
+    uncheckedPrizes.list.push({ size, count: aggregateCount, userOdds, userWon: 0 })
+  })
 
   return uncheckedPrizes
 }
@@ -187,7 +194,7 @@ export const getPrizeTierInfo = async () => {
     if (!!size && !!odds) {
       prizeTierInfo[prizeTier] = {
         size: parseFloat(formatUnits(size, prizePool.prizeToken.decimals)),
-        count: prizeTier ** 4,
+        count: 4 ** prizeTier,
         odds: parseFloat(formatEther(odds))
       }
     }

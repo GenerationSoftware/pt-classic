@@ -1,17 +1,36 @@
 <script lang="ts">
-  import { tokenPrices, userAddress, userClaimedPrizeEvents, userClaimedRewards, userFlashEvents, userTransferEvents } from '$lib/stores'
+  import {
+    tokenPrices,
+    userAddress,
+    userClaimedPrizeEvents,
+    userClaimedRewards,
+    userFlashEvents,
+    userLastCheckedBlockNumber,
+    userTransferEvents
+  } from '$lib/stores'
   import { formatFallbackPrize, formatPrize, formatShareAmount, lower } from '$lib/utils'
   import { formatUnits } from 'viem'
   import Loading from '../Loading.svelte'
 
-  // TODO: these needs to only display checked prizes won (both flash and fallback)
   $: prizesWon = $userFlashEvents?.map(formatPrize) ?? []
+  $: totalPrizesWon = prizesWon.reduce((a, b) => a + b.amount, 0n)
+
+  $: checkedPrizesWon = prizesWon.filter(
+    (prize) => $userLastCheckedBlockNumber !== undefined && prize.blockNumber <= $userLastCheckedBlockNumber
+  )
+  $: totalCheckedPrizesWon = checkedPrizesWon.reduce((a, b) => a + b.amount, 0n)
+
   $: fallbackPrizesWon =
     $userClaimedPrizeEvents
       ?.filter((e) => !!BigInt(e.args.payout))
       .map((claimedPrizeEvent) => formatFallbackPrize(claimedPrizeEvent, $tokenPrices)) ?? []
-  $: totalPrizesWon = [...prizesWon, ...fallbackPrizesWon].reduce((a, b) => a + b.amount, 0n) ?? 0n
-  $: formattedTotalPrizesWon = formatShareAmount(totalPrizesWon)
+
+  $: checkedFallbackPrizesWon = fallbackPrizesWon.filter(
+    (fallbackPrize) => $userLastCheckedBlockNumber !== undefined && fallbackPrize.blockNumber <= $userLastCheckedBlockNumber
+  )
+  $: totalCheckedFallbackPrizesWon = checkedFallbackPrizesWon.reduce((a, b) => a + b.amount, 0n)
+
+  $: formattedTotalCheckedPrizesWon = formatShareAmount(totalCheckedPrizesWon + totalCheckedFallbackPrizesWon)
 
   $: aggregatedTransferAmount =
     !!$userTransferEvents && !!$userAddress
@@ -25,7 +44,7 @@
           0n
         )
       : 0n
-  $: totalDepositedAmount = aggregatedTransferAmount - totalPrizesWon // TODO: should not subtract fallback prizes since those aren't auto-deposited
+  $: totalDepositedAmount = aggregatedTransferAmount - totalPrizesWon
   $: formattedTotalDepositedAmount = totalDepositedAmount >= 0n ? formatShareAmount(totalDepositedAmount) : '?'
 
   $: aggregatedBonusRewardsClaimed =
@@ -55,7 +74,7 @@
   <div class="stat">
     <h3>Total Prizes Won</h3>
     {#if !!$userFlashEvents && !!$userClaimedPrizeEvents}
-      <span>+${formattedTotalPrizesWon}</span>
+      <span>+${formattedTotalCheckedPrizesWon}</span>
     {:else if !$userAddress}
       <span>-</span>
     {:else}
