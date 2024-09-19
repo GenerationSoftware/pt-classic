@@ -6,7 +6,7 @@
 
   let isExpanded = false
 
-  // TODO: these needs to only display checked prizes
+  // TODO: these needs to only display checked prizes (both flash and fallback)
   $: prizesWon = $userFlashEvents?.map(formatPrize) ?? []
   $: fallbackPrizesWon =
     $userClaimedPrizeEvents

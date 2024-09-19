@@ -1,5 +1,6 @@
 export * from './hookABI'
 export * from './prizePoolABI'
 export * from './swapperABI'
+export * from './twabControllerABI'
 export * from './twabRewardsABI'
 export * from './vaultABI'

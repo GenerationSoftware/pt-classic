@@ -4,7 +4,7 @@
   import { formatUnits } from 'viem'
   import Loading from '../Loading.svelte'
 
-  // TODO: these needs to only display checked prizes
+  // TODO: these needs to only display checked prizes won (both flash and fallback)
   $: prizesWon = $userFlashEvents?.map(formatPrize) ?? []
   $: fallbackPrizesWon =
     $userClaimedPrizeEvents
@@ -25,7 +25,7 @@
           0n
         )
       : 0n
-  $: totalDepositedAmount = aggregatedTransferAmount - totalPrizesWon
+  $: totalDepositedAmount = aggregatedTransferAmount - totalPrizesWon // TODO: should not subtract fallback prizes since those aren't auto-deposited
   $: formattedTotalDepositedAmount = totalDepositedAmount >= 0n ? formatShareAmount(totalDepositedAmount) : '?'
 
   $: aggregatedBonusRewardsClaimed =

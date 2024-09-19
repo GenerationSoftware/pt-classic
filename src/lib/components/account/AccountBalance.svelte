@@ -4,6 +4,7 @@
   import { prizeVault } from '$lib/config'
   import Loading from '../Loading.svelte'
 
+  // TODO: need to subtract unchecked prizes won
   $: vaultBalance = $userBalances[lower(prizeVault.address)]
   $: formattedVaultBalance = vaultBalance !== undefined ? formatShareAmount(vaultBalance) : '0.00'
 </script>

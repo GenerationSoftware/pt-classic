@@ -20,6 +20,17 @@ export interface TokenPrices {
   [tokenAddress: Lowercase<Address>]: number
 }
 
+export interface KeyedCache<ValueType> {
+  [userAddress: Lowercase<Address>]: { [chainId: number]: ValueType }
+}
+
+export interface UncheckedPrize {
+  size: number
+  count: number
+  userOdds: number
+  userWon: number
+}
+
 export type PrizeHookStatus = Awaited<ReturnType<typeof getPrizeHookStatus>>
 
 export type TransferEvent = ReturnType<typeof formatTransferEvent>
@@ -33,7 +44,3 @@ export type ClaimedReward = Awaited<ReturnType<typeof getUserClaimedRewards>>[nu
 export type ClaimableReward = Awaited<ReturnType<typeof getUserClaimableRewards>>[number]
 
 export type TimeUnit = 'day' | 'week' | 'month' | 'year'
-
-export interface EventCache<EventType> {
-  [userAddress: Lowercase<Address>]: { [chainId: number]: EventType[] }
-}

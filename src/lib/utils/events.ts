@@ -209,7 +209,10 @@ export const updateUserTransferEvents = async (userAddress: Address, oldTransfer
     })
   ).map(formatTransferEvent)
 
-  userTransferEvents.set([...oldTransferEvents, ...newTransferEvents])
+  const updatedUserTransferEvents = [...oldTransferEvents, ...newTransferEvents]
+  userTransferEvents.set(updatedUserTransferEvents)
+
+  return updatedUserTransferEvents
 }
 
 export const updateUserFlashEvents = async (userAddress: Address, swapperAddresses: Address[], oldFlashEvents: FlashEvent[]) => {
@@ -221,7 +224,10 @@ export const updateUserFlashEvents = async (userAddress: Address, swapperAddress
     })
   ).map(formatFlashEvent)
 
-  userFlashEvents.set([...oldFlashEvents, ...newFlashEvents])
+  const updatedUserFlashEvents = [...oldFlashEvents, ...newFlashEvents]
+  userFlashEvents.set(updatedUserFlashEvents)
+
+  return updatedUserFlashEvents
 }
 
 export const updateUserClaimedPrizeEvents = async (userAddress: Address, oldClaimedPrizeEvents: ClaimedPrizeEvent[]) => {
@@ -233,5 +239,8 @@ export const updateUserClaimedPrizeEvents = async (userAddress: Address, oldClai
     })
   ).map(formatClaimedPrizeEvent)
 
-  userClaimedPrizeEvents.set([...oldClaimedPrizeEvents, ...newClaimedPrizeEvents])
+  const updatedUserClaimedPrizeEvents = [...oldClaimedPrizeEvents, ...newClaimedPrizeEvents]
+  userClaimedPrizeEvents.set(updatedUserClaimedPrizeEvents)
+
+  return updatedUserClaimedPrizeEvents
 }
