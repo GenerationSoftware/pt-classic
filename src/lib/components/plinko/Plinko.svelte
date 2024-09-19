@@ -144,6 +144,11 @@
     return Math.log(prizeSize + 1) / Math.log(maxPrizeSize + 1)
   }
 
+  // Function to get plinko colors
+  const getCssColor = (name: string) => {
+    return plinko.computedStyleMap().get(name)?.toString() ?? ''
+  }
+
   // Define render call
   const render = (ballPos: VectorMath.Vector2, ballRotation: number, gameMs: number) => {
     // Set camera position
@@ -176,7 +181,7 @@
             if (pegX + columnWidth > 0 && pegX - columnWidth < gameWidth) {
               if (prizeRow[prizeIndex] === '^') {
                 // Draw spikes
-                ctx.fillStyle = plinko.computedStyleMap().get('--spike-color')?.toString() ?? ''
+                ctx.fillStyle = getCssColor('--spike-color')
                 ctx.beginPath()
                 ctx.moveTo(pegX, rowY + pegRadius)
                 ctx.lineTo(pegX + pegRadius, rowY)
@@ -193,13 +198,14 @@
                 const prize = prizes[prizeRow[prizeIndex] as number]
                 const prizeLogScale = calculatePrizeLogScale(prize.size)
                 const prizeRadius = pegRadius + (ballRadius - pegRadius) * prizeLogScale
-                ctx.fillStyle =
-                  plinko
-                    .computedStyleMap()
-                    .get(`--prize-${Math.floor((1 - prizeLogScale) * 8)}-color`)
-                    ?.toString() ?? ''
-                ctx.strokeStyle = `hsla(${Math.floor((360 * gameMs) / 1000) % 360}, 100%, 50%, 0.6)`
-                ctx.lineWidth = 0.5
+                const collectedPrize = !(ballPos.y - gameYOffset < rowY || prizeIndex > 0)
+                ctx.fillStyle = getCssColor(`--prize-${Math.floor((1 - prizeLogScale) * 8)}-color`)
+                if (collectedPrize) {
+                  ctx.strokeStyle = getCssColor(`--peg-color`)
+                } else {
+                  ctx.strokeStyle = `hsla(${Math.floor((360 * gameMs) / 1000) % 360}, 100%, 50%, 0.6)`
+                }
+                ctx.lineWidth = 1
                 ctx.setLineDash([1, 1])
                 ctx.lineDashOffset = gameMs / 500
 
@@ -207,7 +213,7 @@
                 ctx.ellipse(pegX + columnWidth / 2, rowY, (columnWidth - pegRadius * 3) / 2, pegRadius / 2, 0, Math.PI, Math.PI * 2)
                 ctx.stroke()
 
-                if (ballPos.y - gameYOffset < rowY || prizeIndex > 0) {
+                if (!collectedPrize) {
                   ctx.beginPath()
                   ctx.ellipse(pegX + columnWidth / 2, rowY + prizeRadius / 2, prizeRadius, prizeRadius, 0, 0, Math.PI * 2)
                   ctx.fill()
@@ -219,7 +225,7 @@
               }
 
               // Draw peg
-              ctx.fillStyle = plinko.computedStyleMap().get('--peg-color')?.toString() ?? ''
+              ctx.fillStyle = getCssColor('--peg-color')
               ctx.beginPath()
               ctx.ellipse(pegX, rowY, pegRadius, pegRadius, 0, 0, Math.PI * 2)
               ctx.fill()
@@ -230,7 +236,7 @@
         // Normal Row Rendering
         for (let col = 0; col <= columns; col++) {
           // Draw peg
-          ctx.fillStyle = plinko.computedStyleMap().get('--peg-color')?.toString() ?? ''
+          ctx.fillStyle = getCssColor('--peg-color')
           const evenRow = row % 2 == 0
           ctx.beginPath()
           ctx.ellipse((evenRow ? col : col + 0.5) * columnWidth, rowY, pegRadius, pegRadius, 0, 0, Math.PI * 2)
@@ -240,7 +246,7 @@
     }
 
     // render ball
-    ctx.fillStyle = plinko.computedStyleMap().get('--ball-color')?.toString() ?? ''
+    ctx.fillStyle = getCssColor('--ball-color')
     ctx.beginPath()
     ctx.ellipse(ballPos.x, ballPos.y - gameYOffset, ballRadius, ballRadius, 0, 0, Math.PI * 2)
     ctx.fill()
@@ -279,11 +285,7 @@
               top: `${Math.min(100, (100 * rowY) / gameHeight)}%`,
               left: `${(100 * prizeX) / gameWidth + leftOffset}%`,
               content: `$${Number.isInteger(prize.size) ? prize.size : prize.size.toFixed(2)}`,
-              backgroundColor:
-                plinko
-                  .computedStyleMap()
-                  .get(`--prize-${Math.floor((1 - prizeScale) * 8)}-color`)
-                  ?.toString() ?? ''
+              backgroundColor: getCssColor(`--prize-${Math.floor((1 - prizeScale) * 8)}-color`)
             }
             prizeBubbles.push(bubble)
           }
@@ -486,7 +488,7 @@
     scale = gameWidth / canvas.width
     gameHeight = scale * canvas.height
 
-    plinko.style.setProperty('--start-btn-size', `${(0.8 * width) / columns}px`)
+    plinko.style.setProperty('--start-btn-size', `${(0.6 * width) / columns}px`)
 
     // re-render frame
     render(gameState.ball.pos, gameState.ball.rot, totalPlayTime)
@@ -514,7 +516,9 @@
   <div class="ui">
     <div class="start-btn-container">
       {#each new Array(columns).fill(0) as _, position}
-        <button class="start-btn" on:click={() => start(position)}>|<br />V</button>
+        <button class="start-btn" on:click={() => start(position)}>
+          <img src="../icons/down.svg" alt="" />
+        </button>
       {/each}
     </div>
     <div class="prize-info-container">
@@ -525,7 +529,7 @@
       <div>Prize Total: <span class="prizes-total">{prizesTotalMessage}</span></div>
     </div>
   </div>
-  <img src="/pool-logo.svg" alt="" bind:this={poolLogo} style:display="none" />
+  <img src="../pool-logo.svg" alt="" bind:this={poolLogo} style:display="none" />
 </div>
 
 <style>
@@ -535,20 +539,18 @@
 
   #plinko {
     /* Game Style (can be overridden through query params) */
-    --background-color: rgb(48, 48, 48);
-    --text-color: white;
-    --ball-color: #b220d6;
-    --spike-color: #646464;
-    --peg-color: #9b9b9b;
-    --prize-0-color: #ff0000;
-    --prize-1-color: #ffae00;
-    --prize-2-color: #eeff00;
-    --prize-3-color: #66ff00;
-    --prize-4-color: #00ffdd;
-    --prize-5-color: #008cff;
-    --prize-6-color: #3700ff;
-    --prize-7-color: #e100ff;
-    --prize-8-color: #ff69f7;
+    --ball-color: var(--pt-bg-purple-dark);
+    --spike-color: var(--pt-gold);
+    --peg-color: var(--pt-teal-light);
+    --prize-0-color: #ff5f5f;
+    --prize-1-color: #fcc36f;
+    --prize-2-color: #daff36;
+    --prize-3-color: #77ff6b;
+    --prize-4-color: #6bfff8;
+    --prize-5-color: #6b7aff;
+    --prize-6-color: #b86bff;
+    --prize-7-color: #ff6be6;
+    --prize-8-color: #ff6b8b;
 
     /* Game Generated Params (defined in js) */
     --start-btn-size: 10vw;
@@ -556,12 +558,10 @@
     position: relative;
     width: 100%;
     height: 100%;
-    min-width: 300px;
-    min-height: 300px;
-    max-width: 100vmin;
     overflow: hidden;
-    background-color: var(--background-color);
-    color: var(--text-color);
+    background-color: var(--pt-purple-600);
+    color: var(--pt-purple-50);
+    border-radius: 1rem;
   }
 
   #plinko > .ui,
@@ -571,18 +571,21 @@
   }
 
   #plinko > .ui .start-btn {
-    border: 1px dashed var(--text-color);
     border-radius: 50%;
+    border: 1px solid #0000;
     width: var(--start-btn-size);
     height: var(--start-btn-size);
     font-weight: bold;
     margin-top: 1rem;
-    background-color: var(--background-color);
-    color: var(--text-color);
   }
 
   #plinko > .ui .start-btn:hover {
-    border-style: solid;
+    border: 1px solid var(--pt-bg-purple-dark);
+  }
+
+  #plinko > .ui .start-btn > img {
+    width: 100%;
+    height: 100%;
   }
 
   #plinko > .ui .start-btn-container {
@@ -611,8 +614,7 @@
     align-items: center;
     gap: 0.5rem;
     padding: 1rem;
-    background-color: var(--background-color);
-    border-bottom: 1px solid var(--text-color);
+    background-color: var(--pt-purple-800);
     transition: all 1s ease-out;
   }
 
@@ -635,8 +637,7 @@
     justify-content: flex-start;
     align-items: center;
     text-align: center;
-    background-color: var(--background-color);
-    border-top: 1px solid var(--text-color);
+    background-color: var(--pt-purple-800);
     padding: 1rem;
     transition: all 1s ease-out;
   }
@@ -653,8 +654,8 @@
     transform: translate(-50%, -150%);
     pointer-events: none;
     border-radius: 1rem;
-    color: var(--text-color);
-    text-shadow: 1px 1px 0 var(--background-color);
+    color: var(--pt-purple-50);
+    text-shadow: 1px 1px 0 var(--pt-purple-800);
     opacity: 0.9;
   }
 

@@ -12,12 +12,35 @@
   import PrizesCard from '$lib/components/account/PrizesCard.svelte'
   import BackButton from '$lib/components/BackButton.svelte'
   import Modal from '$lib/components/Modal.svelte'
+  import Plinko from '$lib/components/plinko/Plinko.svelte'
+  import type { Prize } from '$lib/components/plinko/types'
 
   let pageState: 'main' | 'checkingPrizes' | 'claimingBonusRewards' = 'main'
 
   $: vaultBalance = $userBalances[lower(prizeVault.address)]
   $: isAccountSetupNecessary =
     !!vaultBalance && !!$userPrizeHookStatus && (!$userPrizeHookStatus.isPrizeHookSet || !$userPrizeHookStatus.isSwapperSet)
+
+  const plinkoPrizes: Prize[] = [
+    {
+      size: 1000,
+      count: 1,
+      userOdds: 0.0001,
+      userWon: 0
+    },
+    {
+      size: 122,
+      count: 4,
+      userOdds: 0.01,
+      userWon: 1
+    },
+    {
+      size: 2,
+      count: 64,
+      userOdds: 0.15,
+      userWon: 5
+    }
+  ]
 </script>
 
 {#key pageState}
@@ -42,6 +65,7 @@
       />
     {:else if pageState === 'checkingPrizes'}
       <!-- TODO: plinko game to check wins -->
+      <Plinko width={300} height={500} prizes={plinkoPrizes}></Plinko>
       <!-- TODO: show prizes won -->
       <span>WE BUIDLING</span>
       <BackButton onClick={() => (pageState = 'main')} />
