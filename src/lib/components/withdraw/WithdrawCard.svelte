@@ -29,8 +29,6 @@
       } else {
         error = ''
       }
-    } else if (!!formInput && !$userAddress) {
-      error = 'Connect your wallet to withdraw'
     } else {
       error = ''
     }
@@ -53,17 +51,19 @@
 <div class="card">
   {#if !successfullyWithdrawnAmount}
     <span>How much do you want to withdraw?</span>
-    <div class="input">
+    <div class="input" class:wallet-connected={!!$userAddress}>
       {#if !$userAddress || vaultBalance !== undefined}
         <label class:placeholder-color={!formInput}>
           $<input bind:value={formInput} placeholder="0.00" style:width={`${getInputChars(formInput || '0.00')}ch`} />
         </label>
-        <span>of ${formattedVaultBalance} available</span>
+        {#if $userAddress}
+          <span>of ${formattedVaultBalance} available</span>
+        {/if}
       {:else}
         <Loading height="1rem" />
       {/if}
     </div>
-    <span class="error">{error}</span>
+    <span class="error" class:wallet-connected={!!$userAddress}>{error}</span>
     <WithdrawButton {amount} {onSuccess} disabled={!!error} />
   {:else}
     <h3 class="success-title">Success!</h3>
@@ -87,7 +87,6 @@
   }
 
   div.input {
-    min-height: 4rem;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -97,6 +96,10 @@
     background-color: var(--pt-transparent);
     border: 1px solid var(--pt-transparent);
     border-radius: 1rem;
+  }
+
+  div.input.wallet-connected {
+    min-height: 4rem;
   }
 
   div.input > label {
@@ -129,6 +132,11 @@
     height: 1rem;
     color: var(--pt-warning-light);
     font-size: 0.8rem;
+    opacity: 0;
+  }
+
+  span.error.wallet-connected {
+    opacity: 1;
   }
 
   h3.success-title {

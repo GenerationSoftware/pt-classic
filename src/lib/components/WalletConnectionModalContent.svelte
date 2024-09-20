@@ -1,15 +1,9 @@
 <script lang="ts">
   import { clients, lastConnectedProviderId, walletProviders } from '$lib/stores'
   import { connect } from '$lib/utils'
-  import type { EIP6963ProviderData } from '$lib/types'
   import type { Address } from 'viem'
 
   export let onConnected: (address: Address) => void = () => {}
-
-  const connectWallet = async (provider: EIP6963ProviderData) => {
-    const connectedWalletAddress = await connect(provider)
-    !!connectedWalletAddress && onConnected(connectedWalletAddress)
-  }
 </script>
 
 <div class="content-wrapper">
@@ -18,7 +12,7 @@
       {#each $walletProviders as provider}
         {@const isConnected = !!$clients.wallet && !!$lastConnectedProviderId && $lastConnectedProviderId === provider.info.uuid}
 
-        <button on:click={!isConnected ? () => connectWallet(provider) : undefined}>
+        <button on:click={!isConnected ? () => connect(provider, { onConnected }) : undefined}>
           {#if !!provider.info.icon}
             <img src={provider.info.icon} alt={provider.info.name} />
           {:else}

@@ -2,6 +2,7 @@
   import { appName, pageTransition } from '$lib/config'
   import { getWalletProviders } from '$lib/utils'
   import { fade } from 'svelte/transition'
+  import { goto } from '$app/navigation'
   import { page } from '$app/stores'
   import { onMount } from 'svelte'
   import Nav from '$lib/components/Nav.svelte'
@@ -13,7 +14,7 @@
   $: pageTitle = currentPage.slice(0, 1).toUpperCase() + currentPage.slice(1)
   $: title = appName + (!!pageTitle ? ` | ${pageTitle}` : '')
 
-  onMount(() => getWalletProviders())
+  onMount(() => getWalletProviders({ onAutoConnect: () => goto('account') }))
 </script>
 
 <svelte:head>

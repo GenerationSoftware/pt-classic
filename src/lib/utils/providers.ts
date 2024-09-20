@@ -1,4 +1,4 @@
-import { createPublicClient, createWalletClient, custom, fallback, http, type PublicClient, type WalletClient } from 'viem'
+import { createPublicClient, createWalletClient, custom, type Address, type PublicClient, type WalletClient } from 'viem'
 import { clients, lastConnectedProviderId, userAddress, walletProviders } from '$lib/stores'
 import { publicClientSettings, transportSettings } from '$lib/constants'
 import { chain } from '$lib/config'
@@ -6,14 +6,14 @@ import { get } from 'svelte/store'
 import { DSKit } from 'dskit-eth'
 import type { EIP6963AnnounceProviderEvent, EIP6963ProviderData } from '$lib/types'
 
-export const getWalletProviders = () => {
+export const getWalletProviders = (options?: { onAutoConnect?: () => void }) => {
   const prevProviderId = get(lastConnectedProviderId)
 
   const updateProviders = (providerData: EIP6963ProviderData) => {
     walletProviders.update((providers) => [...providers, providerData])
 
     if (!!prevProviderId && prevProviderId === providerData.info.uuid) {
-      connect(providerData)
+      connect(providerData, { onConnected: options?.onAutoConnect })
     }
   }
 
@@ -39,7 +39,7 @@ export const getWalletProviders = () => {
   }, 1_000)
 }
 
-export const connect = async (providerData: EIP6963ProviderData) => {
+export const connect = async (providerData: EIP6963ProviderData, options?: { onConnected?: (address: Address) => void }) => {
   const transport = custom(providerData.provider, transportSettings)
 
   const _walletClient = createWalletClient({ chain, transport })
@@ -53,6 +53,8 @@ export const connect = async (providerData: EIP6963ProviderData) => {
   clients.set({ public: publicClient, wallet: walletClient, dskit: dskitClient })
   userAddress.set(address)
   lastConnectedProviderId.set(providerData.info.uuid)
+
+  options?.onConnected?.(address)
 
   return address
 }

@@ -1,7 +1,7 @@
 import { createPublicClient, http, type ClientConfig, type PublicClient, type TransportConfig } from 'viem'
 import { chain } from './config'
 
-export const transportSettings: Omit<TransportConfig, 'name' | 'key' | 'request' | 'type'> = { retryCount: 5, retryDelay: 500 }
+export const transportSettings: Omit<TransportConfig, 'name' | 'key' | 'request' | 'type'> = { retryCount: 3, retryDelay: 500 }
 export const publicClientSettings: Omit<ClientConfig, 'chain' | 'transport'> = { batch: { multicall: { batchSize: 1_024 * 1_024 } } }
 
 export const defaultPublicClient = createPublicClient({
