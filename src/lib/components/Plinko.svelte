@@ -72,6 +72,7 @@
 
   // Build Prize Rows
   let lowestWinOdds = 1
+  let fillerPrizesAdded = 0
   prizes.forEach((prize, i) => {
     // Fill with prizes they won
     for (let p = 0; p < prize.userWon; p++) {
@@ -90,6 +91,7 @@
           prizeRow[0] = ' ' // gap
           prizeRow[Math.floor(columns / 2)] = i // prize
           prizeRows.push(prizeRow)
+          fillerPrizesAdded++
         }
       }
     }
@@ -101,7 +103,13 @@
   })
   if (lowestWinOdds > 1) lowestWinOdds = 1
 
-  // TODO: if NO non-won prizes were added, show one of the prizes at random
+  // If no filler prizes were added, show one of the prizes at random
+  if (fillerPrizesAdded == 0) {
+    const prizeRow = Array(columns).fill('^') // spikes
+    prizeRow[0] = ' ' // gap
+    prizeRow[Math.floor(columns / 2)] = Math.floor(Math.random() * prizes.length) // random prize
+    prizeRows.push(prizeRow)
+  }
 
   // Add empty rows equal to the lowest chance prize that they won
   const minRows = 1 + Math.log(1 / lowestWinOdds) / Math.log(columns / 2) // 2 gaps every row defines the odds of passing the row
@@ -528,7 +536,12 @@
       <h3>Drop a ball to reveal your prizes!</h3>
     </div>
     <div class="prize-results-container hidden">
-      <slot name="end-card"></slot>
+      {#if gameState.state === 'done'}
+        <slot name="end-card"></slot>
+      {:else}
+        <div>Prizes Won: <span class="prizes-won">{prizesWonMessage}</span></div>
+        <div>Prize Total: <span class="prizes-total">{prizesTotalMessage}</span></div>
+      {/if}
     </div>
   </div>
   <img src="pooltogether-square.svg" alt="" bind:this={poolLogo} style:display="none" />
