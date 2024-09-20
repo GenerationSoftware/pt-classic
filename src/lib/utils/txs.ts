@@ -9,8 +9,7 @@ import {
 } from 'viem'
 import { chain, prizeHook, prizeVault, twabRewardsAddress } from '$lib/config'
 import { hookABI, twabRewardsABI, vaultABI } from '$lib/abis'
-import { userAddress, walletClient } from '$lib/stores'
-import { publicClient } from '$lib/constants'
+import { clients, userAddress } from '$lib/stores'
 import { lower } from './formatting'
 import { get } from 'svelte/store'
 
@@ -20,13 +19,14 @@ export const approve = async (
   amount: bigint,
   options?: { onSend?: (txHash: Hash) => void; onSuccess?: (txReceipt: TransactionReceipt) => void; onSettled?: () => void }
 ) => {
-  const client = get(walletClient)
+  const publicClient = get(clients).public
+  const walletClient = get(clients).wallet
   const user = get(userAddress)
 
-  if (!client || !user) return
+  if (!walletClient || !user) return
 
   try {
-    const hash = await client.writeContract({
+    const hash = await walletClient.writeContract({
       chain,
       account: user,
       address: tokenAddress,
@@ -59,13 +59,14 @@ export const deposit = async (
     onSettled?: () => void
   }
 ) => {
-  const client = get(walletClient)
+  const publicClient = get(clients).public
+  const walletClient = get(clients).wallet
   const user = get(userAddress)
 
-  if (!client || !user) return
+  if (!walletClient || !user) return
 
   try {
-    const hash = await client.writeContract({
+    const hash = await walletClient.writeContract({
       chain,
       account: user,
       address: prizeVault.address,
@@ -101,13 +102,14 @@ export const redeem = async (
     onSettled?: () => void
   }
 ) => {
-  const client = get(walletClient)
+  const publicClient = get(clients).public
+  const walletClient = get(clients).wallet
   const user = get(userAddress)
 
-  if (!client || !user) return
+  if (!walletClient || !user) return
 
   try {
-    const hash = await client.writeContract({
+    const hash = await walletClient.writeContract({
       chain,
       account: user,
       address: prizeVault.address,
@@ -140,13 +142,14 @@ export const setPrizeHook = async (options?: {
   onSuccess?: (txReceipt: TransactionReceipt) => void
   onSettled?: () => void
 }) => {
-  const client = get(walletClient)
+  const publicClient = get(clients).public
+  const walletClient = get(clients).wallet
   const user = get(userAddress)
 
-  if (!client || !user) return
+  if (!walletClient || !user) return
 
   try {
-    const hash = await client.writeContract({
+    const hash = await walletClient.writeContract({
       chain,
       account: user,
       address: prizeVault.address,
@@ -176,13 +179,14 @@ export const configurePrizeHook = async (options?: {
   onSuccess?: (txReceipt: TransactionReceipt) => void
   onSettled?: () => void
 }) => {
-  const client = get(walletClient)
+  const publicClient = get(clients).public
+  const walletClient = get(clients).wallet
   const user = get(userAddress)
 
-  if (!client || !user) return
+  if (!walletClient || !user) return
 
   try {
-    const hash = await client.writeContract({
+    const hash = await walletClient.writeContract({
       chain,
       account: user,
       address: prizeHook.address,
@@ -215,10 +219,11 @@ export const claimBonusRewards = async (
     onSettled?: () => void
   }
 ) => {
-  const client = get(walletClient)
+  const publicClient = get(clients).public
+  const walletClient = get(clients).wallet
   const user = get(userAddress)
 
-  if (!client || !user) return
+  if (!walletClient || !user) return
 
   const validPromotionEpochs: { promotionId: string; epochIds: number[] }[] = []
   data.forEach(({ promotionId, epochs }) => {
@@ -238,7 +243,7 @@ export const claimBonusRewards = async (
   try {
     const txPromise =
       validPromotionEpochs.length === 1
-        ? client.writeContract({
+        ? walletClient.writeContract({
             chain,
             account: user,
             address: twabRewardsAddress,
@@ -246,7 +251,7 @@ export const claimBonusRewards = async (
             functionName: 'claimRewards',
             args: [user, BigInt(validPromotionEpochs[0].promotionId), validPromotionEpochs[0].epochIds]
           })
-        : client.writeContract({
+        : walletClient.writeContract({
             chain,
             account: user,
             address: twabRewardsAddress,

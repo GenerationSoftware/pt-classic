@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { promotionInfo, userAddress, userClaimableRewards, userClaimedRewards, walletClient } from '$lib/stores'
+  import { clients, promotionInfo, userAddress, userClaimableRewards, userClaimedRewards } from '$lib/stores'
   import { getUserClaimableRewards, getUserClaimedRewards } from '$lib/utils'
 
   export let disabled: boolean = false
@@ -14,7 +14,7 @@
   }
 </script>
 
-{#if !$walletClient || !$userAddress}
+{#if !$clients.wallet || !$userAddress}
   <button class="teal-button" disabled={true}>Claim & Redeposit Bonuses</button>
 {:else}
   <!-- TODO: add on:click to zap all possible claimable rewards (need dskit support for multiple actions) -->

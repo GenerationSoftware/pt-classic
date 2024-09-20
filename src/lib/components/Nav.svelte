@@ -1,17 +1,8 @@
 <script>
-  import { ConnectButton } from '@rainbow-me/rainbowkit'
-  import { hooks, used } from 'svelte-preprocess-react'
-  import { walletClient } from '$lib/stores'
-  import { useWalletClient } from 'wagmi'
+  import WalletConnectionModalContent from './WalletConnectionModalContent.svelte'
+  import NavWalletDisplay from './NavWalletDisplay.svelte'
   import NavPageLink from './NavPageLink.svelte'
-
-  const wagmiStore = hooks(() => useWalletClient())
-
-  wagmiStore.subscribe((val) => {
-    walletClient.set(val?.data)
-  })
-
-  used(ConnectButton)
+  import Modal from './Modal.svelte'
 </script>
 
 <div class="top-nav-wrapper">
@@ -20,7 +11,10 @@
       <img src="pooltogether.svg" alt="PoolTogether" class="desktop-only" />
       <img src="pooltogether-small.svg" alt="PoolTogether" class="mobile-only" />
     </a>
-    <react:ConnectButton />
+    <Modal title="Connect Wallet">
+      <NavWalletDisplay slot="button-content" />
+      <WalletConnectionModalContent slot="modal-content" />
+    </Modal>
   </div>
 </div>
 

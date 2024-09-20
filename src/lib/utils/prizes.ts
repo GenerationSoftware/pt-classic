@@ -1,16 +1,18 @@
-import { userClaimedPrizeEvents, userFlashEvents, userLastCheckedBlockNumber, userTransferEvents } from '$lib/stores'
+import { clients, userClaimedPrizeEvents, userFlashEvents, userLastCheckedBlockNumber, userTransferEvents } from '$lib/stores'
 import { formatEther, formatUnits, type Address, type ContractFunctionParameters } from 'viem'
 import { prizeHook, prizePool, prizeVault } from '$lib/config'
 import { prizePoolABI, twabControllerABI } from '$lib/abis'
-import { publicClient, seconds } from '$lib/constants'
 import { getBlockTimestamp } from './time'
 import { getTokenPrice } from './tokens'
+import { seconds } from '$lib/constants'
 import { lower } from './formatting'
 import { get } from 'svelte/store'
 import type { UncheckedPrize } from '$lib/types'
 
 export const getPrizeDistribution = async () => {
   const prizeDistribution: { tier: number; size: bigint; drawFrequency: number }[] = []
+
+  const publicClient = get(clients).public
 
   const numberOfTiers = await publicClient.readContract({ address: prizePool.address, abi: prizePoolABI, functionName: 'numberOfTiers' })
   const prizeTiers = Array.from(Array(numberOfTiers).keys())
@@ -50,6 +52,8 @@ export const getPrizeDistribution = async () => {
 
 export const getUserUncheckedPrizes = async (userAddress: Address, options?: { checkBlockNumber?: bigint }) => {
   const uncheckedPrizes: { list: UncheckedPrize[]; queriedAtBlockNumber: bigint } = { list: [], queriedAtBlockNumber: 0n }
+
+  const publicClient = get(clients).public
 
   // TODO: make sure this is the first event
   const firstDepositEvent = get(userTransferEvents)?.find(
@@ -169,6 +173,8 @@ export const getUserUncheckedPrizes = async (userAddress: Address, options?: { c
 
 export const getPrizeTierInfo = async () => {
   const prizeTierInfo: { [prizeTier: number]: { size: number; count: number; odds: number } } = {}
+
+  const publicClient = get(clients).public
 
   const numberOfTiers = await publicClient.readContract({
     address: prizePool.address,

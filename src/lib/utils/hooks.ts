@@ -1,9 +1,10 @@
 import { prizeHook, prizeVault } from '$lib/config'
 import { zeroAddress, type Address } from 'viem'
 import { getSetSwapperEvents } from './events'
-import { publicClient } from '$lib/constants'
+import { clients } from '$lib/stores'
 import { vaultABI } from '$lib/abis'
 import { lower } from './formatting'
+import { get } from 'svelte/store'
 
 export const getPrizeHookStatus = async (
   userAddress: Address
@@ -11,6 +12,8 @@ export const getPrizeHookStatus = async (
   | { isPrizeHookSet: boolean; isSwapperSet: false; pastSwapperAddresses: Address[] }
   | { isPrizeHookSet: boolean; isSwapperSet: true; swapperAddress: Address; pastSwapperAddresses: Address[] }
 > => {
+  const publicClient = get(clients).public
+
   let isPrizeHookSet = false
 
   const hook = await publicClient.readContract({

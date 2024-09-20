@@ -1,6 +1,6 @@
 <script lang="ts">
   import { claimBonusRewards, getUserClaimableRewards, getUserClaimedRewards, updateUserTokenBalances } from '$lib/utils'
-  import { promotionInfo, userAddress, userClaimableRewards, userClaimedRewards, walletClient } from '$lib/stores'
+  import { clients, promotionInfo, userAddress, userClaimableRewards, userClaimedRewards } from '$lib/stores'
   import { dolphinAddress } from '$lib/constants'
   import { prizeVault } from '$lib/config'
 
@@ -16,7 +16,7 @@
   }
 </script>
 
-{#if !$walletClient || !$userAddress || !$userClaimableRewards?.length}
+{#if !$clients.wallet || !$userAddress || !$userClaimableRewards?.length}
   <button disabled={true}>Only Claim Bonuses</button>
 {:else}
   <button

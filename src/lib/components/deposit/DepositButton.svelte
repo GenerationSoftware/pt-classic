@@ -1,7 +1,7 @@
 <script lang="ts">
   import { approve, deposit, updateUserTokenBalances, updateUserTransferEvents } from '$lib/utils'
-  import { userAddress, userTransferEvents, walletClient } from '$lib/stores'
-  import { dolphinAddress, publicClient } from '$lib/constants'
+  import { clients, userAddress, userTransferEvents } from '$lib/stores'
+  import { dolphinAddress } from '$lib/constants'
   import { prizeVault } from '$lib/config'
   import { erc20Abi } from 'viem'
 
@@ -14,7 +14,7 @@
 
   const updateAllowance = async () => {
     if (!!$userAddress) {
-      allowance = await publicClient.readContract({
+      allowance = await $clients.public.readContract({
         address: prizeVault.asset.address,
         abi: erc20Abi,
         functionName: 'allowance',
@@ -26,7 +26,7 @@
   $: $userAddress, updateAllowance()
 </script>
 
-{#if !$walletClient || !$userAddress || !amount || allowance === undefined}
+{#if !$clients.wallet || !$userAddress || !amount || allowance === undefined}
   <button class="teal-button" disabled={true}>Deposit</button>
 {:else if allowance < amount}
   <button

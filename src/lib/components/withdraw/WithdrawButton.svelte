@@ -1,6 +1,6 @@
 <script lang="ts">
   import { redeem, updateUserTokenBalances, updateUserTransferEvents } from '$lib/utils'
-  import { userAddress, userTransferEvents, walletClient } from '$lib/stores'
+  import { clients, userAddress, userTransferEvents } from '$lib/stores'
   import { dolphinAddress } from '$lib/constants'
   import { prizeVault } from '$lib/config'
 
@@ -10,7 +10,7 @@
   let isWithdrawing: boolean = false
 </script>
 
-{#if !$walletClient || !$userAddress || !amount}
+{#if !$clients.wallet || !$userAddress || !amount}
   <button class="teal-button" disabled={true}>Withdraw</button>
 {:else}
   <button

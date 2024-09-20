@@ -1,7 +1,7 @@
 import { prizeHook, prizePool, prizeVault, twabRewardsAddress, twabRewardsTokenOptions } from '$lib/config'
+import { clients, userClaimedPrizeEvents, userFlashEvents, userTransferEvents } from '$lib/stores'
 import { formatClaimedPrizeEvent, formatFlashEvent, formatTransferEvent } from './formatting'
-import { userClaimedPrizeEvents, userFlashEvents, userTransferEvents } from '$lib/stores'
-import { publicClient } from '$lib/constants'
+import { get } from 'svelte/store'
 import type { ClaimedPrizeEvent, FlashEvent, TransferEvent } from '$lib/types'
 import type { Address } from 'viem'
 
@@ -10,6 +10,8 @@ export const getTransferEvents = async (
   tokenAddress: Address,
   options?: { filter?: 'from' | 'to'; fromBlock?: bigint }
 ) => {
+  const publicClient = get(clients).public
+
   const transferEvent = {
     type: 'event',
     name: 'Transfer',
@@ -49,6 +51,8 @@ export const getTransferEvents = async (
 
 export const getFlashEvents = async (beneficiary: Address, swapperAddresses: Address[], options?: { fromBlock?: bigint }) => {
   if (!swapperAddresses.length) return []
+
+  const publicClient = get(clients).public
 
   const flashEvents = await publicClient.getLogs({
     address: swapperAddresses,
@@ -93,6 +97,8 @@ export const getFlashEvents = async (beneficiary: Address, swapperAddresses: Add
 }
 
 export const getSetSwapperEvents = async (userAddress: Address) => {
+  const publicClient = get(clients).public
+
   const setSwapperEvents = await publicClient.getLogs({
     address: prizeHook.address,
     event: {
@@ -115,6 +121,8 @@ export const getSetSwapperEvents = async (userAddress: Address) => {
 }
 
 export const getPromotionCreatedEvents = async () => {
+  const publicClient = get(clients).public
+
   const promotionCreatedEvents = await publicClient.getLogs({
     address: twabRewardsAddress,
     event: {
@@ -144,6 +152,8 @@ export const getPromotionCreatedEvents = async () => {
 }
 
 export const getRewardsClaimedEvents = async (userAddress: Address) => {
+  const publicClient = get(clients).public
+
   const rewardsClaimedEvents = await publicClient.getLogs({
     address: twabRewardsAddress,
     event: {
@@ -169,6 +179,8 @@ export const getRewardsClaimedEvents = async (userAddress: Address) => {
 }
 
 export const getClaimedPrizeEvents = async (userAddress: Address, options?: { fromBlock?: bigint }) => {
+  const publicClient = get(clients).public
+
   const claimedPrizeEvents = await publicClient.getLogs({
     address: prizePool.address,
     event: {

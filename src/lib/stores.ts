@@ -1,6 +1,9 @@
 import {
+  getPrizeDistribution,
   getPrizeHookStatus,
+  getPromotionInfo,
   getTokenBalances,
+  getTokenPrice,
   getUserClaimableRewards,
   getUserClaimedRewards,
   getUserUncheckedPrizes,
@@ -9,13 +12,14 @@ import {
   updateUserFlashEvents,
   updateUserTransferEvents
 } from './utils'
-import { dolphinAddress, localStorageKeys, publicClient } from './constants'
-import { chain, prizeVault, zapInTokenOptions } from './config'
+import { chain, prizePool, prizeVault, twabRewardsTokenOptions, zapInTokenOptions } from './config'
+import { defaultPublicClient, dolphinAddress, localStorageKeys } from './constants'
 import { get, writable } from 'svelte/store'
 import type {
   ClaimableReward,
   ClaimedPrizeEvent,
   ClaimedReward,
+  EIP6963ProviderData,
   FlashEvent,
   KeyedCache,
   PrizeDistribution,
@@ -25,14 +29,16 @@ import type {
   TransferEvent,
   UncheckedPrize
 } from './types'
-import type { Address, WalletClient } from 'viem'
+import type { Address, PublicClient, WalletClient } from 'viem'
+import type { DSKit } from 'dskit-eth'
 
-export const walletClient = writable<WalletClient | undefined>(undefined)
+export const walletProviders = writable<EIP6963ProviderData[]>([])
+
+export const lastConnectedProviderId = writable<string | null>(localStorage.getItem(localStorageKeys.lastConnectedProviderId))
+lastConnectedProviderId.subscribe((id) => !!id && localStorage.setItem(localStorageKeys.lastConnectedProviderId, id))
+
+export const clients = writable<{ public: PublicClient; wallet?: WalletClient; dskit?: DSKit }>({ public: defaultPublicClient })
 export const userAddress = writable<Address | undefined>(undefined)
-
-walletClient.subscribe(async (client) => {
-  userAddress.set(!!client ? (await client.getAddresses())[0] : undefined)
-})
 
 export const userBalances = writable<{ [tokenAddress: Lowercase<Address>]: bigint }>({})
 export const userPrizeHookStatus = writable<PrizeHookStatus | undefined>(undefined)
@@ -74,7 +80,7 @@ userAddress.subscribe(async (address) => {
     const prizeHookStatus = await getPrizeHookStatus(address)
     userPrizeHookStatus.set(prizeHookStatus)
 
-    const currentBlockNumber = await publicClient.getBlockNumber()
+    const currentBlockNumber = await get(clients).public.getBlockNumber()
 
     const cachedTransferEvents: KeyedCache<TransferEvent[]> = JSON.parse(localStorage.getItem(localStorageKeys.transferEvents) ?? '{}')
     await updateUserTransferEvents(address, cachedTransferEvents[lower(address)]?.[chain.id] ?? [])
@@ -154,6 +160,24 @@ export const tokenPrices = writable<TokenPrices>({})
 export const prizeDistribution = writable<PrizeDistribution | undefined>(undefined)
 
 export const promotionInfo = writable<PromotionInfo | undefined>(undefined)
+
+clients.subscribe(async ({ wallet }) => {
+  if (!!wallet) {
+    await getTokenPrice(prizePool.prizeToken)
+
+    if (get(prizeDistribution) === undefined) {
+      prizeDistribution.set(await getPrizeDistribution())
+    }
+
+    if (get(promotionInfo) === undefined) {
+      promotionInfo.set(await getPromotionInfo())
+    }
+
+    for (const token of twabRewardsTokenOptions) {
+      await getTokenPrice(token)
+    }
+  }
+})
 
 promotionInfo.subscribe(async (info) => {
   const address = get(userAddress)

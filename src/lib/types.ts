@@ -48,6 +48,20 @@ export interface PlinkoState {
   prizesTotal: number
 }
 
+export interface EIP6963ProviderData {
+  info: {
+    uuid: string
+    name: string
+    icon: string
+    rdns: string
+  }
+  provider: any
+}
+
+export interface EIP6963AnnounceProviderEvent extends CustomEvent<EIP6963ProviderData> {
+  type: 'eip6963:announceProvider'
+}
+
 export type PrizeHookStatus = Awaited<ReturnType<typeof getPrizeHookStatus>>
 
 export type TransferEvent = ReturnType<typeof formatTransferEvent>
