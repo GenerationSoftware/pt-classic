@@ -539,8 +539,8 @@
       {#if gameState.state === 'done'}
         <slot name="end-card"></slot>
       {:else}
-        <div>Prizes Won: <span class="prizes-won">{prizesWonMessage}</span></div>
-        <div>Prize Total: <span class="prizes-total">{prizesTotalMessage}</span></div>
+        <div class="prize-counter">Prizes <span class="prizes-won">{prizesWonMessage}</span></div>
+        <div class="prize-counter">Total <span class="prizes-total">{prizesTotalMessage}</span></div>
       {/if}
     </div>
   </div>
@@ -628,7 +628,7 @@
     justify-content: space-evenly;
     align-items: center;
     gap: 0.5rem;
-    padding: 1rem;
+    padding: 0.5rem;
     background-color: var(--pt-purple-800);
     transition: all 1s ease-out;
   }
@@ -640,6 +640,19 @@
   #plinko.done > .ui .prize-results-container {
     top: 0;
     min-height: 100%;
+  }
+
+  #plinko .prize-counter {
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    background-color: var(--pt-purple-700);
+    font-size: small;
+  }
+
+  #plinko .prize-counter > span {
+    border-left: 2px solid var(--pt-purple-800);
+    margin-left: 0.3rem;
+    padding-left: 0.4rem;
   }
 
   #plinko > .ui .prize-info-container {
