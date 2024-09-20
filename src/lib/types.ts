@@ -46,6 +46,12 @@ export interface PlinkoState {
   nextPrizeRow: number
   prizesWon: number
   prizesTotal: number
+  animationTriggers: PlinkoAnimation[]
+}
+export interface PlinkoAnimation {
+  startMs: number
+  durationMs: number
+  draw: (ctx: CanvasRenderingContext2D, t: number) => void
 }
 
 export type PrizeHookStatus = Awaited<ReturnType<typeof getPrizeHookStatus>>

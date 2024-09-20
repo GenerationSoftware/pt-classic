@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte'
   import { VectorMath } from '$lib/utils'
-  import type { PlinkoPrizeRowTile, PlinkoState, UncheckedPrize } from '$lib/types'
+  import type { PlinkoAnimation, PlinkoPrizeRowTile, PlinkoState, UncheckedPrize } from '$lib/types'
 
   export let width: number
   export let height: number
@@ -37,6 +37,7 @@
   const prizeRowFrequency = 6
   const prizeRowColPerSec = 1.5
   const spikesPerCol = 7
+  const minCollisionAnimationSpacing = 100
   let gameHeight = 100
   let scale = 1
   let lastFrameTime = 0
@@ -54,12 +55,16 @@
     },
     nextPrizeRow: 0,
     prizesWon: 0,
-    prizesTotal: 0
+    prizesTotal: 0,
+    animationTriggers: []
   }
+  let nextGameState = gameState
   let futureGameState: PlinkoState | null = null
   let prizesWonMessage = '0'
   let prizesTotalMessage = '$0'
   let prizeBubbles: { top: string; left: string; content: string; backgroundColor: string }[] = []
+  let animations: PlinkoAnimation[] = []
+  let lastCollisionAnimationStartMs = 0
 
   // Prize Info
   const maxPrizeSize = Math.max(...prizes.map((x) => x.size))
@@ -274,6 +279,22 @@
     )
     ctx.restore()
 
+    // render particle animations
+    const completedAnimations = new WeakSet<any>()
+    for (let i = 0; i < animations.length; i++) {
+      if (gameMs >= animations[i].startMs) {
+        if (gameMs < animations[i].startMs + animations[i].durationMs) {
+          ctx.save()
+          ctx.translate(0, -gameYOffset)
+          animations[i].draw(ctx, (gameMs - animations[i].startMs) / animations[i].durationMs)
+          ctx.restore()
+        } else {
+          completedAnimations.add(animations[i])
+        }
+      }
+    }
+    animations = animations.filter((x) => !completedAnimations.has(x))
+
     // Reset current transformation matrix to the identity matrix
     ctx.setTransform(1, 0, 0, 1, 0, 0)
   }
@@ -309,10 +330,11 @@
   }
 
   // Function to get the game state for the next frame
-  const getNextFrameState = (state: PlinkoState): PlinkoState => {
-    const n = JSON.parse(JSON.stringify(state))
+  const getNextFrameState = (state: PlinkoState, generateAnimations: boolean): PlinkoState => {
+    const n: PlinkoState = JSON.parse(JSON.stringify(state))
     n.frame++
     n.ms = state.ms + frameStepMs
+    n.animationTriggers = []
 
     // Update velocity
     n.ball.vel.x += (n.ball.acc.x * frameStepMs) / 1000
@@ -398,8 +420,45 @@
         }
 
         // Push ball away
-        const pushedDiff = VectorMath.smul(VectorMath.norm(diff), -1 * (ballRadius + pegRadius))
-        n.ball.pos = VectorMath.add(pegPos, pushedDiff)
+        const diffNorm = VectorMath.norm(diff)
+        n.ball.pos = VectorMath.add(pegPos, VectorMath.smul(diffNorm, -1 * (ballRadius + pegRadius)))
+
+        // Add collision animation
+        if (generateAnimations && speed > maxSpeed * 0.2 && n.ms - lastCollisionAnimationStartMs >= minCollisionAnimationSpacing) {
+          lastCollisionAnimationStartMs = n.ms
+          const center = VectorMath.add(pegPos, VectorMath.smul(diffNorm, -1 * pegRadius))
+          const particles: { endPos: VectorMath.Vector2; size: number; color: string }[] = []
+          for (let i = 0; i < 5; i++) {
+            const angle = Math.random() * Math.PI * 2
+            const travelDistance = (speed / maxSpeed) * (pegRadius / 2 + pegRadius * 2 * Math.random())
+            const size = (speed / maxSpeed) * pegRadius * 0.3 + pegRadius * 0.3 * Math.random()
+            particles.push({
+              endPos: {
+                x: Math.cos(angle) * travelDistance,
+                y: Math.sin(angle) * travelDistance
+              },
+              size,
+              color: Math.random() > 0.5 ? getCssColor('--peg-color') : getCssColor('--spike-color')
+            })
+          }
+          n.animationTriggers.push({
+            startMs: n.ms,
+            durationMs: 250,
+            draw: (ctx, t) => {
+              for (const p of particles) {
+                const size = (1 - t) * p.size
+                const pos = VectorMath.add(center, VectorMath.smul(p.endPos, t))
+                const rot = Math.random()
+                ctx.fillStyle = p.color
+                ctx.beginPath()
+                ctx.moveTo(pos.x + size * Math.cos(rot), pos.y + size * Math.sin(rot))
+                ctx.lineTo(pos.x + size * Math.cos(rot + (Math.PI * 2) / 3), pos.y + size * Math.sin(rot + (Math.PI * 2) / 3))
+                ctx.lineTo(pos.x + size * Math.cos(rot + (Math.PI * 4) / 3), pos.y + size * Math.sin(rot + (Math.PI * 4) / 3))
+                ctx.fill()
+              }
+            }
+          })
+        }
       }
     }
 
@@ -414,13 +473,107 @@
     // Check if ball has passed the next prize row
     if (n.ball.pos.y >= (n.nextPrizeRow + 1) * rowHeight * prizeRowFrequency) {
       if (n.nextPrizeRow == endPrizeRowIndex) {
+        // Update game state
         n.state = 'done'
+
+        // Add ball destruction animation
+        if (generateAnimations) {
+          const deathPos = { x: n.ball.pos.x, y: n.ball.pos.y }
+          const particles: { offsetPos: VectorMath.Vector2; size: number; color: string }[] = []
+          const animationDurationMs = 1_000
+          const particleCount = 10
+          for (let i = 0; i < particleCount; i++) {
+            const angle = Math.random() * Math.PI * 2
+            const radialPos = 0.25 + Math.random() * 0.75
+            const size = ballRadius / Math.log(particleCount + 1)
+            const offsetPos = {
+              x: Math.cos(angle) * radialPos * ballRadius,
+              y: Math.sin(angle) * radialPos * ballRadius
+            }
+            particles.push({
+              offsetPos,
+              size,
+              color: Math.random() > 0.66 ? '#ffffff' : getCssColor('--ball-color')
+            })
+          }
+          n.animationTriggers.push({
+            startMs: n.ms,
+            durationMs: animationDurationMs,
+            draw: (ctx, t) => {
+              for (const p of particles) {
+                const size = p.size * (1 - t)
+                const pos = VectorMath.add(
+                  deathPos,
+                  VectorMath.add(
+                    VectorMath.smul(
+                      VectorMath.smul(
+                        VectorMath.add(n.ball.vel, VectorMath.smul(n.ball.acc, (t * animationDurationMs) / 1_000)),
+                        animationDurationMs / 1_000
+                      ),
+                      t
+                    ),
+                    VectorMath.smul(p.offsetPos, 1 + t * 3)
+                  )
+                )
+                const rot = p.offsetPos.x * t
+                ctx.fillStyle = p.color
+                ctx.beginPath()
+                ctx.moveTo(pos.x + size * Math.cos(rot), pos.y + size * Math.sin(rot))
+                ctx.lineTo(pos.x + size * Math.cos(rot + (Math.PI * 2) / 3), pos.y + size * Math.sin(rot + (Math.PI * 2) / 3))
+                ctx.lineTo(pos.x + size * Math.cos(rot + (Math.PI * 4) / 3), pos.y + size * Math.sin(rot + (Math.PI * 4) / 3))
+                ctx.fill()
+              }
+            }
+          })
+        }
       }
       const prizeRow = prizeRows[n.nextPrizeRow]
       if (prizeRow && Number.isInteger(prizeRow[0])) {
         const prize = prizes[prizeRow[0] as number]
         n.prizesWon++
         n.prizesTotal += prize.size
+        if (generateAnimations) {
+          const center = n.ball.pos
+          const particles: { endPos: VectorMath.Vector2; size: number; color: string }[] = []
+          const numParticles = 5 + Math.log(1 + prize.size) * 2
+          const animationDurationMs = 3_000
+          for (let i = 0; i < numParticles; i++) {
+            const angle = Math.random() * Math.PI * 2
+            const travelDistance = gameWidth / 2 + gameWidth * Math.random()
+            const size = (speed / maxSpeed) * ballRadius * 0.4 + ballRadius * 0.4 * Math.random()
+            particles.push({
+              endPos: {
+                x: Math.cos(angle) * travelDistance,
+                y: Math.sin(angle) * travelDistance
+              },
+              size,
+              color: getCssColor(`--prize-${Math.floor(Math.random() * 9)}-color`)
+            })
+          }
+          n.animationTriggers.push({
+            startMs: n.ms,
+            durationMs: animationDurationMs,
+            draw: (ctx, t) => {
+              for (const p of particles) {
+                const size = (1 - t) * p.size
+                const pos = VectorMath.add(
+                  center,
+                  VectorMath.add(
+                    VectorMath.smul(p.endPos, Math.sqrt(t)),
+                    VectorMath.smul(n.ball.acc, Math.pow((t * animationDurationMs) / 2_000, 2))
+                  )
+                )
+                const rot = p.endPos.x * t
+                ctx.fillStyle = p.color
+                ctx.beginPath()
+                ctx.moveTo(pos.x + size * Math.cos(rot), pos.y + size * Math.sin(rot))
+                ctx.lineTo(pos.x + size * Math.cos(rot + (Math.PI * 2) / 3), pos.y + size * Math.sin(rot + (Math.PI * 2) / 3))
+                ctx.lineTo(pos.x + size * Math.cos(rot + (Math.PI * 4) / 3), pos.y + size * Math.sin(rot + (Math.PI * 4) / 3))
+                ctx.fill()
+              }
+            }
+          })
+        }
       }
       n.nextPrizeRow++
     }
@@ -440,9 +593,12 @@
 
       if (gameState.state === 'playing') {
         // Get next game state
-        const nextState = getNextFrameState(gameState)
-        if (totalPlayTime >= nextState.ms) {
-          gameState = nextState
+        if (nextGameState == gameState) {
+          nextGameState = getNextFrameState(gameState, true)
+        }
+        if (totalPlayTime >= nextGameState.ms) {
+          gameState = nextGameState
+          animations.push(...nextGameState.animationTriggers)
         }
 
         // Update stats
@@ -450,15 +606,15 @@
         prizesTotalMessage = `$${gameState.prizesTotal.toFixed(2)}`
 
         // Simulate future game states until out of frame
-        let _futureGameState = futureGameState ?? nextState
+        let _futureGameState = futureGameState ?? nextGameState
         futureGameState = _futureGameState
-        while (_futureGameState.ball.pos.y < nextState.ball.pos.y + gameHeight * 1.5) {
+        while (_futureGameState.ball.pos.y < nextGameState.ball.pos.y + gameHeight * 1.5) {
           const nextPrizeRow = _futureGameState.nextPrizeRow
-          _futureGameState = getNextFrameState(_futureGameState)
+          _futureGameState = getNextFrameState(_futureGameState, false)
           futureGameState = _futureGameState
           if (_futureGameState.nextPrizeRow > nextPrizeRow) {
             // record prize offset
-            let goalPegX = ((prizeRowColPerSec * columnWidth * (nextPrizeRow % 2 == 0 ? -1 : 1) * futureGameState.ms) / 1000) % gameWidth
+            let goalPegX = ((prizeRowColPerSec * columnWidth * (nextPrizeRow % 2 == 0 ? -1 : 1) * _futureGameState.ms) / 1000) % gameWidth
             if (goalPegX < 0) {
               goalPegX += gameWidth
             }
@@ -471,9 +627,9 @@
         }
 
         // Render frame with interpolated ball position
-        const frameTime = Math.min(totalPlayTime, nextState.ms)
+        const frameTime = Math.min(totalPlayTime, nextGameState.ms)
         const t = (frameTime - gameState.ms) / frameStepMs
-        const iBallPos = VectorMath.add(VectorMath.smul(gameState.ball.pos, 1 - t), VectorMath.smul(nextState.ball.pos, t))
+        const iBallPos = VectorMath.add(VectorMath.smul(gameState.ball.pos, 1 - t), VectorMath.smul(nextGameState.ball.pos, t))
         render(iBallPos, gameState.ball.rot, frameTime)
 
         // Place prize bubbles
