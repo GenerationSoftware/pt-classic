@@ -39,6 +39,4 @@ export const tokenSwapRouteConfigs: { [address: Lowercase<Address>]: SwapRouteCo
   }
 }
 
-export const blockExplorerUrl = 'https://basescan.org/' satisfies `https://${string}/`
-
 export const pageTransition = { duration: 100 } satisfies { duration: number }

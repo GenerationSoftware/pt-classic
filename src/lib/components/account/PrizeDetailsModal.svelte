@@ -1,10 +1,12 @@
 <script lang="ts">
-  import { blockExplorerUrl } from '$lib/config'
   import { getBlockDate, type formatClaimedReward, type formatFallbackPrize, type formatPrize } from '$lib/utils'
+  import { chain } from '$lib/config'
   import Loading from '../Loading.svelte'
   import Modal from '../Modal.svelte'
 
   export let prize: ReturnType<typeof formatPrize> | ReturnType<typeof formatFallbackPrize> | ReturnType<typeof formatClaimedReward>
+
+  $: txHref = `${chain.blockExplorers.default.url}/tx/${prize.txHash}`
 </script>
 
 <Modal title={prize.type === 'fallbackPrize' ? 'Prize Details' : 'Reward Details'}>
@@ -58,7 +60,7 @@
     {/if}
     <div class="item">
       <span>Transaction:</span>
-      <a href={`${blockExplorerUrl}tx/${prize.txHash}`} target="_blank">{prize.txHash.slice(0, 12)}...</a>
+      <a href={txHref} target="_blank">{prize.txHash.slice(0, 12)}...</a>
     </div>
   </div>
 </Modal>
