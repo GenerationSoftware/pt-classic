@@ -5,7 +5,7 @@
 
   export let width: number
   export let height: number
-  export let columns = 4
+  export let columns: 4 | 5 | 6 | 7 = 4
   export let prizes: UncheckedPrize[] = []
 
   let canvas: HTMLCanvasElement
@@ -100,6 +100,8 @@
     }
   })
   if (lowestWinOdds > 1) lowestWinOdds = 1
+
+  // TODO: if NO non-won prizes were added, show one of the prizes at random
 
   // Add empty rows equal to the lowest chance prize that they won
   const minRows = 1 + Math.log(1 / lowestWinOdds) / Math.log(columns / 2) // 2 gaps every row defines the odds of passing the row
