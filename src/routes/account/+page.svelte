@@ -44,7 +44,9 @@
       />
     {:else if pageState === 'checkingPrizes'}
       {#if $userUncheckedPrizes}
-        <Plinko width={300} height={500} prizes={$userUncheckedPrizes.list} />
+        <Plinko width={300} height={500} prizes={$userUncheckedPrizes.list}>
+          <div slot="end-card">TODO: add end of game info</div>
+        </Plinko>
       {:else}
         <Loading />
       {/if}

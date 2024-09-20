@@ -528,8 +528,7 @@
       <h3>Drop a ball to reveal your prizes!</h3>
     </div>
     <div class="prize-results-container hidden">
-      <div>Prizes Won: <span class="prizes-won">{prizesWonMessage}</span></div>
-      <div>Prize Total: <span class="prizes-total">{prizesTotalMessage}</span></div>
+      <slot name="end-card"></slot>
     </div>
   </div>
   <img src="pooltogether-square.svg" alt="" bind:this={poolLogo} style:display="none" />
