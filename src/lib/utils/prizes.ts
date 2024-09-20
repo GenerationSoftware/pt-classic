@@ -131,7 +131,7 @@ export const getUserUncheckedPrizes = async (userAddress: Address, options?: { c
     )
   )
 
-  const oddsMultiplier = (vaultPortion || 1) * (!!userTwab && !!vaultTwab ? userTwab / vaultTwab : 1)
+  const oddsMultiplier = (vaultPortion || 0.01) * (!!userTwab && !!vaultTwab ? userTwab / vaultTwab : 0.01)
 
   // Adding prizes won
   relevantFlashEvents.forEach((flashEvent) => {
@@ -140,7 +140,7 @@ export const getUserUncheckedPrizes = async (userAddress: Address, options?: { c
     const nearestPrizeTier = Object.values(prizeTierInfo).reduce((a, b) =>
       Math.abs(b.size - sizeInPrizeToken) < Math.abs(a.size - sizeInPrizeToken) ? b : a
     )
-    const userOdds = (nearestPrizeTier.size / sizeInPrizeToken) * nearestPrizeTier.odds
+    const userOdds = (nearestPrizeTier.size / sizeInPrizeToken) * nearestPrizeTier.odds * oddsMultiplier
 
     uncheckedPrizes.list.push({ size, count: 1, userOdds, userWon: 1 })
   })
@@ -158,8 +158,8 @@ export const getUserUncheckedPrizes = async (userAddress: Address, options?: { c
   Object.values(prizeTierInfo).forEach((tier) => {
     const size = tier.size * prizeTokenPrice
     const numDraws = numUncheckedDraws > 0 ? numUncheckedDraws : 1
-    const count = oddsMultiplier === 1 ? tier.count : tier.count * numDraws // TODO: check logic
-    const userOdds = oddsMultiplier === 1 ? tier.odds : tier.odds * oddsMultiplier * count // TODO: check logic
+    const count = tier.count * numDraws
+    const userOdds = tier.odds * oddsMultiplier
 
     uncheckedPrizes.list.push({ size, count, userOdds, userWon: 0 })
   })

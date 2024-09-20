@@ -99,6 +99,7 @@
       lowestWinOdds = prize.userOdds
     }
   })
+  if (lowestWinOdds > 1) lowestWinOdds = 1
 
   // Add empty rows equal to the lowest chance prize that they won
   const minRows = 1 + Math.log(1 / lowestWinOdds) / Math.log(columns / 2) // 2 gaps every row defines the odds of passing the row
