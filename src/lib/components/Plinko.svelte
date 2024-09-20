@@ -559,9 +559,9 @@
     --peg-color: var(--pt-teal-light);
     --prize-0-color: #ff5f5f;
     --prize-1-color: #fcc36f;
-    --prize-2-color: #daff36;
-    --prize-3-color: #77ff6b;
-    --prize-4-color: #6bfff8;
+    --prize-2-color: #c7eb2a;
+    --prize-3-color: #64e958;
+    --prize-4-color: #56e4dd;
     --prize-5-color: #6b7aff;
     --prize-6-color: #b86bff;
     --prize-7-color: #ff6be6;
@@ -684,6 +684,7 @@
     border-radius: 1rem;
     color: var(--pt-purple-50);
     text-shadow: 1px 1px 0 var(--pt-purple-800);
+    filter: drop-shadow(2px 2px 3px #0006);
     opacity: 0.9;
   }
 
