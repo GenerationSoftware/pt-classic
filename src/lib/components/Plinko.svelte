@@ -387,7 +387,7 @@
           if (pegVelocity.x != 0) {
             const negDiff = VectorMath.neg(diff)
             const angleOfTransfer = VectorMath.angleBetween(pegVelocity, negDiff)
-            if (angleOfTransfer < Math.PI / 2) {
+            if (angleOfTransfer < Math.PI / 4) {
               n.ball.vel = VectorMath.add(n.ball.vel, VectorMath.smul(pegVelocity, Math.cos(angleOfTransfer)))
             }
           }
