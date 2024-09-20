@@ -15,7 +15,7 @@ export const getPrizeDistribution = async () => {
   const publicClient = get(clients).public
 
   const numberOfTiers = await publicClient.readContract({ address: prizePool.address, abi: prizePoolABI, functionName: 'numberOfTiers' })
-  const prizeTiers = Array.from(Array(numberOfTiers).keys())
+  const prizeTiers = [...Array(numberOfTiers - 2).keys()]
 
   // @ts-ignore
   const multicall = await publicClient.multicall({
@@ -38,7 +38,7 @@ export const getPrizeDistribution = async () => {
   if (multicall.every((entry) => entry.status === 'success' && (typeof entry.result === 'bigint' || typeof entry.result === 'number'))) {
     prizeTiers.forEach((tier, i) => {
       const size = multicall[i].result as bigint
-      const accrualDuration = multicall[i + numberOfTiers].result as number
+      const accrualDuration = multicall[i + prizeTiers.length].result as number
 
       const prizeCount = 4 ** i
       const drawFrequency = prizeCount / accrualDuration
@@ -176,11 +176,7 @@ export const getPrizeTierInfo = async () => {
 
   const publicClient = get(clients).public
 
-  const numberOfTiers = await publicClient.readContract({
-    address: prizePool.address,
-    abi: prizePoolABI,
-    functionName: 'numberOfTiers'
-  })
+  const numberOfTiers = await publicClient.readContract({ address: prizePool.address, abi: prizePoolABI, functionName: 'numberOfTiers' })
 
   const prizeTiers = [...Array(numberOfTiers - 2).keys()]
 

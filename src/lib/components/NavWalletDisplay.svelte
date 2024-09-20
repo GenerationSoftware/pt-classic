@@ -3,10 +3,19 @@
 </script>
 
 {#if $userAddress}
-  <!-- TODO: show ENS if resolved -->
-  <!-- TODO: show ENS profile pic if resolved -->
-  <!-- TODO: have dropdown to disconnect -->
-  <span>{$userAddress}</span>
+  <div class="user-info">
+    <!-- TODO: show ENS profile pic if resolved (default wallet/profile pic if not) -->
+    <!-- TODO: show ENS if resolved -->
+    <span>{$userAddress.slice(0, 6)}...{$userAddress.slice(-4)}</span>
+  </div>
 {:else}
-  <span class="teal-button">Connect Wallet</span>
+  <span>Connect Wallet</span>
 {/if}
+
+<style>
+  div.user-info {
+    display: flex;
+    align-items: center;
+    gap: 1ch;
+  }
+</style>

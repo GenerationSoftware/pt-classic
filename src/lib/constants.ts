@@ -1,9 +1,14 @@
-import { createPublicClient, http, type ClientConfig, type PublicClient } from 'viem'
+import { createPublicClient, http, type ClientConfig, type PublicClient, type TransportConfig } from 'viem'
 import { chain } from './config'
 
+export const transportSettings: Omit<TransportConfig, 'name' | 'key' | 'request' | 'type'> = { retryCount: 5, retryDelay: 500 }
 export const publicClientSettings: Omit<ClientConfig, 'chain' | 'transport'> = { batch: { multicall: { batchSize: 1_024 * 1_024 } } }
 
-export const defaultPublicClient = createPublicClient({ chain, transport: http(), ...publicClientSettings }) as PublicClient
+export const defaultPublicClient = createPublicClient({
+  chain,
+  transport: http(undefined, transportSettings),
+  ...publicClientSettings
+}) as PublicClient
 
 export const dolphinAddress = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
 

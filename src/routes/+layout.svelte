@@ -1,7 +1,9 @@
 <script>
   import { appName, pageTransition } from '$lib/config'
+  import { getWalletProviders } from '$lib/utils'
   import { fade } from 'svelte/transition'
   import { page } from '$app/stores'
+  import { onMount } from 'svelte'
   import Nav from '$lib/components/Nav.svelte'
   import '../app.css'
 
@@ -10,6 +12,8 @@
   $: currentPage = $page.url.pathname.split('/')[1]
   $: pageTitle = currentPage.slice(0, 1).toUpperCase() + currentPage.slice(1)
   $: title = appName + (!!pageTitle ? ` | ${pageTitle}` : '')
+
+  onMount(() => getWalletProviders())
 </script>
 
 <svelte:head>

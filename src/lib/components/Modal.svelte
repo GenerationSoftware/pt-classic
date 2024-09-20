@@ -5,12 +5,12 @@
 
   let dialog: HTMLDialogElement
 
-  const open = () => {
+  export const open = () => {
     onOpen?.()
     dialog.showModal()
   }
 
-  const close = () => {
+  export const close = () => {
     onClose?.()
     dialog.close()
   }

@@ -1,8 +1,10 @@
-<script>
+<script lang="ts">
   import WalletConnectionModalContent from './WalletConnectionModalContent.svelte'
   import NavWalletDisplay from './NavWalletDisplay.svelte'
   import NavPageLink from './NavPageLink.svelte'
   import Modal from './Modal.svelte'
+
+  let closeModal: () => void
 </script>
 
 <div class="top-nav-wrapper">
@@ -11,9 +13,9 @@
       <img src="pooltogether.svg" alt="PoolTogether" class="desktop-only" />
       <img src="pooltogether-small.svg" alt="PoolTogether" class="mobile-only" />
     </a>
-    <Modal title="Connect Wallet">
+    <Modal title="Wallets" bind:close={closeModal}>
       <NavWalletDisplay slot="button-content" />
-      <WalletConnectionModalContent slot="modal-content" />
+      <WalletConnectionModalContent slot="modal-content" onConnected={closeModal} />
     </Modal>
   </div>
 </div>
@@ -50,6 +52,7 @@
     display: flex;
     justify-content: center;
     padding: 1rem;
+    overflow-x: hidden;
   }
 
   div.top-nav-content {
@@ -69,5 +72,6 @@
     padding: 1rem 0;
     background-color: var(--pt-purple-600);
     border-top: 2px solid var(--pt-purple-500);
+    z-index: 1;
   }
 </style>

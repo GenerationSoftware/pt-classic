@@ -5,14 +5,12 @@
   import { formatUnits } from 'viem'
   import Loading from '../Loading.svelte'
 
-  // TODO: filter out really small prizes?
-  $: prizesToDisplay = $prizeDistribution?.slice(0, -2)
   $: prizeTokenPrice = $tokenPrices[lower(prizePool.prizeToken.address)]
 </script>
 
 <div class="content-wrapper">
-  {#if !!prizesToDisplay && !!prizeTokenPrice}
-    {#each prizesToDisplay as prize}
+  {#if !!$prizeDistribution && !!prizeTokenPrice}
+    {#each $prizeDistribution as prize}
       {@const prizeSize = parseFloat(formatUnits(prize.size, prizePool.prizeToken.decimals))}
       {@const prizeValue = prizeSize * prizeTokenPrice}
       {@const formattedPrizeValue = prizeValue.toLocaleString('en', { maximumFractionDigits: prizeValue >= 1 ? 0 : 2 })}
