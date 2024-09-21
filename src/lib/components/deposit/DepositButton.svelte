@@ -5,6 +5,7 @@
   import { prizeVault } from '$lib/config'
   import { erc20Abi } from 'viem'
   import WalletConnectionModalContent from '../WalletConnectionModalContent.svelte'
+  import Loading from '../Loading.svelte'
   import Modal from '../Modal.svelte'
 
   export let amount: bigint
@@ -50,8 +51,14 @@
         }
       })}
     class="teal-button"
-    disabled={isApproving || disabled}>Approve</button
+    disabled={isApproving || disabled}
   >
+    {#if isApproving}
+      <Loading height=".75rem" />
+    {:else}
+      Approve
+    {/if}
+  </button>
 {:else}
   <button
     type="submit"
@@ -71,6 +78,12 @@
         }
       })}
     class="teal-button"
-    disabled={isDepositing || disabled}>Deposit</button
+    disabled={isDepositing || disabled}
   >
+    {#if isDepositing}
+      <Loading height=".75rem" />
+    {:else}
+      Deposit
+    {/if}
+  </button>
 {/if}

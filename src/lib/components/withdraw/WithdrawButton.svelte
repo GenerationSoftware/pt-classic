@@ -4,6 +4,7 @@
   import { dolphinAddress } from '$lib/constants'
   import { prizeVault } from '$lib/config'
   import WalletConnectionModalContent from '../WalletConnectionModalContent.svelte'
+  import Loading from '../Loading.svelte'
   import Modal from '../Modal.svelte'
 
   export let amount: bigint
@@ -38,6 +39,12 @@
         }
       })}
     class="teal-button"
-    disabled={isWithdrawing || disabled}>Withdraw</button
+    disabled={isWithdrawing || disabled}
   >
+    {#if isWithdrawing}
+      <Loading height=".75rem" />
+    {:else}
+      Withdraw
+    {/if}
+  </button>
 {/if}

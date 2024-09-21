@@ -3,6 +3,7 @@
   import { clients, promotionInfo, userAddress, userClaimableRewards, userClaimedRewards } from '$lib/stores'
   import { dolphinAddress } from '$lib/constants'
   import { prizeVault } from '$lib/config'
+  import Loading from '../Loading.svelte'
 
   export let disabled: boolean = false
   export let onSuccess: () => void = () => {}
@@ -35,8 +36,14 @@
           updateUserTokenBalances($userAddress, [dolphinAddress, prizeVault.address, prizeVault.asset.address])
         }
       })}
-    disabled={isClaiming || disabled}>Only Claim Bonuses</button
+    disabled={isClaiming || disabled}
   >
+    {#if isClaiming}
+      <Loading height=".5rem" />
+    {:else}
+      Only Claim Bonuses
+    {/if}
+  </button>
 {/if}
 
 <style>

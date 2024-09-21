@@ -1,8 +1,8 @@
 <script lang="ts">
+  import { playConfetti } from './Confetti.svelte'
   import { onDestroy, onMount } from 'svelte'
   import { VectorMath } from '$lib/utils'
   import type { PlinkoAnimation, PlinkoPrizeRowTile, PlinkoState, UncheckedPrize } from '$lib/types'
-  import { playConfetti } from './Confetti.svelte'
 
   export let width: number
   export let height: number

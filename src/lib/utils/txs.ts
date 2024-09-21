@@ -85,8 +85,8 @@ export const deposit = async (
     const txReceipt = await publicClient.waitForTransactionReceipt({ hash })
 
     if (txReceipt.status === 'success') {
-      const encodedEvent = txReceipt.logs.filter((log) => lower(log.address) === lower(prizeVault.address))[1]
-      const event = decodeEventLog({ abi: vaultABI, eventName: 'Deposit', topics: encodedEvent.topics, strict: true })
+      const { topics, data } = txReceipt.logs.filter((log) => lower(log.address) === lower(prizeVault.address))[1]
+      const event = decodeEventLog({ abi: vaultABI, eventName: 'Deposit', topics, data, strict: true })
 
       options?.onSuccess?.(txReceipt, event)
     } else {
@@ -130,8 +130,8 @@ export const redeem = async (
     const txReceipt = await publicClient.waitForTransactionReceipt({ hash })
 
     if (txReceipt.status === 'success') {
-      const encodedEvent = txReceipt.logs.filter((log) => lower(log.address) === lower(prizeVault.address))[1]
-      const event = decodeEventLog({ abi: vaultABI, eventName: 'Withdraw', topics: encodedEvent.topics, strict: true })
+      const { topics, data } = txReceipt.logs.filter((log) => lower(log.address) === lower(prizeVault.address))[1]
+      const event = decodeEventLog({ abi: vaultABI, eventName: 'Withdraw', topics, data, strict: true })
 
       options?.onSuccess?.(txReceipt, event)
     } else {
