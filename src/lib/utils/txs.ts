@@ -9,6 +9,7 @@ import {
 } from 'viem'
 import { chain, prizeHook, prizeVault, twabRewardsAddress } from '$lib/config'
 import { hookABI, twabRewardsABI, vaultABI } from '$lib/abis'
+import { validateClientNetwork } from './providers'
 import { clients, userAddress } from '$lib/stores'
 import { lower } from './formatting'
 import { get } from 'svelte/store'
@@ -24,6 +25,8 @@ export const approve = async (
   const user = get(userAddress)
 
   if (!walletClient || !user) return
+
+  validateClientNetwork(walletClient)
 
   try {
     const hash = await walletClient.writeContract({
@@ -64,6 +67,8 @@ export const deposit = async (
   const user = get(userAddress)
 
   if (!walletClient || !user) return
+
+  validateClientNetwork(walletClient)
 
   try {
     const hash = await walletClient.writeContract({
@@ -108,6 +113,8 @@ export const redeem = async (
 
   if (!walletClient || !user) return
 
+  validateClientNetwork(walletClient)
+
   try {
     const hash = await walletClient.writeContract({
       chain,
@@ -148,6 +155,8 @@ export const setPrizeHook = async (options?: {
 
   if (!walletClient || !user) return
 
+  validateClientNetwork(walletClient)
+
   try {
     const hash = await walletClient.writeContract({
       chain,
@@ -184,6 +193,8 @@ export const configurePrizeHook = async (options?: {
   const user = get(userAddress)
 
   if (!walletClient || !user) return
+
+  validateClientNetwork(walletClient)
 
   try {
     const hash = await walletClient.writeContract({
@@ -224,6 +235,8 @@ export const claimBonusRewards = async (
   const user = get(userAddress)
 
   if (!walletClient || !user) return
+
+  validateClientNetwork(walletClient)
 
   const validPromotionEpochs: { promotionId: string; epochIds: number[] }[] = []
   data.forEach(({ promotionId, epochs }) => {

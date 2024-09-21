@@ -1,5 +1,6 @@
 import { getPromotionCreatedEvents, getRewardsClaimedEvents } from './events'
 import { twabRewardsAddress, twabRewardsTokenOptions } from '$lib/config'
+import { validateClientNetwork } from './providers'
 import { getCurrentTimestamp } from './time'
 import { twabRewardsABI } from '$lib/abis'
 import { clients } from '$lib/stores'
@@ -24,6 +25,7 @@ export const getPromotionInfo = async () => {
   } = {}
 
   const publicClient = get(clients).public
+  validateClientNetwork(publicClient)
 
   const promotionCreatedEvents = await getPromotionCreatedEvents()
 
@@ -77,6 +79,7 @@ export const getUserClaimableRewards = async (promotionInfo: PromotionInfo, user
   const promotionEpochs: { [promotionId: string]: number[] } = {}
 
   const publicClient = get(clients).public
+  validateClientNetwork(publicClient)
 
   Object.entries(promotionInfo).forEach(([promotionId, info]) => {
     const epochIds = getPromotionEpochIds(info)

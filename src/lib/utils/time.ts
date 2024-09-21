@@ -1,4 +1,5 @@
 import { blockTimestamps, clients } from '$lib/stores'
+import { validateClientNetwork } from './providers'
 import { get } from 'svelte/store'
 
 export const getBlockTimestamp = async (blockNumber: bigint) => {
@@ -6,6 +7,7 @@ export const getBlockTimestamp = async (blockNumber: bigint) => {
   if (!!existingBlockTimestamp) return existingBlockTimestamp
 
   const publicClient = get(clients).public
+  validateClientNetwork(publicClient)
 
   const block = await publicClient.getBlock({ blockNumber, includeTransactions: false })
 

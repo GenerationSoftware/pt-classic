@@ -1,5 +1,6 @@
 import { clients, tokenPrices, userBalances } from '$lib/stores'
 import { prizeVault, tokenSwapRouteConfigs } from '$lib/config'
+import { validateClientNetwork } from './providers'
 import { dolphinAddress } from '$lib/constants'
 import { erc20Abi, type Address } from 'viem'
 import { lower } from './formatting'
@@ -9,6 +10,7 @@ export const getTokenBalances = async (owner: Address, tokenAddresses: Address[]
   const balances: { [tokenAddress: Lowercase<Address>]: bigint } = {}
 
   const publicClient = get(clients).public
+  validateClientNetwork(publicClient)
 
   const uniqueTokenAddresses = [...new Set<Lowercase<Address>>(tokenAddresses.filter((a) => a !== dolphinAddress).map(lower))]
 
@@ -34,6 +36,7 @@ export const getTokenPrice = async (token: { address: Address; decimals: number 
   if (existingTokenPrice !== undefined) return existingTokenPrice
 
   const dskit = get(clients).dskit
+  !!dskit?.publicClient && validateClientNetwork(dskit.publicClient)
 
   const tokenPrice = await dskit?.price.ofToken({ token, tokenDenominator: prizeVault.asset }, tokenSwapRouteConfigs[lower(token.address)])
 

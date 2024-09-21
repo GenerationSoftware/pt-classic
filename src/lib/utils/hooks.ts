@@ -1,4 +1,5 @@
 import { prizeHook, prizeVault } from '$lib/config'
+import { validateClientNetwork } from './providers'
 import { zeroAddress, type Address } from 'viem'
 import { getSetSwapperEvents } from './events'
 import { clients } from '$lib/stores'
@@ -13,6 +14,7 @@ export const getPrizeHookStatus = async (
   | { isPrizeHookSet: boolean; isSwapperSet: true; swapperAddress: Address; pastSwapperAddresses: Address[] }
 > => {
   const publicClient = get(clients).public
+  validateClientNetwork(publicClient)
 
   let isPrizeHookSet = false
 

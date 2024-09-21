@@ -2,6 +2,7 @@ import { clients, userClaimedPrizeEvents, userFlashEvents, userLastCheckedBlockN
 import { formatEther, formatUnits, type Address, type ContractFunctionParameters } from 'viem'
 import { prizeHook, prizePool, prizeVault } from '$lib/config'
 import { prizePoolABI, twabControllerABI } from '$lib/abis'
+import { validateClientNetwork } from './providers'
 import { getBlockTimestamp } from './time'
 import { getTokenPrice } from './tokens'
 import { seconds } from '$lib/constants'
@@ -13,6 +14,7 @@ export const getPrizeDistribution = async () => {
   const prizeDistribution: { tier: number; size: bigint; drawFrequency: number }[] = []
 
   const publicClient = get(clients).public
+  validateClientNetwork(publicClient)
 
   const numberOfTiers = await publicClient.readContract({ address: prizePool.address, abi: prizePoolABI, functionName: 'numberOfTiers' })
   const prizeTiers = [...Array(numberOfTiers - 2).keys()]
@@ -54,6 +56,7 @@ export const getUserUncheckedPrizes = async (userAddress: Address, options?: { c
   const uncheckedPrizes: { list: UncheckedPrize[]; queriedAtBlockNumber: bigint } = { list: [], queriedAtBlockNumber: 0n }
 
   const publicClient = get(clients).public
+  validateClientNetwork(publicClient)
 
   // TODO: make sure this is the first event
   const firstDepositEvent = get(userTransferEvents)?.find(
@@ -175,6 +178,7 @@ export const getPrizeTierInfo = async () => {
   const prizeTierInfo: { [prizeTier: number]: { size: number; count: number; odds: number } } = {}
 
   const publicClient = get(clients).public
+  validateClientNetwork(publicClient)
 
   const numberOfTiers = await publicClient.readContract({ address: prizePool.address, abi: prizePoolABI, functionName: 'numberOfTiers' })
 

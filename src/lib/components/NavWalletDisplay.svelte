@@ -2,6 +2,8 @@
   import { userAddress } from '$lib/stores'
 </script>
 
+<!-- TODO: display wrong network icon and switch networks on click -->
+
 {#if $userAddress}
   <div class="user-info">
     <!-- TODO: show ENS profile pic instead if resolved -->

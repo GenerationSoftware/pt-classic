@@ -50,6 +50,12 @@ export const connect = async (providerData: EIP6963ProviderData, options?: { onC
   const walletClient = createWalletClient({ account: address, chain, transport })
   const dskitClient = new DSKit({ viemPublicClient: publicClient })
 
+  const walletClientChainId = await walletClient.getChainId()
+
+  if (walletClientChainId !== chain.id) {
+    await walletClient.switchChain({ id: chain.id })
+  }
+
   clients.set({ public: publicClient, wallet: walletClient, dskit: dskitClient })
   userAddress.set(address)
   lastConnectedProviderId.set(providerData.info.uuid)
