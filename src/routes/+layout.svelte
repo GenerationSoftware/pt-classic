@@ -7,6 +7,7 @@
   import { onMount } from 'svelte'
   import Nav from '$lib/components/Nav.svelte'
   import '../app.css'
+  import Confetti from '$lib/components/Confetti.svelte'
 
   export let data
 
@@ -28,6 +29,9 @@
     <slot />
   </main>
 {/key}
+
+<!-- import and call the `playConfetti` function anywhere in the app to play the confetti animation -->
+<Confetti />
 
 <style>
   main {
