@@ -14,7 +14,6 @@
     "format": "prettier --write ."
   },
   "dependencies": {
-    "@wagmi/core": "2.13.5",
     "dskit-eth": "0.1.9",
     "viem": "2.20.0"
   },
