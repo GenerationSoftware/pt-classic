@@ -8,7 +8,6 @@
 <style>
   h2 {
     text-align: center;
-    margin-top: 1rem;
     padding: 0 1rem;
     font-size: 1.75rem;
     font-weight: 700;

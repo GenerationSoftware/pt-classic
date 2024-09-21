@@ -18,12 +18,16 @@
 
   let pageState: 'main' | 'checkingPrizes' | 'claimingBonusRewards' = 'main'
   let plinkoPrizes: UncheckedPrize[] = []
+  let innerWidth: number
 
   $: vaultBalance = $userBalances[lower(prizeVault.address)]
   $: isAccountSetupNecessary =
     !!vaultBalance && !!$userPrizeHookStatus && (!$userPrizeHookStatus.isPrizeHookSet || !$userPrizeHookStatus.isSwapperSet)
 
   $: if (!!$userUncheckedPrizes?.list.length && pageState !== 'checkingPrizes') plinkoPrizes = $userUncheckedPrizes.list
+
+  $: plinkoDimensions =
+    innerWidth > 1760 ? ({ width: 480, height: 800, columns: 6 } as const) : ({ width: 300, height: 500, columns: 4 } as const)
 
   const onPrizesChecked = () => {
     if (!!$userAddress && !!$userUncheckedPrizes) {
@@ -32,6 +36,8 @@
     }
   }
 </script>
+
+<svelte:window bind:innerWidth />
 
 {#key pageState}
   <div
@@ -55,7 +61,7 @@
       />
     {:else if pageState === 'checkingPrizes'}
       {#if $userUncheckedPrizes && plinkoPrizes.length > 0}
-        <Plinko width={300} height={500} prizes={plinkoPrizes} onStart={onPrizesChecked}>
+        <Plinko {...plinkoDimensions} prizes={plinkoPrizes} onStart={onPrizesChecked}>
           <div slot="end-card" class="plinko-end-card">
             {@const prizesWon = plinkoPrizes.filter((prize) => prize.userWon > 0)}
 
@@ -114,7 +120,6 @@
 
   h2 {
     text-align: center;
-    margin-top: 1rem;
     padding: 0 1rem;
     font-size: 1.75rem;
     font-weight: 700;

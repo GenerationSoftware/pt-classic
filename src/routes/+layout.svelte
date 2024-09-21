@@ -35,9 +35,11 @@
 
 <style>
   main {
+    max-width: 48rem;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 1rem;
+    margin: 2rem auto;
   }
 </style>

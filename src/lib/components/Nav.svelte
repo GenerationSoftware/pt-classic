@@ -67,14 +67,29 @@
   }
 
   nav {
-    width: 100%;
     position: fixed;
     bottom: 0;
+    width: 100%;
     display: flex;
     justify-content: space-evenly;
+    align-items: center;
     padding: 1rem 0;
     background-color: var(--pt-purple-600);
     border-top: 2px solid var(--pt-purple-500);
     z-index: 1;
+  }
+
+  @media (min-width: 48rem) {
+    nav {
+      position: absolute;
+      inset: 0 auto auto 50%;
+      height: 3.25rem;
+      translate: -50%;
+      max-width: 48rem;
+      justify-content: center;
+      gap: 2.5rem;
+      background-color: transparent;
+      border: none;
+    }
   }
 </style>

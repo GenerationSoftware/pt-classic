@@ -95,7 +95,7 @@
 
 <style>
   div.stats {
-    width: calc(100% - 3rem);
+    width: min(calc(100% - 3rem), 32rem);
     display: flex;
     flex-direction: column;
     gap: 0.25rem;

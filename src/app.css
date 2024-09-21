@@ -109,7 +109,7 @@ p {
   font-family: monospace, monospace;
 }
 
-@media (min-width: 720px) {
+@media (min-width: 48rem) {
   .desktop-only {
     display: block;
   }

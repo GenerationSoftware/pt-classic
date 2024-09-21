@@ -42,9 +42,13 @@
     fill: var(--pt-teal-light);
   }
 
-  @media (min-width: 720px) {
+  @media (min-width: 48rem) {
     a.active {
       color: var(--pt-teal-light);
+    }
+
+    a:not(.active):hover > span {
+      color: var(--pt-teal-dark);
     }
   }
 </style>

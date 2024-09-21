@@ -34,7 +34,7 @@
 <style>
   dialog {
     --padding: 1rem;
-    max-width: calc(100% - 2rem - (2 * var(--padding)));
+    max-width: min(calc(100% - 2rem - (2 * var(--padding))), 32rem);
     max-height: 60vh;
     padding: var(--padding);
     color: var(--pt-teal-light);
@@ -48,8 +48,8 @@
   }
 
   dialog::backdrop {
-    background-color: rgba(1, 1, 7, 0.3);
-    backdrop-filter: blur(2px);
+    background-color: rgba(1, 1, 7, 0.8);
+    backdrop-filter: blur(3px);
   }
 
   div#content {
@@ -72,6 +72,12 @@
 
   button#close {
     padding: 0.25rem;
+  }
+
+  @media (min-width: 48rem) {
+    dialog {
+      min-width: 20rem;
+    }
   }
 
   @keyframes fade {

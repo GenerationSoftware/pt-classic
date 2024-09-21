@@ -52,6 +52,7 @@ export const getPrizeDistribution = async () => {
   return prizeDistribution
 }
 
+// TODO: should not return any prizes if user doesn't have any prizes or transfer events
 export const getUserUncheckedPrizes = async (userAddress: Address, options?: { checkBlockNumber?: bigint }) => {
   const uncheckedPrizes: { list: UncheckedPrize[]; queriedAtBlockNumber: bigint } = { list: [], queriedAtBlockNumber: 0n }
 

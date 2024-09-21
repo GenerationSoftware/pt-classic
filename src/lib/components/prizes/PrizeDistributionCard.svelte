@@ -66,4 +66,10 @@
     font-weight: 500;
     line-height: 150%;
   }
+
+  @media (min-width: 48rem) {
+    div.content-wrapper {
+      max-width: 25rem;
+    }
+  }
 </style>

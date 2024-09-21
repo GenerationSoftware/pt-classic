@@ -91,7 +91,7 @@
 <style>
   div.card {
     --padding: 1.5rem;
-    width: calc(100% - 2rem - (2 * var(--padding)));
+    width: min(calc(100% - 2rem - (2 * var(--padding))), calc(32rem - (2 * var(--padding))));
     display: flex;
     flex-direction: column;
     padding: var(--padding);

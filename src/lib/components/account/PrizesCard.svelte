@@ -83,7 +83,7 @@
 
 <style>
   div.card {
-    width: calc(100% - 2rem);
+    width: min(calc(100% - 2rem), 32rem);
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
@@ -164,5 +164,15 @@
   button.expand {
     color: var(--pt-purple-400);
     font-size: 0.75rem;
+  }
+
+  @media (min-width: 48rem) {
+    div.banner {
+      width: 30rem;
+    }
+
+    div.banner > span.img-wrapper {
+      padding-top: 14rem;
+    }
   }
 </style>

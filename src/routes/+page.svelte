@@ -65,4 +65,14 @@
     font-weight: 600;
     color: var(--pt-purple-200);
   }
+
+  @media (min-width: 48rem) {
+    div.banner {
+      width: 32rem;
+    }
+
+    div.banner > span.img-wrapper {
+      padding-top: 16rem;
+    }
+  }
 </style>

@@ -17,4 +17,10 @@
     border: 1px solid var(--pt-purple-400);
     border-radius: 0.5rem;
   }
+
+  @media (min-width: 48rem) {
+    div {
+      width: 32rem;
+    }
+  }
 </style>
