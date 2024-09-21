@@ -7,6 +7,8 @@
   export let height: number
   export let columns: 4 | 5 | 6 | 7 = 4
   export let prizes: UncheckedPrize[] = []
+  export let onStart: () => void = () => {}
+  export let onDone: () => void = () => {}
 
   let canvas: HTMLCanvasElement
   let plinko: HTMLDivElement
@@ -526,6 +528,8 @@
             }
           })
         }
+
+        onDone()
       }
       const prizeRow = prizeRows[n.nextPrizeRow]
       if (prizeRow && Number.isInteger(prizeRow[0])) {
@@ -668,6 +672,7 @@
     plinko.classList.add('playing')
     gameState.ball.pos.x = (gameWidth * (position + 0.4 + 0.2 * Math.random())) / columns
     play()
+    onStart()
   }
 </script>
 
@@ -691,9 +696,9 @@
     <div class="prize-info-container">
       <h3>Drop a ball to reveal your prizes!</h3>
     </div>
-    <div class="prize-results-container hidden">
+    <div class="prize-results-container">
       {#if gameState.state === 'done'}
-        <slot name="end-card"></slot>
+        <slot name="end-card" />
       {:else}
         <div class="prize-counter">Prizes <span class="prizes-won">{prizesWonMessage}</span></div>
         <div class="prize-counter">Total <span class="prizes-total">{prizesTotalMessage}</span></div>

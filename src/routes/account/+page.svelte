@@ -1,8 +1,9 @@
 <script lang="ts">
-  import { userBalances, userPrizeHookStatus, userUncheckedPrizes } from '$lib/stores'
+  import { userAddress, userBalances, userLastCheckedBlockNumber, userPrizeHookStatus, userUncheckedPrizes } from '$lib/stores'
   import { pageTransition, prizeVault } from '$lib/config'
   import { fade } from 'svelte/transition'
-  import { lower } from '$lib/utils'
+  import { getUserUncheckedPrizes, lower } from '$lib/utils'
+  import type { UncheckedPrize } from '$lib/types'
   import ConfigModalContent from '$lib/components/account/ConfigModalContent.svelte'
   import ConfigModalBanner from '$lib/components/account/ConfigModalBanner.svelte'
   import AccountBalance from '$lib/components/account/AccountBalance.svelte'
@@ -16,10 +17,20 @@
   import Modal from '$lib/components/Modal.svelte'
 
   let pageState: 'main' | 'checkingPrizes' | 'claimingBonusRewards' = 'main'
+  let plinkoPrizes: UncheckedPrize[] = []
 
   $: vaultBalance = $userBalances[lower(prizeVault.address)]
   $: isAccountSetupNecessary =
     !!vaultBalance && !!$userPrizeHookStatus && (!$userPrizeHookStatus.isPrizeHookSet || !$userPrizeHookStatus.isSwapperSet)
+
+  $: if (!!$userUncheckedPrizes?.list.length && pageState !== 'checkingPrizes') plinkoPrizes = $userUncheckedPrizes.list
+
+  const onPrizesChecked = () => {
+    if (!!$userAddress && !!$userUncheckedPrizes) {
+      userLastCheckedBlockNumber.set($userUncheckedPrizes.queriedAtBlockNumber)
+      getUserUncheckedPrizes($userAddress, { checkBlockNumber: $userUncheckedPrizes.queriedAtBlockNumber }).then(userUncheckedPrizes.set)
+    }
+  }
 </script>
 
 {#key pageState}
@@ -43,9 +54,21 @@
         onClickClaimBonusRewards={() => (pageState = 'claimingBonusRewards')}
       />
     {:else if pageState === 'checkingPrizes'}
-      {#if $userUncheckedPrizes}
-        <Plinko width={300} height={500} prizes={$userUncheckedPrizes.list}>
-          <div slot="end-card">TODO: add end of game info</div>
+      {#if $userUncheckedPrizes && plinkoPrizes.length > 0}
+        <Plinko width={300} height={500} prizes={plinkoPrizes} onStart={onPrizesChecked}>
+          <div slot="end-card" class="plinko-end-card">
+            {@const prizesWon = plinkoPrizes.filter((prize) => prize.userWon > 0)}
+
+            {#if prizesWon.length > 0}
+              {@const amountWon = plinkoPrizes.reduce((a, b) => a + b.size * b.userWon, 0)}
+              {@const formattedAmountWon = amountWon.toLocaleString('en', { maximumFractionDigits: 2 })}
+
+              <span>You won <strong>${formattedAmountWon}</strong>!</span>
+            {:else}
+              <span>Sorry, no prizes this time.</span>
+            {/if}
+            <img src="pooly.svg" alt="Pooly" />
+          </div>
         </Plinko>
       {:else}
         <Loading />
@@ -66,6 +89,27 @@
     flex-direction: inherit;
     align-items: inherit;
     gap: inherit;
+  }
+
+  div.plinko-end-card {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  div.plinko-end-card > span {
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 150%;
+  }
+
+  div.plinko-end-card > span > strong {
+    color: var(--pt-teal-light);
+  }
+
+  div.plinko-end-card > img {
+    height: 6rem;
   }
 
   h2 {
