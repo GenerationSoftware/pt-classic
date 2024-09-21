@@ -650,7 +650,9 @@
         if (!plinko.classList.contains('done')) {
           plinko.classList.remove('playing')
           plinko.classList.add('done')
-          setTimeout(playConfetti, 200)
+          if (gameState.prizesWon > 0) {
+            setTimeout(playConfetti, 200)
+          }
         }
       }
     }
