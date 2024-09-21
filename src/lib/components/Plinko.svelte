@@ -2,6 +2,7 @@
   import { onDestroy, onMount } from 'svelte'
   import { VectorMath } from '$lib/utils'
   import type { PlinkoAnimation, PlinkoPrizeRowTile, PlinkoState, UncheckedPrize } from '$lib/types'
+  import { playConfetti } from './Confetti.svelte'
 
   export let width: number
   export let height: number
@@ -646,8 +647,13 @@
       } else {
         // Render with ball out of frame
         render({ x: -gameWidth, y: gameState.ball.pos.y }, 0, totalPlayTime)
-        plinko.classList.remove('playing')
-        plinko.classList.add('done')
+        if (!plinko.classList.contains('done')) {
+          plinko.classList.remove('playing')
+          plinko.classList.add('done')
+          if (gameState.prizesWon > 0) {
+            setTimeout(playConfetti, 200)
+          }
+        }
       }
     }
   }
@@ -715,7 +721,7 @@
 
   #plinko {
     /* Game Style (can be overridden through query params) */
-    --ball-color: var(--pt-bg-purple-dark);
+    --ball-color: var(--pt-purple-800);
     --spike-color: var(--pt-gold);
     --peg-color: var(--pt-teal-light);
     --prize-0-color: #ff5f5f;
