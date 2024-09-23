@@ -73,7 +73,7 @@
             {:else}
               <span>Sorry, no prizes this time.</span>
             {/if}
-            <img src="pooly.svg" alt="Pooly" />
+            <img src="/pooly.svg" alt="Pooly" />
           </div>
         </Plinko>
       {:else}

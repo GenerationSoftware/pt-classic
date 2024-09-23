@@ -695,7 +695,7 @@
     <div class="start-btn-container">
       {#each new Array(columns).fill(0) as _, position}
         <button class="start-btn" on:click={() => start(position)}>
-          <img src="icons/down.svg" alt="" />
+          <img src="/icons/down.svg" alt="" />
         </button>
       {/each}
     </div>
@@ -711,7 +711,7 @@
       {/if}
     </div>
   </div>
-  <img src="pooltogether-square.svg" alt="" bind:this={poolLogo} style:display="none" />
+  <img src="/pooltogether-square.svg" alt="" bind:this={poolLogo} style:display="none" />
 </div>
 
 <style>
