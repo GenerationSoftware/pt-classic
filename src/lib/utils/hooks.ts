@@ -34,7 +34,7 @@ export const getPrizeHookStatus = async (
   if (!!setSwapperEvents.length) {
     const swapperAddresses = [...new Set<Address>(setSwapperEvents.map((e) => e.args.newSwapper))]
 
-    const swapperAddress = swapperAddresses.pop() // TODO: make sure the last event is the most recent one
+    const swapperAddress = swapperAddresses.pop()
     const pastSwapperAddresses = swapperAddresses.filter((a) => a !== zeroAddress)
 
     if (!!swapperAddress && swapperAddress !== zeroAddress) {

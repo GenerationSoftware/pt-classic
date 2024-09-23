@@ -8,6 +8,7 @@
     userLastCheckedBlockNumber
   } from '$lib/stores'
   import { formatClaimedReward, formatFallbackPrize, formatPrize, getBlockDate } from '$lib/utils'
+  import WalletConnectionModal from '../WalletConnectionModal.svelte'
   import PrizeDetailsModal from './PrizeDetailsModal.svelte'
   import Loading from '../Loading.svelte'
 
@@ -42,8 +43,12 @@
   <div class="content-wrapper">
     <div class="rows">
       {#if !$userAddress}
-        <!-- TODO: allow clicking "connect your wallet" to connect -->
-        <span>Connect your wallet to continue...</span>
+        <span class="wallet-prompt">
+          <WalletConnectionModal>
+            <span slot="button-content">Connect your wallet</span>
+          </WalletConnectionModal>
+          to continue...
+        </span>
       {:else if !$userFlashEvents || !$userClaimedPrizeEvents || !$userClaimedRewards}
         <Loading height=".75rem" />
       {:else if !rows.length}
@@ -144,6 +149,10 @@
     gap: 0.25rem;
     margin-bottom: 0.5rem;
     overflow-y: auto;
+  }
+
+  span.wallet-prompt span {
+    text-decoration: underline;
   }
 
   div.row {

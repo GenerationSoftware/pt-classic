@@ -1,11 +1,8 @@
 <script lang="ts">
   import { userAddress } from '$lib/stores'
-  import WalletConnectionModalContent from './WalletConnectionModalContent.svelte'
+  import WalletConnectionModal from './WalletConnectionModal.svelte'
   import NavWalletDisplay from './NavWalletDisplay.svelte'
   import NavPageLink from './NavPageLink.svelte'
-  import Modal from './Modal.svelte'
-
-  let closeModal: () => void
 </script>
 
 <div class="top-nav-wrapper">
@@ -14,10 +11,9 @@
       <img src="pooltogether.svg" alt="PoolTogether" class="desktop-only" />
       <img src="pooltogether-small.svg" alt="PoolTogether" class="mobile-only" />
     </a>
-    <Modal title="Wallets" bind:close={closeModal}>
+    <WalletConnectionModal>
       <NavWalletDisplay slot="button-content" />
-      <WalletConnectionModalContent slot="modal-content" onConnected={closeModal} />
-    </Modal>
+    </WalletConnectionModal>
   </div>
 </div>
 

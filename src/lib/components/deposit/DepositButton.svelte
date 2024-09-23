@@ -4,9 +4,8 @@
   import { dolphinAddress } from '$lib/constants'
   import { prizeVault } from '$lib/config'
   import { erc20Abi } from 'viem'
-  import WalletConnectionModalContent from '../WalletConnectionModalContent.svelte'
+  import WalletConnectionModal from '../WalletConnectionModal.svelte'
   import Loading from '../Loading.svelte'
-  import Modal from '../Modal.svelte'
 
   export let amount: bigint
   export let disabled: boolean = false
@@ -14,7 +13,6 @@
   let allowance: bigint | undefined = undefined
   let isApproving: boolean = false
   let isDepositing: boolean = false
-  let closeWalletConnectionModal: () => void
 
   const updateAllowance = async () => {
     if (!!$userAddress) {
@@ -31,10 +29,9 @@
 </script>
 
 {#if !$clients.wallet || !$userAddress}
-  <Modal title="Wallets" bind:close={closeWalletConnectionModal}>
+  <WalletConnectionModal>
     <div slot="button-content" class="teal-button">Connect Wallet</div>
-    <WalletConnectionModalContent slot="modal-content" onConnected={closeWalletConnectionModal} />
-  </Modal>
+  </WalletConnectionModal>
 {:else if !amount || allowance === undefined}
   <button class="teal-button" disabled={true}>Deposit</button>
 {:else if allowance < amount}

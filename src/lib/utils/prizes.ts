@@ -52,14 +52,12 @@ export const getPrizeDistribution = async () => {
   return prizeDistribution
 }
 
-// TODO: should not return any prizes if user doesn't have any prizes or transfer events
 export const getUserUncheckedPrizes = async (userAddress: Address, options?: { checkBlockNumber?: bigint }) => {
   const uncheckedPrizes: { list: UncheckedPrize[]; queriedAtBlockNumber: bigint } = { list: [], queriedAtBlockNumber: 0n }
 
   const publicClient = get(clients).public
   validateClientNetwork(publicClient)
 
-  // TODO: make sure this is the first event
   const firstDepositEvent = get(userTransferEvents)?.find(
     (e) => lower(e.args.to) === lower(userAddress) && lower(e.args.from) !== prizeHook.address
   )
@@ -82,7 +80,8 @@ export const getUserUncheckedPrizes = async (userAddress: Address, options?: { c
 
   const numUncheckedDraws = Math.floor((maxTimestamp - minTimestamp) / seconds.day)
 
-  if (!relevantFlashEvents.length && !relevantClaimedPrizeEvents.length && numUncheckedDraws < 1) return uncheckedPrizes
+  if (!relevantFlashEvents.length && !relevantClaimedPrizeEvents.length && (!firstDepositEvent || numUncheckedDraws < 1))
+    return uncheckedPrizes
 
   const lastAwardedDrawId = await publicClient.readContract({
     address: prizePool.address,

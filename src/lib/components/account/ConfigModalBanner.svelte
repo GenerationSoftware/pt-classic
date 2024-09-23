@@ -6,7 +6,6 @@
   $: duration = animate ? undefined : 0
 </script>
 
-<!-- TODO: different animations for desktop -->
 <div in:fly={{ x: -100, duration }} out:fly={{ x: 100, duration }}>Click here to finish setting up your account</div>
 
 <style>

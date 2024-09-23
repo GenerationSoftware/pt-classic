@@ -220,7 +220,7 @@ export const getClaimedPrizeEvents = async (userAddress: Address, options?: { fr
 }
 
 export const updateUserTransferEvents = async (userAddress: Address, oldTransferEvents: TransferEvent[]) => {
-  const lastTransferEvent = oldTransferEvents.at(-1) // TODO: make sure this is accurate
+  const lastTransferEvent = oldTransferEvents.at(-1)
 
   const newTransferEvents = (
     await getTransferEvents(userAddress, prizeVault.address, {
@@ -235,7 +235,7 @@ export const updateUserTransferEvents = async (userAddress: Address, oldTransfer
 }
 
 export const updateUserFlashEvents = async (userAddress: Address, swapperAddresses: Address[], oldFlashEvents: FlashEvent[]) => {
-  const lastFlashEvent = oldFlashEvents.at(-1) // TODO: make sure this is accurate
+  const lastFlashEvent = oldFlashEvents.at(-1)
 
   const newFlashEvents = (
     await getFlashEvents(userAddress, swapperAddresses, {
@@ -250,7 +250,7 @@ export const updateUserFlashEvents = async (userAddress: Address, swapperAddress
 }
 
 export const updateUserClaimedPrizeEvents = async (userAddress: Address, oldClaimedPrizeEvents: ClaimedPrizeEvent[]) => {
-  const lastClaimedPrizeEvent = oldClaimedPrizeEvents.at(-1) // TODO: make sure this is accurate
+  const lastClaimedPrizeEvent = oldClaimedPrizeEvents.at(-1)
 
   const newClaimedPrizeEvents = (
     await getClaimedPrizeEvents(userAddress, {
