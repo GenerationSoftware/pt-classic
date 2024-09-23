@@ -1,8 +1,8 @@
 import { getPromotionCreatedEvents, getRewardsClaimedEvents } from './events'
-import { twabRewardsAddress, twabRewardsTokenOptions } from '$lib/config'
 import { validateClientNetwork } from './providers'
 import { getCurrentTimestamp } from './time'
 import { twabRewardsABI } from '$lib/abis'
+import { twabRewards } from '$lib/config'
 import { clients } from '$lib/stores'
 import { lower } from './formatting'
 import { get } from 'svelte/store'
@@ -32,7 +32,7 @@ export const getPromotionInfo = async () => {
   const promotionIds = promotionCreatedEvents.map((event) => event.args.promotionId)
 
   const contracts: ContractFunctionParameters<typeof twabRewardsABI, 'view', 'getPromotion'>[] = promotionIds.map((promotionId) => ({
-    address: twabRewardsAddress,
+    address: twabRewards.address,
     abi: twabRewardsABI,
     functionName: 'getPromotion',
     args: [promotionId]
@@ -56,7 +56,7 @@ export const getUserClaimedRewards = async (promotionInfo: PromotionInfo, userAd
 
   rewardsClaimedEvents.forEach((claimEvent) => {
     const tokenAddress = promotionInfo[claimEvent.args.promotionId.toString()]?.token
-    const token = !!tokenAddress ? twabRewardsTokenOptions.find((t) => lower(t.address) === lower(tokenAddress)) : undefined
+    const token = !!tokenAddress ? twabRewards.tokenOptions.find((t) => lower(t.address) === lower(tokenAddress)) : undefined
 
     if (!!token) {
       const existingClaimIndex = claimed.findIndex(
@@ -93,7 +93,7 @@ export const getUserClaimableRewards = async (promotionInfo: PromotionInfo, user
 
   if (promotionIds.length > 0) {
     const contracts: ContractFunctionParameters<typeof twabRewardsABI, 'view', 'getRewardsAmount'>[] = promotionIds.map((promotionId) => ({
-      address: twabRewardsAddress,
+      address: twabRewards.address,
       abi: twabRewardsABI,
       functionName: 'getRewardsAmount',
       args: [userAddress, BigInt(promotionId), promotionEpochs[promotionId]]
@@ -103,7 +103,7 @@ export const getUserClaimableRewards = async (promotionInfo: PromotionInfo, user
 
     promotionIds.forEach((promotionId, i) => {
       const tokenAddress = promotionInfo[promotionId]?.token
-      const token = !!tokenAddress ? twabRewardsTokenOptions.find((t) => lower(t.address) === lower(tokenAddress)) : undefined
+      const token = !!tokenAddress ? twabRewards.tokenOptions.find((t) => lower(t.address) === lower(tokenAddress)) : undefined
 
       if (!!token && multicall[i].status === 'success' && typeof multicall[i].result === 'object') {
         const epochs: { [epochId: number]: bigint } = {}

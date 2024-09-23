@@ -1,6 +1,6 @@
-import { prizeHook, prizePool, prizeVault, twabRewardsAddress, twabRewardsTokenOptions } from '$lib/config'
 import { clients, userClaimedPrizeEvents, userFlashEvents, userTransferEvents } from '$lib/stores'
 import { formatClaimedPrizeEvent, formatFlashEvent, formatTransferEvent } from './formatting'
+import { prizeHook, prizePool, prizeVault, twabRewards } from '$lib/config'
 import { validateClientNetwork } from './providers'
 import { get } from 'svelte/store'
 import type { ClaimedPrizeEvent, FlashEvent, TransferEvent } from '$lib/types'
@@ -129,7 +129,7 @@ export const getPromotionCreatedEvents = async () => {
   validateClientNetwork(publicClient)
 
   const promotionCreatedEvents = await publicClient.getLogs({
-    address: twabRewardsAddress,
+    address: twabRewards.address,
     event: {
       anonymous: false,
       inputs: [
@@ -146,7 +146,7 @@ export const getPromotionCreatedEvents = async () => {
     },
     args: {
       vault: prizeVault.address,
-      token: twabRewardsTokenOptions.map((t) => t.address)
+      token: twabRewards.tokenOptions.map((t) => t.address)
     },
     fromBlock: prizeVault.deployedAtBlock,
     toBlock: 'latest',
@@ -161,7 +161,7 @@ export const getRewardsClaimedEvents = async (userAddress: Address) => {
   validateClientNetwork(publicClient)
 
   const rewardsClaimedEvents = await publicClient.getLogs({
-    address: twabRewardsAddress,
+    address: twabRewards.address,
     event: {
       anonymous: false,
       inputs: [

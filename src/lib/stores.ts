@@ -12,7 +12,7 @@ import {
   updateUserFlashEvents,
   updateUserTransferEvents
 } from './utils'
-import { chain, prizePool, prizeVault, twabRewardsTokenOptions, zapInTokenOptions } from './config'
+import { chain, prizePool, prizeVault, twabRewards, zapInTokenOptions } from './config'
 import { defaultPublicClient, dolphinAddress, localStorageKeys } from './constants'
 import { get, writable } from 'svelte/store'
 import type {
@@ -185,7 +185,7 @@ clients.subscribe(async ({ wallet }) => {
       promotionInfo.set(await getPromotionInfo())
     }
 
-    for (const token of twabRewardsTokenOptions) {
+    for (const token of twabRewards.tokenOptions) {
       await getTokenPrice(token)
     }
   }

@@ -27,9 +27,10 @@ export const prizeHook = {
   minPrizeSize: parseUnits('1', prizeVault.decimals)
 } satisfies { address: Lowercase<Address>; minPrizeSize: bigint }
 
-export const twabRewardsAddress: Lowercase<Address> = '0x86f0923d20810441efc593eb0f2825c6bff2dc09'
-
-export const twabRewardsTokenOptions: Token[] = [{ address: '0xd652C5425aea2Afd5fb142e120FeCf79e18fafc3', decimals: 18, symbol: 'POOL' }]
+export const twabRewards = {
+  address: '0x86f0923d20810441efc593eb0f2825c6bff2dc09',
+  tokenOptions: [{ address: '0xd652C5425aea2Afd5fb142e120FeCf79e18fafc3', decimals: 18, symbol: 'POOL' }]
+} satisfies { address: Lowercase<Address>; tokenOptions: Token[] }
 
 export const zapInTokenOptions: Token[] = []
 

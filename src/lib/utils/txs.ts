@@ -7,7 +7,7 @@ import {
   type Hash,
   type TransactionReceipt
 } from 'viem'
-import { chain, prizeHook, prizeVault, twabRewardsAddress } from '$lib/config'
+import { chain, prizeHook, prizeVault, twabRewards } from '$lib/config'
 import { hookABI, twabRewardsABI, vaultABI } from '$lib/abis'
 import { validateClientNetwork } from './providers'
 import { clients, userAddress } from '$lib/stores'
@@ -259,7 +259,7 @@ export const claimBonusRewards = async (
         ? walletClient.writeContract({
             chain,
             account: user,
-            address: twabRewardsAddress,
+            address: twabRewards.address,
             abi: twabRewardsABI,
             functionName: 'claimRewards',
             args: [user, BigInt(validPromotionEpochs[0].promotionId), validPromotionEpochs[0].epochIds]
@@ -267,7 +267,7 @@ export const claimBonusRewards = async (
         : walletClient.writeContract({
             chain,
             account: user,
-            address: twabRewardsAddress,
+            address: twabRewards.address,
             abi: twabRewardsABI,
             functionName: 'multicall',
             args: [
