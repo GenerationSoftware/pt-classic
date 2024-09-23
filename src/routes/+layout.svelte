@@ -1,5 +1,5 @@
 <script>
-  import { appName, pageTransition } from '$lib/config'
+  import { appName, pageTransition, prizeVault } from '$lib/config'
   import { getWalletProviders } from '$lib/utils'
   import { fade } from 'svelte/transition'
   import { goto } from '$app/navigation'
@@ -20,6 +20,7 @@
 
 <svelte:head>
   <title>{title}</title>
+  <meta name="description" content={`Deposit ${prizeVault.asset.symbol}, win prizes`} />
 </svelte:head>
 
 <Nav />
