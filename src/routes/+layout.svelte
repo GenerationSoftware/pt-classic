@@ -15,7 +15,7 @@
   $: pageTitle = currentPage.slice(0, 1).toUpperCase() + currentPage.slice(1)
   $: title = appName + (!!pageTitle ? ` | ${pageTitle}` : '')
 
-  onMount(() => getWalletProviders({ onAutoConnect: () => goto('account') }))
+  onMount(() => getWalletProviders({ onAutoConnect: () => goto('/account') }))
 </script>
 
 <svelte:head>
