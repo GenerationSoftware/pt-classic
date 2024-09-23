@@ -21,13 +21,14 @@ import type {
   ClaimedReward,
   EIP6963ProviderData,
   FlashEvent,
-  KeyedCache,
+  UserKeyedCache,
   PrizeDistribution,
   PrizeHookStatus,
   PromotionInfo,
   TokenPrices,
   TransferEvent,
-  UncheckedPrize
+  UncheckedPrize,
+  KeyedCache
 } from './types'
 import type { Address, PublicClient, WalletClient } from 'viem'
 import type { DSKit } from 'dskit-eth'
@@ -53,8 +54,9 @@ export const userClaimableRewards = writable<ClaimableReward[] | undefined>(unde
 export const userLastCheckedBlockNumber = writable<bigint | undefined>(undefined)
 export const userUncheckedPrizes = writable<{ list: UncheckedPrize[]; queriedAtBlockNumber: bigint } | undefined>(undefined)
 
-// TODO: cache this somehow (careful with potential future network overlaps)
-export const blockTimestamps = writable<{ [blockNumber: number]: number }>({})
+export const blockTimestamps = writable<{ [blockNumber: number]: number }>(
+  JSON.parse(localStorage.getItem(localStorageKeys.blockTimestamps) ?? '{}')[chain.id] ?? {}
+)
 
 userAddress.subscribe(async (address) => {
   userBalances.set({})
@@ -82,22 +84,22 @@ userAddress.subscribe(async (address) => {
 
     const currentBlockNumber = await get(clients).public.getBlockNumber()
 
-    const cachedTransferEvents: KeyedCache<TransferEvent[]> = JSON.parse(localStorage.getItem(localStorageKeys.transferEvents) ?? '{}')
+    const cachedTransferEvents: UserKeyedCache<TransferEvent[]> = JSON.parse(localStorage.getItem(localStorageKeys.transferEvents) ?? '{}')
     await updateUserTransferEvents(address, cachedTransferEvents[lower(address)]?.[chain.id] ?? [])
 
     const swapperAddresses = !!prizeHookStatus.isSwapperSet
       ? [prizeHookStatus.swapperAddress, ...prizeHookStatus.pastSwapperAddresses]
       : prizeHookStatus.pastSwapperAddresses
 
-    const cachedFlashEvents: KeyedCache<FlashEvent[]> = JSON.parse(localStorage.getItem(localStorageKeys.flashEvents) ?? '{}')
+    const cachedFlashEvents: UserKeyedCache<FlashEvent[]> = JSON.parse(localStorage.getItem(localStorageKeys.flashEvents) ?? '{}')
     await updateUserFlashEvents(address, swapperAddresses, cachedFlashEvents[lower(address)]?.[chain.id] ?? [])
 
-    const cachedClaimedPrizeEvents: KeyedCache<ClaimedPrizeEvent[]> = JSON.parse(
+    const cachedClaimedPrizeEvents: UserKeyedCache<ClaimedPrizeEvent[]> = JSON.parse(
       localStorage.getItem(localStorageKeys.claimedPrizeEvents) ?? '{}'
     )
     await updateUserClaimedPrizeEvents(address, cachedClaimedPrizeEvents[lower(address)]?.[chain.id] ?? [])
 
-    const cachedLastCheckedBlockNumber: KeyedCache<string> = JSON.parse(
+    const cachedLastCheckedBlockNumber: UserKeyedCache<string> = JSON.parse(
       localStorage.getItem(localStorageKeys.lastCheckedBlockNumber) ?? '{}'
     )
     const lastCheckedBlockNumber = BigInt(cachedLastCheckedBlockNumber[lower(address)]?.[chain.id] ?? '0')
@@ -111,7 +113,7 @@ userTransferEvents.subscribe((transferEvents) => {
   const address = get(userAddress)
 
   if (!!transferEvents && !!address) {
-    const newStorage: KeyedCache<TransferEvent[]> = JSON.parse(localStorage.getItem(localStorageKeys.transferEvents) ?? '{}')
+    const newStorage: UserKeyedCache<TransferEvent[]> = JSON.parse(localStorage.getItem(localStorageKeys.transferEvents) ?? '{}')
     if (newStorage[lower(address)] === undefined) newStorage[lower(address)] = {}
     newStorage[lower(address)][chain.id] = transferEvents
 
@@ -123,7 +125,7 @@ userFlashEvents.subscribe((flashEvents) => {
   const address = get(userAddress)
 
   if (!!flashEvents && !!address) {
-    const newStorage: KeyedCache<FlashEvent[]> = JSON.parse(localStorage.getItem(localStorageKeys.flashEvents) ?? '{}')
+    const newStorage: UserKeyedCache<FlashEvent[]> = JSON.parse(localStorage.getItem(localStorageKeys.flashEvents) ?? '{}')
     if (newStorage[lower(address)] === undefined) newStorage[lower(address)] = {}
     newStorage[lower(address)][chain.id] = flashEvents
 
@@ -135,7 +137,7 @@ userClaimedPrizeEvents.subscribe((claimedPrizeEvents) => {
   const address = get(userAddress)
 
   if (!!claimedPrizeEvents && !!address) {
-    const newStorage: KeyedCache<ClaimedPrizeEvent[]> = JSON.parse(localStorage.getItem(localStorageKeys.claimedPrizeEvents) ?? '{}')
+    const newStorage: UserKeyedCache<ClaimedPrizeEvent[]> = JSON.parse(localStorage.getItem(localStorageKeys.claimedPrizeEvents) ?? '{}')
     if (newStorage[lower(address)] === undefined) newStorage[lower(address)] = {}
     newStorage[lower(address)][chain.id] = claimedPrizeEvents
 
@@ -147,12 +149,22 @@ userLastCheckedBlockNumber.subscribe((lastCheckedBlockNumber) => {
   const address = get(userAddress)
 
   if (!!lastCheckedBlockNumber && !!address) {
-    const newStorage: KeyedCache<string> = JSON.parse(localStorage.getItem(localStorageKeys.lastCheckedBlockNumber) ?? '{}')
+    const newStorage: UserKeyedCache<string> = JSON.parse(localStorage.getItem(localStorageKeys.lastCheckedBlockNumber) ?? '{}')
     if (newStorage[lower(address)] === undefined) newStorage[lower(address)] = {}
     newStorage[lower(address)][chain.id] = lastCheckedBlockNumber.toString()
 
     localStorage.setItem(localStorageKeys.lastCheckedBlockNumber, JSON.stringify(newStorage))
   }
+})
+
+blockTimestamps.subscribe((timestamps) => {
+  const newStorage: KeyedCache<{ [blockNumber: number]: number }> = JSON.parse(
+    localStorage.getItem(localStorageKeys.blockTimestamps) ?? '{}'
+  )
+  if (newStorage[chain.id] === undefined) newStorage[chain.id] = {}
+  newStorage[chain.id] = { ...newStorage[chain.id], ...timestamps }
+
+  localStorage.setItem(localStorageKeys.blockTimestamps, JSON.stringify(newStorage))
 })
 
 export const tokenPrices = writable<TokenPrices>({})

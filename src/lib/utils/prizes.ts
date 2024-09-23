@@ -71,7 +71,7 @@ export const getUserUncheckedPrizes = async (userAddress: Address, options?: { c
   if (minBlockNumber >= maxBlockNumber) return uncheckedPrizes
 
   const minTimestamp = await getBlockTimestamp(minBlockNumber)
-  const maxTimestamp = await getBlockTimestamp(maxBlockNumber)
+  const maxTimestamp = await getBlockTimestamp(maxBlockNumber, { cache: false })
 
   if (minTimestamp >= maxTimestamp) return uncheckedPrizes
 

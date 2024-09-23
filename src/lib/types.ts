@@ -21,8 +21,11 @@ export interface TokenPrices {
   [tokenAddress: Lowercase<Address>]: number
 }
 
+export interface UserKeyedCache<ValueType> {
+  [userAddress: Lowercase<Address>]: KeyedCache<ValueType>
+}
 export interface KeyedCache<ValueType> {
-  [userAddress: Lowercase<Address>]: { [chainId: number]: ValueType }
+  [chainId: number]: ValueType
 }
 
 export interface UncheckedPrize {
