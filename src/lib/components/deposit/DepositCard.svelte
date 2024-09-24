@@ -194,6 +194,10 @@
     color: var(--pt-purple-100);
   }
 
+  div.switch-token > button:hover > em {
+    color: var(--pt-purple-200);
+  }
+
   div.switch-token span {
     font-size: 0.875rem;
     color: var(--pt-purple-100);

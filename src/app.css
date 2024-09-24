@@ -105,6 +105,10 @@ p {
   text-decoration: none;
 }
 
+.teal-button:hover {
+  background-color: var(--pt-teal-dark);
+}
+
 .monospace {
   font-family: monospace, monospace;
 }

@@ -35,10 +35,18 @@
     border-radius: 50%;
   }
 
+  div.user-info:hover > svg {
+    background-color: var(--pt-purple-200);
+  }
+
   div.user-info > span {
     max-width: 50vw;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  div.user-info:hover > span {
+    color: var(--pt-purple-200);
   }
 
   span.connect-button {
@@ -50,5 +58,9 @@
     border: 1px solid var(--pt-transparent);
     border-radius: 0.5rem;
     line-height: 150%;
+  }
+
+  span.connect-button:hover {
+    background-color: rgba(245, 240, 255, 0.15);
   }
 </style>
