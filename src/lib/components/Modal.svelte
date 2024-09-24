@@ -2,6 +2,7 @@
   export let title: string
   export let onOpen: () => void = () => {}
   export let onClose: () => void = () => {}
+  export let buttonStyle: string = ''
 
   let dialog: HTMLDialogElement
 
@@ -16,7 +17,7 @@
   }
 </script>
 
-<button on:click={open}>
+<button on:click={open} style={buttonStyle}>
   <slot name="button-content" />
 </button>
 

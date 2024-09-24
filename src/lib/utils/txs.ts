@@ -3,6 +3,7 @@ import {
   encodeFunctionData,
   erc20Abi,
   type Address,
+  type ContractFunctionParameters,
   type DecodeEventLogReturnType,
   type Hash,
   type TransactionReceipt
@@ -91,6 +92,44 @@ export const deposit = async (
       options?.onSuccess?.(txReceipt, event)
     } else {
       throw new Error(`deposit tx reverted: ${hash}`)
+    }
+  } catch (e) {
+    console.error(e)
+  } finally {
+    options?.onSettled?.()
+  }
+}
+
+export const depositZap = async (
+  zapRequest: ContractFunctionParameters,
+  options?: {
+    onSend?: (txHash: Hash) => void
+    onSuccess?: (txReceipt: TransactionReceipt, depositEvent: DecodeEventLogReturnType<typeof vaultABI, 'Deposit'>) => void
+    onSettled?: () => void
+  }
+) => {
+  const publicClient = get(clients).public
+  const walletClient = get(clients).wallet
+  const user = get(userAddress)
+
+  if (!walletClient || !user) return
+
+  validateClientNetwork(walletClient)
+
+  try {
+    const hash = await walletClient.writeContract({ chain, account: user, ...zapRequest })
+
+    options?.onSend?.(hash)
+
+    const txReceipt = await publicClient.waitForTransactionReceipt({ hash })
+
+    if (txReceipt.status === 'success') {
+      const { topics, data } = txReceipt.logs.filter((log) => lower(log.address) === lower(prizeVault.address))[1]
+      const event = decodeEventLog({ abi: vaultABI, eventName: 'Deposit', topics, data, strict: true })
+
+      options?.onSuccess?.(txReceipt, event)
+    } else {
+      throw new Error(`${zapRequest.functionName} tx reverted: ${hash}`)
     }
   } catch (e) {
     console.error(e)

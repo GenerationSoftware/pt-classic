@@ -1,7 +1,6 @@
 import { createPublicClient, createWalletClient, custom, type Address, type PublicClient, type WalletClient } from 'viem'
 import { clients, lastConnectedProviderId, userAddress, walletProviders } from '$lib/stores'
-import { publicClientSettings, transportSettings } from '$lib/constants'
-import { chain } from '$lib/config'
+import { chain, publicClientSettings, transportSettings } from '$lib/config'
 import { get } from 'svelte/store'
 import { DSKit } from 'dskit-eth'
 import type { EIP6963AnnounceProviderEvent, EIP6963ProviderData } from '$lib/types'

@@ -15,7 +15,12 @@ export const getTokenBalances = async (owner: Address, tokenAddresses: Address[]
   const uniqueTokenAddresses = [...new Set<Lowercase<Address>>(tokenAddresses.filter((a) => a !== dolphinAddress).map(lower))]
 
   const multicall = await publicClient.multicall({
-    contracts: tokenAddresses.map((tokenAddress) => ({ address: tokenAddress, abi: erc20Abi, functionName: 'balanceOf', args: [owner] }))
+    contracts: uniqueTokenAddresses.map((tokenAddress) => ({
+      address: tokenAddress,
+      abi: erc20Abi,
+      functionName: 'balanceOf',
+      args: [owner]
+    }))
   })
 
   uniqueTokenAddresses.forEach((address, i) => {
@@ -38,7 +43,11 @@ export const getTokenPrice = async (token: { address: Address; decimals: number 
   const dskit = get(clients).dskit
   !!dskit?.publicClient && validateClientNetwork(dskit.publicClient)
 
-  const tokenPrice = await dskit?.price.ofToken({ token, tokenDenominator: prizeVault.asset }, tokenSwapRouteConfigs[lower(token.address)])
+  // TODO: `token: { ...token }` is not necessary once dskit is fixed (overriding token on redirect currently)
+  const tokenPrice = await dskit?.price.ofToken(
+    { token: { ...token }, tokenDenominator: prizeVault.asset },
+    tokenSwapRouteConfigs[lower(token.address)]
+  )
 
   tokenPrices.update((oldTokenPrices) => ({ ...oldTokenPrices, [lower(token.address)]: tokenPrice }))
 
