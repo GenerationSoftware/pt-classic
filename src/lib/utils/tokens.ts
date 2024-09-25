@@ -36,22 +36,34 @@ export const getTokenBalances = async (owner: Address, tokenAddresses: Address[]
   return balances
 }
 
+const tokenPricePromises: { [tokenAddress: Lowercase<Address>]: Promise<number> } = {}
+
 export const getTokenPrice = async (token: { address: Address; decimals: number }) => {
   const existingTokenPrice = get(tokenPrices)[lower(token.address)]
   if (existingTokenPrice !== undefined) return existingTokenPrice
 
+  const existingPromise = tokenPricePromises[lower(token.address)]
+  if (existingPromise !== undefined) return await existingPromise
+
   const dskit = get(clients).dskit
-  !!dskit?.publicClient && validateClientNetwork(dskit.publicClient)
 
-  // TODO: `token: { ...token }` is not necessary once dskit is fixed (overriding token on redirect currently)
-  const tokenPrice = await dskit?.price.ofToken(
-    { token: { ...token }, tokenDenominator: prizeVault.asset },
-    tokenSwapRouteConfigs[lower(token.address)]
-  )
+  if (!!dskit) {
+    !!dskit.publicClient && validateClientNetwork(dskit.publicClient)
 
-  tokenPrices.update((oldTokenPrices) => ({ ...oldTokenPrices, [lower(token.address)]: tokenPrice }))
+    // TODO: `token: { ...token }` is not necessary once dskit is fixed (overriding token on redirect currently)
+    const tokenPricePromise = dskit.price.ofToken(
+      { token: { ...token }, tokenDenominator: prizeVault.asset },
+      tokenSwapRouteConfigs[lower(token.address)]
+    )
 
-  return tokenPrice
+    tokenPricePromises[lower(token.address)] = tokenPricePromise
+
+    const tokenPrice = await tokenPricePromise
+
+    tokenPrices.update((oldTokenPrices) => ({ ...oldTokenPrices, [lower(token.address)]: tokenPrice }))
+
+    return tokenPrice
+  }
 }
 
 export const updateUserTokenBalances = async (owner: Address, tokenAddresses: Address[]) => {

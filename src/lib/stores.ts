@@ -186,10 +186,6 @@ clients.subscribe(async ({ wallet }) => {
     if (get(promotionInfo) === undefined) {
       promotionInfo.set(await getPromotionInfo())
     }
-
-    for (const token of twabRewards.tokenOptions) {
-      await getTokenPrice(token)
-    }
   }
 })
 
@@ -208,5 +204,33 @@ userAddress.subscribe(async (address) => {
   if (!!address && !!info) {
     userClaimedRewards.set(await getUserClaimedRewards(info, address))
     userClaimableRewards.set(await getUserClaimableRewards(info, address))
+  }
+})
+
+userClaimedRewards.subscribe(async (rewards) => {
+  const keyedTokens: { [tokenAddress: Lowercase<Address>]: number } = {}
+  rewards?.forEach((reward) => (keyedTokens[lower(reward.token.address)] = reward.token.decimals))
+
+  const tokens = Object.entries(keyedTokens).map(([address, decimals]) => ({ address, decimals })) as {
+    address: Lowercase<Address>
+    decimals: number
+  }[]
+
+  for (const token of tokens) {
+    await getTokenPrice(token)
+  }
+})
+
+userClaimableRewards.subscribe(async (rewards) => {
+  const keyedTokens: { [tokenAddress: Lowercase<Address>]: number } = {}
+  rewards?.forEach((reward) => (keyedTokens[lower(reward.token.address)] = reward.token.decimals))
+
+  const tokens = Object.entries(keyedTokens).map(([address, decimals]) => ({ address, decimals })) as {
+    address: Lowercase<Address>
+    decimals: number
+  }[]
+
+  for (const token of tokens) {
+    await getTokenPrice(token)
   }
 })
