@@ -48,10 +48,13 @@
 }
 
 html {
+  min-height: 100vh;
   font-family: 'Inter';
   font-feature-settings: 'calt' off;
   color: var(--pt-purple-50);
   background-color: var(--pt-bg-purple-darker);
+  background-image: url('/background.svg');
+  background-repeat: no-repeat;
 }
 
 body {

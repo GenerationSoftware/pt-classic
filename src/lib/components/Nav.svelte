@@ -51,6 +51,8 @@
     display: flex;
     justify-content: center;
     padding: 1rem;
+    background-color: var(--pt-bg-purple-darker);
+    box-shadow: 0 0 10px 2px hsl(263, 86%, 8%);
     overflow-x: hidden;
   }
 
