@@ -1,4 +1,4 @@
-<script lang="ts">
+<script>
   import { userAddress } from '$lib/stores'
   import WalletConnectionModal from './WalletConnectionModal.svelte'
   import NavWalletDisplay from './NavWalletDisplay.svelte'

@@ -5,6 +5,7 @@
   import { goto } from '$app/navigation'
   import { page } from '$app/stores'
   import { onMount } from 'svelte'
+  import AppVersion from '$lib/components/AppVersion.svelte'
   import Confetti from '$lib/components/Confetti.svelte'
   import Nav from '$lib/components/Nav.svelte'
   import '../app.css'
@@ -30,6 +31,8 @@
     <slot />
   </main>
 {/key}
+
+<AppVersion />
 
 <!-- import and call the `playConfetti` function anywhere in the app to play the confetti animation -->
 <Confetti />
