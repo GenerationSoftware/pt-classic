@@ -1,3 +1,4 @@
+export * from './ens'
 export * from './events'
 export * from './formatting'
 export * from './hooks'
