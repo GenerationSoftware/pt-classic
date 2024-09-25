@@ -319,7 +319,7 @@
             const bubble = {
               top: `${Math.min(100, (100 * rowY) / gameHeight)}%`,
               left: `${(100 * prizeX) / gameWidth + leftOffset}%`,
-              content: `$${Number.isInteger(prize.size) ? prize.size : prize.size.toFixed(2)}`,
+              content: `$${prize.size.toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
               backgroundColor: getCssColor(`--prize-${Math.floor((1 - prizeScale) * 8)}-color`)
             }
             prizeBubbles.push(bubble)
