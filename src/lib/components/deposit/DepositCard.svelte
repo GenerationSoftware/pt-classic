@@ -18,6 +18,7 @@
   let formInput: string
   let error: string = ''
   let successfullyDepositedAmount: bigint = 0n
+  let closeConfigModal: () => void
 
   $: token = tokenOptions[tokenOptionIndex]
 
@@ -115,11 +116,11 @@
     <span class="success-info">You deposited {formatShareAmount(successfullyDepositedAmount)} {prizeVault.asset.symbol}</span>
     <SuccessPooly style="max-height: 7.5rem; margin: 2rem 0;" />
     {#if isAccountSetupNecessary}
-      <Modal title="Account Setup">
+      <Modal title="Account Setup" bind:close={closeConfigModal}>
         <div slot="button-content" class="account-setup-prompt">
           <ConfigModalBanner />
         </div>
-        <ConfigModalContent slot="modal-content" />
+        <ConfigModalContent slot="modal-content" onSuccess={closeConfigModal} />
       </Modal>
     {/if}
     <BackButton onClick={() => (successfullyDepositedAmount = 0n)} />

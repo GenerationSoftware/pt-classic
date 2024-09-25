@@ -1,18 +1,25 @@
 <script lang="ts">
+  import Loading from '../Loading.svelte'
+
   export let action: () => {}
   export let isDone: boolean
+  export let isDoing: boolean
 </script>
 
 <div>
   {#if !isDone}
-    <button on:click={action} class="teal-button">
-      <slot name="name-not-done" />
-      <svg height="1.5rem" width="1.5rem" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
-        <glyph glyph-name="double-right" unicode="&#xea7c;" horiz-adv-x="1000" />
-        <path
-          d="M572.1 271.9l-64.70000000000005 64.70000000000005 163.30000000000007 163.29999999999995-163.30000000000007 163.20000000000005 64.70000000000005 64.69999999999993 227.89999999999998-227.89999999999998-227.89999999999998-228z m-372.1 64.70000000000005l163.3 163.29999999999995-163.3 163.20000000000005 64.69999999999999 64.69999999999993 227.90000000000003-227.89999999999998-227.90000000000003-228-64.69999999999999 64.70000000000005z"
-        />
-      </svg>
+    <button on:click={action} class="teal-button" disabled={isDoing}>
+      {#if isDoing}
+        <Loading height="1rem" />
+      {:else}
+        <slot name="name-not-done" />
+        <svg height="1.5rem" width="1.5rem" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
+          <glyph glyph-name="double-right" unicode="&#xea7c;" horiz-adv-x="1000" />
+          <path
+            d="M572.1 271.9l-64.70000000000005 64.70000000000005 163.30000000000007 163.29999999999995-163.30000000000007 163.20000000000005 64.70000000000005 64.69999999999993 227.89999999999998-227.89999999999998-227.89999999999998-228z m-372.1 64.70000000000005l163.3 163.29999999999995-163.3 163.20000000000005 64.69999999999999 64.69999999999993 227.90000000000003-227.89999999999998-227.90000000000003-228-64.69999999999999 64.70000000000005z"
+          />
+        </svg>
+      {/if}
     </button>
   {:else}
     <button class="teal-button" disabled>

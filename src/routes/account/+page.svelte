@@ -19,6 +19,7 @@
   let pageState: 'main' | 'checkingPrizes' | 'claimingBonusRewards' = 'main'
   let plinkoPrizes: UncheckedPrize[] = []
   let innerWidth: number
+  let closeConfigModal: () => void
 
   $: vaultBalance = $userBalances[lower(prizeVault.address)]
   $: isAccountSetupNecessary =
@@ -47,9 +48,9 @@
   >
     {#if pageState === 'main'}
       {#if isAccountSetupNecessary}
-        <Modal title="Account Setup">
+        <Modal title="Account Setup" bind:close={closeConfigModal}>
           <ConfigModalBanner slot="button-content" animate={true} />
-          <ConfigModalContent slot="modal-content" />
+          <ConfigModalContent slot="modal-content" onSuccess={closeConfigModal} />
         </Modal>
       {/if}
       <AccountBalance />
