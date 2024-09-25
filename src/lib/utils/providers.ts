@@ -61,6 +61,12 @@ export const connect = async (providerData: EIP6963ProviderData, options?: { onC
 
   options?.onConnected?.(address)
 
+  providerData.provider.on('accountsChanged', (accounts: Address[]) => {
+    if (get(lastConnectedProviderId) === providerData.info.uuid) {
+      userAddress.set(accounts[0])
+    }
+  })
+
   return address
 }
 
