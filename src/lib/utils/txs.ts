@@ -2,9 +2,9 @@ import {
   decodeEventLog,
   encodeFunctionData,
   erc20Abi,
+  parseEther,
   type Address,
   type ContractFunctionParameters,
-  type DecodeEventLogReturnType,
   type Hash,
   type TransactionReceipt
 } from 'viem'
@@ -15,10 +15,12 @@ import { clients, userAddress } from '$lib/stores'
 import { lower } from './formatting'
 import { get } from 'svelte/store'
 
-export const approve = async (
-  tokenAddress: Address,
-  spenderAddress: Address,
-  amount: bigint,
+export const getGasBuffer = (gasEstimate: bigint) => {
+  return (gasEstimate * parseEther('1.2')) / 10n ** 18n
+}
+
+export const sendTx = async (
+  txRequest: ContractFunctionParameters,
   options?: { onSend?: (txHash: Hash) => void; onSuccess?: (txReceipt: TransactionReceipt) => void; onSettled?: () => void }
 ) => {
   const publicClient = get(clients).public
@@ -30,14 +32,9 @@ export const approve = async (
   validateClientNetwork(walletClient)
 
   try {
-    const hash = await walletClient.writeContract({
-      chain,
-      account: user,
-      address: tokenAddress,
-      abi: erc20Abi,
-      functionName: 'approve',
-      args: [spenderAddress, amount]
-    })
+    const gasEstimate = await publicClient.estimateContractGas({ account: user, ...txRequest })
+
+    const hash = await walletClient.writeContract({ chain, account: user, ...txRequest, gas: getGasBuffer(gasEstimate) })
 
     options?.onSend?.(hash)
 
@@ -46,238 +43,98 @@ export const approve = async (
     if (txReceipt.status === 'success') {
       options?.onSuccess?.(txReceipt)
     } else {
-      throw new Error(`approve tx reverted: ${hash}`)
+      throw new Error(`${txRequest.functionName} tx reverted: ${hash}`)
     }
   } catch (e) {
     console.error(e)
   } finally {
     options?.onSettled?.()
   }
+}
+
+export const approve = async (tokenAddress: Address, spenderAddress: Address, amount: bigint, options?: Parameters<typeof sendTx>[1]) => {
+  return await sendTx({ address: tokenAddress, abi: erc20Abi, functionName: 'approve', args: [spenderAddress, amount] }, options)
+}
+
+export const decodeDepositEvent = (depositTxReceipt: TransactionReceipt) => {
+  const { topics, data } = depositTxReceipt.logs.filter((log) => lower(log.address) === lower(prizeVault.address))[1]
+  return decodeEventLog({ abi: vaultABI, eventName: 'Deposit', topics, data, strict: true })
 }
 
 export const deposit = async (
   amount: bigint,
   options?: {
     onSend?: (txHash: Hash) => void
-    onSuccess?: (txReceipt: TransactionReceipt, depositEvent: DecodeEventLogReturnType<typeof vaultABI, 'Deposit'>) => void
+    onSuccess?: (txReceipt: TransactionReceipt, depositEvent: ReturnType<typeof decodeDepositEvent>) => void
     onSettled?: () => void
   }
 ) => {
-  const publicClient = get(clients).public
-  const walletClient = get(clients).wallet
-  const user = get(userAddress)
-
-  if (!walletClient || !user) return
-
-  validateClientNetwork(walletClient)
-
-  try {
-    const hash = await walletClient.writeContract({
-      chain,
-      account: user,
-      address: prizeVault.address,
-      abi: vaultABI,
-      functionName: 'deposit',
-      args: [amount, user]
-    })
-
-    options?.onSend?.(hash)
-
-    const txReceipt = await publicClient.waitForTransactionReceipt({ hash })
-
-    if (txReceipt.status === 'success') {
-      const { topics, data } = txReceipt.logs.filter((log) => lower(log.address) === lower(prizeVault.address))[1]
-      const event = decodeEventLog({ abi: vaultABI, eventName: 'Deposit', topics, data, strict: true })
-
-      options?.onSuccess?.(txReceipt, event)
-    } else {
-      throw new Error(`deposit tx reverted: ${hash}`)
-    }
-  } catch (e) {
-    console.error(e)
-  } finally {
-    options?.onSettled?.()
-  }
+  return await sendTx(
+    { address: prizeVault.address, abi: vaultABI, functionName: 'deposit', args: [amount, get(userAddress)] },
+    { ...options, onSuccess: (txReceipt) => options?.onSuccess?.(txReceipt, decodeDepositEvent(txReceipt)) }
+  )
 }
 
 export const depositZap = async (
-  zapRequest: ContractFunctionParameters,
+  zapTxRequest: ContractFunctionParameters,
   options?: {
     onSend?: (txHash: Hash) => void
-    onSuccess?: (txReceipt: TransactionReceipt, depositEvent: DecodeEventLogReturnType<typeof vaultABI, 'Deposit'>) => void
+    onSuccess?: (txReceipt: TransactionReceipt, depositEvent: ReturnType<typeof decodeDepositEvent>) => void
     onSettled?: () => void
   }
 ) => {
-  const publicClient = get(clients).public
-  const walletClient = get(clients).wallet
-  const user = get(userAddress)
+  return await sendTx(zapTxRequest, {
+    ...options,
+    onSuccess: (txReceipt) => options?.onSuccess?.(txReceipt, decodeDepositEvent(txReceipt))
+  })
+}
 
-  if (!walletClient || !user) return
-
-  validateClientNetwork(walletClient)
-
-  try {
-    const hash = await walletClient.writeContract({ chain, account: user, ...zapRequest })
-
-    options?.onSend?.(hash)
-
-    const txReceipt = await publicClient.waitForTransactionReceipt({ hash })
-
-    if (txReceipt.status === 'success') {
-      const { topics, data } = txReceipt.logs.filter((log) => lower(log.address) === lower(prizeVault.address))[1]
-      const event = decodeEventLog({ abi: vaultABI, eventName: 'Deposit', topics, data, strict: true })
-
-      options?.onSuccess?.(txReceipt, event)
-    } else {
-      throw new Error(`${zapRequest.functionName} tx reverted: ${hash}`)
-    }
-  } catch (e) {
-    console.error(e)
-  } finally {
-    options?.onSettled?.()
-  }
+export const decodeWithdrawEvent = (redeemTxReceipt: TransactionReceipt) => {
+  const { topics, data } = redeemTxReceipt.logs.filter((log) => lower(log.address) === lower(prizeVault.address))[1]
+  return decodeEventLog({ abi: vaultABI, eventName: 'Withdraw', topics, data, strict: true })
 }
 
 export const redeem = async (
   amount: bigint,
   options?: {
     onSend?: (txHash: Hash) => void
-    onSuccess?: (txReceipt: TransactionReceipt, withdrawEvent: DecodeEventLogReturnType<typeof vaultABI, 'Withdraw'>) => void
+    onSuccess?: (txReceipt: TransactionReceipt, withdrawEvent: ReturnType<typeof decodeWithdrawEvent>) => void
     onSettled?: () => void
   }
 ) => {
-  const publicClient = get(clients).public
-  const walletClient = get(clients).wallet
-  const user = get(userAddress)
-
-  if (!walletClient || !user) return
-
-  validateClientNetwork(walletClient)
-
-  try {
-    const hash = await walletClient.writeContract({
-      chain,
-      account: user,
-      address: prizeVault.address,
-      abi: vaultABI,
-      functionName: 'redeem',
-      args: [amount, user, user, amount]
-    })
-
-    options?.onSend?.(hash)
-
-    const txReceipt = await publicClient.waitForTransactionReceipt({ hash })
-
-    if (txReceipt.status === 'success') {
-      const { topics, data } = txReceipt.logs.filter((log) => lower(log.address) === lower(prizeVault.address))[1]
-      const event = decodeEventLog({ abi: vaultABI, eventName: 'Withdraw', topics, data, strict: true })
-
-      options?.onSuccess?.(txReceipt, event)
-    } else {
-      throw new Error(`redeem tx reverted: ${hash}`)
-    }
-  } catch (e) {
-    console.error(e)
-  } finally {
-    options?.onSettled?.()
-  }
+  return await sendTx(
+    { address: prizeVault.address, abi: vaultABI, functionName: 'redeem', args: [amount, get(userAddress), get(userAddress), amount] },
+    { ...options, onSuccess: (txReceipt) => options?.onSuccess?.(txReceipt, decodeWithdrawEvent(txReceipt)) }
+  )
 }
 
-export const setPrizeHook = async (options?: {
-  onSend?: (txHash: Hash) => void
-  onSuccess?: (txReceipt: TransactionReceipt) => void
-  onSettled?: () => void
-}) => {
-  const publicClient = get(clients).public
-  const walletClient = get(clients).wallet
-  const user = get(userAddress)
-
-  if (!walletClient || !user) return
-
-  validateClientNetwork(walletClient)
-
-  try {
-    const hash = await walletClient.writeContract({
-      chain,
-      account: user,
+export const setPrizeHook = async (options?: Parameters<typeof sendTx>[1]) => {
+  return await sendTx(
+    {
       address: prizeVault.address,
       abi: vaultABI,
       functionName: 'setHooks',
       args: [{ useBeforeClaimPrize: true, useAfterClaimPrize: false, implementation: prizeHook.address }]
-    })
-
-    options?.onSend?.(hash)
-
-    const txReceipt = await publicClient.waitForTransactionReceipt({ hash })
-
-    if (txReceipt.status === 'success') {
-      options?.onSuccess?.(txReceipt)
-    } else {
-      throw new Error(`setHooks tx reverted: ${hash}`)
-    }
-  } catch (e) {
-    console.error(e)
-  } finally {
-    options?.onSettled?.()
-  }
+    },
+    options
+  )
 }
 
-export const configurePrizeHook = async (options?: {
-  onSend?: (txHash: Hash) => void
-  onSuccess?: (txReceipt: TransactionReceipt) => void
-  onSettled?: () => void
-}) => {
-  const publicClient = get(clients).public
-  const walletClient = get(clients).wallet
-  const user = get(userAddress)
-
-  if (!walletClient || !user) return
-
-  validateClientNetwork(walletClient)
-
-  try {
-    const hash = await walletClient.writeContract({
-      chain,
-      account: user,
-      address: prizeHook.address,
-      abi: hookABI,
-      functionName: 'setPrizeSizeVoteAndSwapper',
-      args: [prizeHook.minPrizeSize]
-    })
-
-    options?.onSend?.(hash)
-
-    const txReceipt = await publicClient.waitForTransactionReceipt({ hash })
-
-    if (txReceipt.status === 'success') {
-      options?.onSuccess?.(txReceipt)
-    } else {
-      throw new Error(`setPrizeSizeVoteAndSwapper tx reverted: ${hash}`)
-    }
-  } catch (e) {
-    console.error(e)
-  } finally {
-    options?.onSettled?.()
-  }
+export const configurePrizeHook = async (options?: Parameters<typeof sendTx>[1]) => {
+  return await sendTx(
+    { address: prizeHook.address, abi: hookABI, functionName: 'setPrizeSizeVoteAndSwapper', args: [prizeHook.minPrizeSize] },
+    options
+  )
 }
 
 export const claimBonusRewards = async (
   data: { promotionId: string; epochs: { [epochId: number]: bigint } }[],
-  options?: {
-    onSend?: (txHash: Hash) => void
-    onSuccess?: (txReceipt: TransactionReceipt) => void
-    onSettled?: () => void
-  }
+  options?: Parameters<typeof sendTx>[1]
 ) => {
-  const publicClient = get(clients).public
-  const walletClient = get(clients).wallet
+  const validPromotionEpochs: { promotionId: string; epochIds: number[] }[] = []
+
   const user = get(userAddress)
 
-  if (!walletClient || !user) return
-
-  validateClientNetwork(walletClient)
-
-  const validPromotionEpochs: { promotionId: string; epochIds: number[] }[] = []
   data.forEach(({ promotionId, epochs }) => {
     const epochIds: number[] = []
 
@@ -290,50 +147,35 @@ export const claimBonusRewards = async (
     }
   })
 
-  if (!validPromotionEpochs.length) return
+  if (!user || !validPromotionEpochs.length) return
 
-  try {
-    const txPromise =
-      validPromotionEpochs.length === 1
-        ? walletClient.writeContract({
-            chain,
-            account: user,
-            address: twabRewards.address,
-            abi: twabRewardsABI,
-            functionName: 'claimRewards',
-            args: [user, BigInt(validPromotionEpochs[0].promotionId), validPromotionEpochs[0].epochIds]
-          })
-        : walletClient.writeContract({
-            chain,
-            account: user,
-            address: twabRewards.address,
-            abi: twabRewardsABI,
-            functionName: 'multicall',
-            args: [
-              validPromotionEpochs.map((entry) =>
-                encodeFunctionData({
-                  abi: twabRewardsABI,
-                  functionName: 'claimRewards',
-                  args: [user, BigInt(entry.promotionId), entry.epochIds]
-                })
-              )
-            ]
-          })
-
-    const hash = await txPromise
-
-    options?.onSend?.(hash)
-
-    const txReceipt = await publicClient.waitForTransactionReceipt({ hash })
-
-    if (txReceipt.status === 'success') {
-      options?.onSuccess?.(txReceipt)
-    } else {
-      throw new Error(`${validPromotionEpochs.length === 1 ? 'claimRewards' : 'multicall'} tx reverted: ${hash}`)
-    }
-  } catch (e) {
-    console.error(e)
-  } finally {
-    options?.onSettled?.()
+  if (validPromotionEpochs.length === 1) {
+    return await sendTx(
+      {
+        address: twabRewards.address,
+        abi: twabRewardsABI,
+        functionName: 'claimRewards',
+        args: [user, BigInt(validPromotionEpochs[0].promotionId), validPromotionEpochs[0].epochIds]
+      },
+      options
+    )
+  } else {
+    return await sendTx(
+      {
+        address: twabRewards.address,
+        abi: twabRewardsABI,
+        functionName: 'multicall',
+        args: [
+          validPromotionEpochs.map((entry) =>
+            encodeFunctionData({
+              abi: twabRewardsABI,
+              functionName: 'claimRewards',
+              args: [user, BigInt(entry.promotionId), entry.epochIds]
+            })
+          )
+        ]
+      },
+      options
+    )
   }
 }
