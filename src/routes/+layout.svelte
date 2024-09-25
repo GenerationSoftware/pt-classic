@@ -20,7 +20,7 @@
 
 <svelte:head>
   <title>{title}</title>
-  <meta name="description" content={`Deposit ${prizeVault.asset.symbol}, win prizes`} />
+  <meta name="description" content={`Save ${prizeVault.asset.symbol}, win prizes`} />
 </svelte:head>
 
 <Nav />
