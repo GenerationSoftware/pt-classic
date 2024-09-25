@@ -75,6 +75,13 @@
     z-index: 1;
   }
 
+  nav::after {
+    content: url('/pooly.svg');
+    position: absolute;
+    right: 1rem;
+    top: -66px;
+  }
+
   @media (min-width: 48rem) {
     nav {
       position: absolute;
