@@ -1,11 +1,16 @@
 <script>
+  import { formatPrizeFrequency, getPrizeDistribution, lower } from '$lib/utils'
   import { prizeDistribution, tokenPrices } from '$lib/stores'
-  import { formatPrizeFrequency, lower } from '$lib/utils'
   import { prizePool } from '$lib/config'
   import { formatUnits } from 'viem'
+  import { onMount } from 'svelte'
   import Loading from '../Loading.svelte'
 
   $: prizeTokenPrice = $tokenPrices[lower(prizePool.prizeToken.address)]
+
+  onMount(() => {
+    getPrizeDistribution().then(prizeDistribution.set)
+  })
 </script>
 
 <div class="content-wrapper">

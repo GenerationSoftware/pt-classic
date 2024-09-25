@@ -47,23 +47,21 @@ export const getTokenPrice = async (token: { address: Address; decimals: number 
 
   const dskit = get(clients).dskit
 
-  if (!!dskit) {
-    !!dskit.publicClient && validateClientNetwork(dskit.publicClient)
+  !!dskit.publicClient && validateClientNetwork(dskit.publicClient)
 
-    // TODO: `token: { ...token }` is not necessary once dskit is fixed (overriding token on redirect currently)
-    const tokenPricePromise = dskit.price.ofToken(
-      { token: { ...token }, tokenDenominator: prizeVault.asset },
-      tokenSwapRouteConfigs[lower(token.address)]
-    )
+  // TODO: `token: { ...token }` is not necessary once dskit is fixed (overriding token on redirect currently)
+  const tokenPricePromise = dskit.price.ofToken(
+    { token: { ...token }, tokenDenominator: prizeVault.asset },
+    tokenSwapRouteConfigs[lower(token.address)]
+  )
 
-    tokenPricePromises[lower(token.address)] = tokenPricePromise
+  tokenPricePromises[lower(token.address)] = tokenPricePromise
 
-    const tokenPrice = await tokenPricePromise
+  const tokenPrice = await tokenPricePromise
 
-    tokenPrices.update((oldTokenPrices) => ({ ...oldTokenPrices, [lower(token.address)]: tokenPrice }))
+  tokenPrices.update((oldTokenPrices) => ({ ...oldTokenPrices, [lower(token.address)]: tokenPrice }))
 
-    return tokenPrice
-  }
+  return tokenPrice
 }
 
 export const updateUserTokenBalances = async (owner: Address, tokenAddresses: Address[]) => {

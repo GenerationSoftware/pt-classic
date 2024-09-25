@@ -12,10 +12,11 @@ import {
   updateUserFlashEvents,
   updateUserTransferEvents
 } from './utils'
-import { chain, prizePool, prizeVault, publicClientSettings, transportSettings, twabRewards, zap } from './config'
+import { chain, prizePool, prizeVault, publicClientSettings, transportSettings, zap } from './config'
 import { createPublicClient, http, type Address, type PublicClient, type WalletClient } from 'viem'
 import { dolphinAddress, localStorageKeys } from './constants'
 import { get, writable } from 'svelte/store'
+import { DSKit } from 'dskit-eth'
 import type {
   ClaimableReward,
   ClaimedPrizeEvent,
@@ -31,16 +32,22 @@ import type {
   UncheckedPrize,
   KeyedCache
 } from './types'
-import type { DSKit } from 'dskit-eth'
 
 export const walletProviders = writable<EIP6963ProviderData[]>([])
 
 export const lastConnectedProviderId = writable<string | null>(localStorage.getItem(localStorageKeys.lastConnectedProviderId))
 lastConnectedProviderId.subscribe((id) => !!id && localStorage.setItem(localStorageKeys.lastConnectedProviderId, id))
 
-export const clients = writable<{ public: PublicClient; wallet?: WalletClient; dskit?: DSKit }>({
-  public: createPublicClient({ chain, transport: http(undefined, transportSettings), ...publicClientSettings }) as PublicClient
-})
+const getInitialClients = () => {
+  const initialPublicClient = createPublicClient({
+    chain,
+    transport: http(undefined, transportSettings),
+    ...publicClientSettings
+  }) as PublicClient
+  return { public: initialPublicClient, dskit: new DSKit({ viemPublicClient: initialPublicClient }) }
+}
+export const clients = writable<{ public: PublicClient; dskit: DSKit; wallet?: WalletClient }>(getInitialClients())
+
 export const userAddress = writable<Address | undefined>(undefined)
 
 export const userBalances = writable<{ [tokenAddress: Lowercase<Address>]: bigint }>({})

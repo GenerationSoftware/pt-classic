@@ -38,7 +38,7 @@
   }
 </script>
 
-{#if !$clients.wallet || !$clients.dskit || !$userAddress}
+{#if !$clients.wallet || !$userAddress}
   <WalletConnectionModal>
     <div slot="button-content" class="teal-button">Connect Wallet</div>
   </WalletConnectionModal>
