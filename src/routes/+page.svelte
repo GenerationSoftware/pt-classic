@@ -31,7 +31,7 @@
 <style>
   div.banner {
     position: relative;
-    width: calc(100% - 4rem);
+    width: min(calc(100% - 4rem), 30rem);
     display: flex;
     justify-content: center;
     text-align: center;
@@ -70,12 +70,14 @@
   }
 
   span.pt-info {
+    padding: 0 1rem;
+    text-align: center;
     font-size: 0.875rem;
     color: var(--pt-purple-200);
   }
 
   span.join-us {
-    width: calc(100% - 2rem);
+    width: min(calc(100% - 2rem), 32rem);
     text-align: center;
     margin-top: calc(1em - 1rem);
     font-size: 1.75rem;
@@ -84,10 +86,6 @@
   }
 
   @media (min-width: 48rem) {
-    div.banner {
-      width: 32rem;
-    }
-
     div.banner > span.title {
       font-size: 1.75rem;
     }
