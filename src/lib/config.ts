@@ -8,11 +8,18 @@ export const appName: string = 'PT Classic'
 
 export const chain = base satisfies Chain
 
-export const prizePool: { address: Address; prizeToken: Token; twabController: { address: Address }; drawPeriodSeconds: number } = {
+export const prizePool: {
+  address: Address
+  prizeToken: Token
+  twabController: { address: Address }
+  drawPeriodSeconds: number
+  tierLiquidityUtilizationRate: number
+} = {
   address: '0x45b2010d8A4f08b53c9fa7544C51dFd9733732cb',
   prizeToken: { address: '0x4200000000000000000000000000000000000006', decimals: 18, symbol: 'WETH' },
   twabController: { address: '0x7e63601F7e28C758Feccf8CDF02F6598694f44C6' },
-  drawPeriodSeconds: 86_400
+  drawPeriodSeconds: 86_400,
+  tierLiquidityUtilizationRate: 0.5
 }
 
 export const prizeVault: Token & { asset: Token; deployedAtBlock: bigint } = {

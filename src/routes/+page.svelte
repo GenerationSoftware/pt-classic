@@ -1,18 +1,31 @@
 <script>
+  import { getTotalPrizeValueAvailable, lower } from '$lib/utils'
+  import { prizeDistribution, tokenPrices } from '$lib/stores'
+  import { fade } from 'svelte/transition'
+  import { prizePool } from '$lib/config'
   import DepositCard from '$lib/components/deposit/DepositCard.svelte'
+  import Loading from '$lib/components/Loading.svelte'
+
+  $: prizeTokenPrice = $tokenPrices[lower(prizePool.prizeToken.address)]
+  $: totalPrizeValueAvailable = getTotalPrizeValueAvailable($prizeDistribution ?? [], prizeTokenPrice ?? 0)
+  $: formattedTotalPrizeValueAvailable = totalPrizeValueAvailable.toLocaleString('en', { maximumFractionDigits: 0 })
 </script>
 
 <div class="banner">
   <span class="img-wrapper" />
-  <!-- TODO: query amount in prize pool, "save and win up to $X" (color amount pink) -->
-  <span class="title">Save & win big, no losses</span>
+  <span class="title">
+    {#if totalPrizeValueAvailable !== 0}
+      <span in:fade>Save & win up to <strong>${formattedTotalPrizeValueAvailable}</strong></span>
+    {:else}
+      <Loading height="1rem" />
+    {/if}
+  </span>
 </div>
 
 <span class="pt-info">Participate in daily PoolTogether prize draws</span>
 
 <DepositCard />
 
-<!-- TODO: query a more exact value (color it pink :3) -->
 <span class="join-us">Join the thousands of people saving to win</span>
 
 <style>
@@ -30,8 +43,12 @@
 
   div.banner > span.title {
     padding: 0.25rem 0;
-    font-size: 1.75rem;
+    font-size: 1.6rem;
     font-weight: 700;
+  }
+
+  div.banner > span.title strong {
+    color: var(--pt-pink-light);
   }
 
   div.banner > span.img-wrapper {
@@ -69,6 +86,10 @@
   @media (min-width: 48rem) {
     div.banner {
       width: 32rem;
+    }
+
+    div.banner > span.title {
+      font-size: 1.75rem;
     }
 
     div.banner > span.img-wrapper {

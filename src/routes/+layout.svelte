@@ -1,6 +1,6 @@
 <script>
+  import { getPrizeDistribution, getTokenPrice, getWalletProviders } from '$lib/utils'
   import { appName, pageTransition, prizePool, prizeVault } from '$lib/config'
-  import { getTokenPrice, getWalletProviders } from '$lib/utils'
   import { fade } from 'svelte/transition'
   import { goto } from '$app/navigation'
   import { page } from '$app/stores'
@@ -16,9 +16,10 @@
   $: pageTitle = currentPage.slice(0, 1).toUpperCase() + currentPage.slice(1)
   $: title = appName + (!!pageTitle ? ` | ${pageTitle}` : '')
 
-  onMount(() => {
+  onMount(async () => {
     getWalletProviders({ onAutoConnect: () => goto('/account') })
-    getTokenPrice(prizePool.prizeToken)
+    await getTokenPrice(prizePool.prizeToken)
+    await getPrizeDistribution()
   })
 </script>
 

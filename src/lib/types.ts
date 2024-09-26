@@ -77,7 +77,7 @@ export type TransferEvent = ReturnType<typeof formatTransferEvent>
 export type FlashEvent = ReturnType<typeof formatFlashEvent>
 export type ClaimedPrizeEvent = ReturnType<typeof formatClaimedPrizeEvent>
 
-export type PrizeDistribution = Awaited<ReturnType<typeof getPrizeDistribution>>
+export type PrizeDistribution = { tier: number; size: number; count: number; odds: number; drawFrequency: number }[]
 
 export type PromotionInfo = Awaited<ReturnType<typeof getPromotionInfo>>
 export type ClaimedReward = Awaited<ReturnType<typeof getUserClaimedRewards>>[number]

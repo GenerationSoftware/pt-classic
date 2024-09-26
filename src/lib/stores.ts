@@ -186,9 +186,7 @@ clients.subscribe(async ({ wallet }) => {
   if (!!wallet) {
     await getTokenPrice(prizePool.prizeToken)
 
-    if (get(prizeDistribution) === undefined) {
-      prizeDistribution.set(await getPrizeDistribution())
-    }
+    await getPrizeDistribution()
 
     if (get(promotionInfo) === undefined) {
       promotionInfo.set(await getPromotionInfo())

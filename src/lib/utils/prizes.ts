@@ -1,6 +1,13 @@
-import { clients, userClaimedPrizeEvents, userFlashEvents, userLastCheckedBlockNumber, userTransferEvents } from '$lib/stores'
-import { formatEther, formatUnits, type Address, type ContractFunctionParameters } from 'viem'
+import {
+  clients,
+  prizeDistribution,
+  userClaimedPrizeEvents,
+  userFlashEvents,
+  userLastCheckedBlockNumber,
+  userTransferEvents
+} from '$lib/stores'
 import { prizeHook, prizePool, prizeVault } from '$lib/config'
+import { formatEther, formatUnits, type Address } from 'viem'
 import { prizePoolABI, twabControllerABI } from '$lib/abis'
 import { validateClientNetwork } from './providers'
 import { getBlockTimestamp } from './time'
@@ -8,10 +15,13 @@ import { getTokenPrice } from './tokens'
 import { seconds } from '$lib/constants'
 import { lower } from './formatting'
 import { get } from 'svelte/store'
-import type { UncheckedPrize } from '$lib/types'
+import type { PrizeDistribution, UncheckedPrize } from '$lib/types'
 
 export const getPrizeDistribution = async () => {
-  const prizeDistribution: { tier: number; size: bigint; drawFrequency: number }[] = []
+  const existingPrizeDistribution = get(prizeDistribution)
+  if (existingPrizeDistribution !== undefined) return existingPrizeDistribution
+
+  const newPrizeDistribution: PrizeDistribution = []
 
   const publicClient = get(clients).public
   validateClientNetwork(publicClient)
@@ -33,23 +43,32 @@ export const getPrizeDistribution = async () => {
         abi: prizePoolABI,
         functionName: 'getTierAccrualDurationInDraws',
         args: [tier]
+      })),
+      ...prizeTiers.map((tier) => ({
+        address: prizePool.address,
+        abi: prizePoolABI,
+        functionName: 'getTierOdds',
+        args: [tier, numberOfTiers]
       }))
     ]
   })
 
   if (multicall.every((entry) => entry.status === 'success' && (typeof entry.result === 'bigint' || typeof entry.result === 'number'))) {
     prizeTiers.forEach((tier, i) => {
-      const size = multicall[i].result as bigint
+      const size = parseFloat(formatUnits(multicall[i].result as bigint, prizePool.prizeToken.decimals))
       const accrualDuration = multicall[i + prizeTiers.length].result as number
+      const odds = parseFloat(formatEther(multicall[i + prizeTiers.length * 2].result as bigint))
 
-      const prizeCount = 4 ** i
-      const drawFrequency = prizeCount / accrualDuration
+      const count = 4 ** i
+      const drawFrequency = count / accrualDuration
 
-      prizeDistribution.push({ tier, size, drawFrequency })
+      newPrizeDistribution.push({ tier, size, count, odds, drawFrequency })
     })
+
+    prizeDistribution.set(newPrizeDistribution)
   }
 
-  return prizeDistribution
+  return newPrizeDistribution
 }
 
 export const getUserUncheckedPrizes = async (userAddress: Address, options?: { checkBlockNumber?: bigint }) => {
@@ -92,9 +111,9 @@ export const getUserUncheckedPrizes = async (userAddress: Address, options?: { c
   if (!lastAwardedDrawId) return uncheckedPrizes
 
   const prizeTokenPrice = await getTokenPrice(prizePool.prizeToken)
-  const prizeTierInfo = await getPrizeTierInfo()
+  const prizeDistribution = await getPrizeDistribution()
 
-  if (!prizeTokenPrice || !Object.keys(prizeTierInfo).length) return uncheckedPrizes
+  if (!prizeTokenPrice || !prizeDistribution.length) return uncheckedPrizes
 
   const lastTwabPeriodEndedAt = BigInt(Math.floor(maxTimestamp / seconds.hour))
   const lastTwabPeriodStartedAt = lastTwabPeriodEndedAt - BigInt(seconds.hour)
@@ -144,7 +163,7 @@ export const getUserUncheckedPrizes = async (userAddress: Address, options?: { c
   relevantFlashEvents.forEach((flashEvent) => {
     const size = parseFloat(formatUnits(BigInt(flashEvent.args.amount), prizeVault.decimals))
     const sizeInPrizeToken = size / prizeTokenPrice
-    const nearestPrizeTier = Object.values(prizeTierInfo).reduce((a, b) =>
+    const nearestPrizeTier = prizeDistribution.reduce((a, b) =>
       Math.abs(b.size - sizeInPrizeToken) < Math.abs(a.size - sizeInPrizeToken) ? b : a
     )
     const userOdds = (nearestPrizeTier.size / sizeInPrizeToken) * nearestPrizeTier.odds * oddsMultiplier
@@ -155,14 +174,14 @@ export const getUserUncheckedPrizes = async (userAddress: Address, options?: { c
   // Adding fallback prizes won
   relevantClaimedPrizeEvents.forEach((claimedPrizeEvent) => {
     const size = parseFloat(formatUnits(BigInt(claimedPrizeEvent.args.payout), prizeVault.decimals))
-    const tierOdds = prizeTierInfo[claimedPrizeEvent.args.tier]?.odds ?? 1
+    const tierOdds = prizeDistribution[claimedPrizeEvent.args.tier]?.odds ?? 1
     const userOdds = tierOdds * oddsMultiplier
 
     uncheckedPrizes.list.push({ size, count: 1, userOdds, userWon: 1 })
   })
 
   // Adding other estimated prizes awarded but not won
-  Object.values(prizeTierInfo).forEach((tier) => {
+  prizeDistribution.forEach((tier) => {
     const size = tier.size * prizeTokenPrice
     const numDraws = numUncheckedDraws > 0 ? numUncheckedDraws : 1
     const count = tier.count * numDraws
@@ -174,47 +193,10 @@ export const getUserUncheckedPrizes = async (userAddress: Address, options?: { c
   return uncheckedPrizes
 }
 
-export const getPrizeTierInfo = async () => {
-  const prizeTierInfo: { [prizeTier: number]: { size: number; count: number; odds: number } } = {}
+export const getTotalPrizeValueAvailable = (prizeDistribution: PrizeDistribution, prizeTokenPrice: number) => {
+  const utilizationRateMultiplier = 1 / prizePool.tierLiquidityUtilizationRate
 
-  const publicClient = get(clients).public
-  validateClientNetwork(publicClient)
+  const totalPrizeAmount = prizeDistribution.reduce((a, { size, count }) => a + size * utilizationRateMultiplier * count, 0)
 
-  const numberOfTiers = await publicClient.readContract({ address: prizePool.address, abi: prizePoolABI, functionName: 'numberOfTiers' })
-
-  const prizeTiers = [...Array(numberOfTiers - 2).keys()]
-
-  const prizeSizeContracts: ContractFunctionParameters<typeof prizePoolABI, 'view', 'getTierPrizeSize'>[] = prizeTiers.map((prizeTier) => ({
-    address: prizePool.address,
-    abi: prizePoolABI,
-    functionName: 'getTierPrizeSize',
-    args: [prizeTier]
-  }))
-  const prizeOddsContracts: ContractFunctionParameters<typeof prizePoolABI, 'view', 'getTierOdds'>[] = prizeTiers.map((prizeTier) => ({
-    address: prizePool.address,
-    abi: prizePoolABI,
-    functionName: 'getTierOdds',
-    args: [prizeTier, numberOfTiers]
-  }))
-
-  // @ts-ignore
-  const multicall = await publicClient.multicall({ contracts: [...prizeSizeContracts, ...prizeOddsContracts] })
-
-  prizeTiers.forEach((prizeTier, i) => {
-    const sizeCall = multicall[i]
-    const userOddsCall = multicall[i + prizeTiers.length]
-
-    const size = sizeCall.status === 'success' && typeof sizeCall.result === 'bigint' ? sizeCall.result : undefined
-    const odds = userOddsCall.status === 'success' && typeof userOddsCall.result === 'bigint' ? userOddsCall.result : undefined
-
-    if (!!size && !!odds) {
-      prizeTierInfo[prizeTier] = {
-        size: parseFloat(formatUnits(size, prizePool.prizeToken.decimals)),
-        count: 4 ** prizeTier,
-        odds: parseFloat(formatEther(odds))
-      }
-    }
-  })
-
-  return prizeTierInfo
+  return totalPrizeAmount * prizeTokenPrice
 }
