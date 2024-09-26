@@ -48,6 +48,12 @@
     flex-direction: column;
     align-items: center;
     gap: 1rem;
-    margin: 2rem auto;
+    margin: 2rem auto 10rem;
+  }
+
+  @media (min-width: 48rem) {
+    main {
+      margin-bottom: 2rem;
+    }
   }
 </style>
