@@ -1,17 +1,35 @@
 <script>
-  import { userAddress, userBalances } from '$lib/stores'
-  import { formatShareAmount, lower } from '$lib/utils'
-  import { prizeVault } from '$lib/config'
+  import { userAddress, userFlashEvents, userLastCheckedBlockNumber, userTransferEvents } from '$lib/stores'
+  import { formatPrize, formatShareAmount, lower } from '$lib/utils'
   import Loading from '../Loading.svelte'
 
-  $: vaultBalance = $userBalances[lower(prizeVault.address)]
-  $: formattedVaultBalance = vaultBalance !== undefined ? formatShareAmount(vaultBalance) : '0.00'
+  $: aggregatedTransferAmount =
+    !!$userTransferEvents && !!$userAddress
+      ? $userTransferEvents.reduce(
+          (a, b) =>
+            lower(b.args.to) === lower($userAddress)
+              ? a + BigInt(b.args.value)
+              : lower(b.args.from) === lower($userAddress)
+                ? a - BigInt(b.args.value)
+                : a,
+          0n
+        )
+      : 0n
+
+  $: prizesWon = $userFlashEvents?.map(formatPrize) ?? []
+  $: uncheckedPrizesWon = prizesWon.filter(
+    (prize) => $userLastCheckedBlockNumber === undefined || prize.blockNumber > $userLastCheckedBlockNumber
+  )
+  $: totalUncheckedPrizesWon = uncheckedPrizesWon.reduce((a, b) => a + b.amount, 0n)
+
+  $: totalSaved = aggregatedTransferAmount - totalUncheckedPrizesWon
+  $: formattedTotalSaved = totalSaved > 0n ? formatShareAmount(totalSaved) : '0.00'
 </script>
 
 <div>
   <h2>Total Saved</h2>
-  {#if vaultBalance !== undefined}
-    <span class="balance">${formattedVaultBalance}</span>
+  {#if !!$userTransferEvents && !!$userFlashEvents}
+    <span class="balance">${formattedTotalSaved}</span>
   {:else if !$userAddress}
     <span>-</span>
   {:else}

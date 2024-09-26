@@ -55,7 +55,7 @@
 
   div.top-nav-content {
     width: 100%;
-    max-width: 1280px;
+    max-width: 80rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
