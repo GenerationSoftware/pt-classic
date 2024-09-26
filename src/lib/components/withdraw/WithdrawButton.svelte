@@ -1,8 +1,6 @@
 <script lang="ts">
   import { redeem, updateUserTokenBalances, updateUserTransferEvents } from '$lib/utils'
   import { clients, userAddress, userTransferEvents } from '$lib/stores'
-  import { dolphinAddress } from '$lib/constants'
-  import { prizeVault } from '$lib/config'
   import WalletConnectionModal from '../WalletConnectionModal.svelte'
   import Loading from '../Loading.svelte'
 
@@ -32,7 +30,7 @@
         },
         onSettled: () => {
           isWithdrawing = false
-          updateUserTokenBalances($userAddress, [dolphinAddress, prizeVault.address, prizeVault.asset.address])
+          updateUserTokenBalances($userAddress)
         }
       })}
     class="teal-button"

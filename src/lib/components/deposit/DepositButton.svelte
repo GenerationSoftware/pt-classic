@@ -1,7 +1,6 @@
 <script lang="ts">
   import { approve, deposit, updateUserTokenBalances, updateUserTransferEvents } from '$lib/utils'
   import { clients, userAddress, userTransferEvents } from '$lib/stores'
-  import { dolphinAddress } from '$lib/constants'
   import { prizeVault } from '$lib/config'
   import { erc20Abi } from 'viem'
   import WalletConnectionModal from '../WalletConnectionModal.svelte'
@@ -71,7 +70,7 @@
         onSettled: () => {
           isDepositing = false
           updateAllowance()
-          updateUserTokenBalances($userAddress, [dolphinAddress, prizeVault.address, prizeVault.asset.address])
+          updateUserTokenBalances($userAddress)
         }
       })}
     class="teal-button"

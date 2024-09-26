@@ -1,8 +1,6 @@
 <script lang="ts">
   import { claimBonusRewards, getUserClaimableRewards, getUserClaimedRewards, updateUserTokenBalances } from '$lib/utils'
   import { clients, promotionInfo, userAddress, userClaimableRewards, userClaimedRewards } from '$lib/stores'
-  import { dolphinAddress } from '$lib/constants'
-  import { prizeVault } from '$lib/config'
   import Loading from '../Loading.svelte'
 
   export let disabled: boolean = false
@@ -18,7 +16,7 @@
 </script>
 
 {#if !$clients.wallet || !$userAddress || !$userClaimableRewards?.length}
-  <button disabled={true}>Only Claim Bonuses</button>
+  <button disabled={true}>Claim Bonuses</button>
 {:else}
   <button
     type="submit"
@@ -33,26 +31,16 @@
         },
         onSettled: () => {
           isClaiming = false
-          updateUserTokenBalances($userAddress, [dolphinAddress, prizeVault.address, prizeVault.asset.address])
+          updateUserTokenBalances($userAddress)
         }
       })}
+    class="teal-button"
     disabled={isClaiming || disabled}
   >
     {#if isClaiming}
-      <Loading height=".5rem" />
+      <Loading height=".75rem" />
     {:else}
-      Only Claim Bonuses
+      Claim Bonuses
     {/if}
   </button>
 {/if}
-
-<style>
-  button {
-    margin-top: 0.375rem;
-    color: var(--pt-purple-100);
-    font-size: 0.875rem;
-    font-weight: 500;
-    line-height: 150%;
-    text-decoration: underline;
-  }
-</style>

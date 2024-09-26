@@ -4,12 +4,10 @@
   import { lower } from '$lib/utils'
   import type { ClaimableReward } from '$lib/types'
   import ClaimRewardsButton from './ClaimRewardsButton.svelte'
-  import ZapRewardsButton from './ZapRewardsButton.svelte'
   import SuccessPooly from '../SuccessPooly.svelte'
   import Loading from '../Loading.svelte'
 
-  let isSuccessfulRewardsClaim = false
-  let isSuccessfulRewardsZap = false
+  let isSuccessfulClaim = false
 
   const getPromotionRewardAmount = (reward: ClaimableReward) => {
     return parseFloat(
@@ -34,7 +32,7 @@
 </script>
 
 <div class="card">
-  {#if !isSuccessfulRewardsClaim && !isSuccessfulRewardsZap}
+  {#if !isSuccessfulClaim}
     {#if !!$userClaimableRewards && isFetchedBonusRewardsTokenPrices}
       {#if $userClaimableRewards.length > 0}
         <span class="rewards-title">You have <strong>${formattedTotalClaimableBonusRewards}</strong> in bonus rewards to claim</span>
@@ -49,8 +47,7 @@
             </div>
           {/each}
         </div>
-        <ZapRewardsButton onSuccess={() => (isSuccessfulRewardsZap = true)} />
-        <ClaimRewardsButton onSuccess={() => (isSuccessfulRewardsClaim = true)} />
+        <ClaimRewardsButton onSuccess={() => (isSuccessfulClaim = true)} />
       {:else}
         <span class="rewards-title">You don't have any bonus rewards to claim</span>
       {/if}
@@ -59,11 +56,7 @@
     {/if}
   {:else}
     <h3 class="success-title">Success!</h3>
-    {#if isSuccessfulRewardsClaim}
-      <span class="success-info">You claimed your available bonus rewards</span>
-    {:else if isSuccessfulRewardsZap}
-      <span class="success-info">You claimed and redeposited your bonus rewards</span>
-    {/if}
+    <span class="success-info">You claimed your available bonus rewards</span>
     <SuccessPooly style="max-height: 7.5rem; margin: 2rem 0 1rem;" />
   {/if}
 </div>

@@ -1,5 +1,5 @@
+import { prizeVault, tokenSwapRouteConfigs, zap } from '$lib/config'
 import { clients, tokenPrices, userBalances } from '$lib/stores'
-import { prizeVault, tokenSwapRouteConfigs } from '$lib/config'
 import { validateClientNetwork } from './providers'
 import { dolphinAddress } from '$lib/constants'
 import { erc20Abi, type Address } from 'viem'
@@ -36,6 +36,16 @@ export const getTokenBalances = async (owner: Address, tokenAddresses: Address[]
   return balances
 }
 
+export const updateUserTokenBalances = async (owner: Address) => {
+  const updatedBalances = await getTokenBalances(owner, [
+    prizeVault.address,
+    prizeVault.asset.address,
+    dolphinAddress,
+    ...zap.tokenOptions.map((t) => t.address)
+  ])
+  userBalances.update((oldBalances) => ({ ...oldBalances, ...updatedBalances }))
+}
+
 const tokenPricePromises: { [tokenAddress: Lowercase<Address>]: Promise<number> } = {}
 
 export const getTokenPrice = async (token: { address: Address; decimals: number }) => {
@@ -62,9 +72,4 @@ export const getTokenPrice = async (token: { address: Address; decimals: number 
   tokenPrices.update((oldTokenPrices) => ({ ...oldTokenPrices, [lower(token.address)]: tokenPrice }))
 
   return tokenPrice
-}
-
-export const updateUserTokenBalances = async (owner: Address, tokenAddresses: Address[]) => {
-  const updatedBalances = await getTokenBalances(owner, tokenAddresses)
-  userBalances.update((oldBalances) => ({ ...oldBalances, ...updatedBalances }))
 }

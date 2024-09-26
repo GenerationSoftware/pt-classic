@@ -2,9 +2,9 @@
   import { approve, depositZap, getTokenPrice, lower, updateUserTokenBalances, updateUserTransferEvents } from '$lib/utils'
   import { clients, tokenPrices, userAddress, userTransferEvents } from '$lib/stores'
   import { formatUnits, parseUnits } from 'viem/utils'
+  import { chain, prizeVault } from '$lib/config'
   import { dolphinAddress } from '$lib/constants'
   import { erc20Abi, type Address } from 'viem'
-  import { chain, prizeVault } from '$lib/config'
   import { zapRouter } from 'dskit-eth'
   import { vaultABI } from '$lib/abis'
   import type { Token } from '$lib/types'
@@ -114,7 +114,7 @@
             onSettled: () => {
               isDepositing = false
               !!zapTx.approval && updateAllowance(zapTx.approval.spender)
-              updateUserTokenBalances($userAddress, [dolphinAddress, prizeVault.address, prizeVault.asset.address, token.address])
+              updateUserTokenBalances($userAddress)
             }
           })}
         class="teal-button"

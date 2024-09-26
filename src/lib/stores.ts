@@ -2,7 +2,6 @@ import {
   getPrizeDistribution,
   getPrizeHookStatus,
   getPromotionInfo,
-  getTokenBalances,
   getTokenPrice,
   getUserClaimableRewards,
   getUserClaimedRewards,
@@ -10,11 +9,12 @@ import {
   lower,
   updateUserClaimedPrizeEvents,
   updateUserFlashEvents,
+  updateUserTokenBalances,
   updateUserTransferEvents
 } from './utils'
-import { chain, prizePool, prizeVault, publicClientSettings, transportSettings, zap } from './config'
 import { createPublicClient, http, type Address, type PublicClient, type WalletClient } from 'viem'
-import { dolphinAddress, localStorageKeys } from './constants'
+import { chain, prizePool, publicClientSettings, transportSettings } from './config'
+import { localStorageKeys } from './constants'
 import { get, writable } from 'svelte/store'
 import { DSKit } from 'dskit-eth'
 import type {
@@ -79,14 +79,7 @@ userAddress.subscribe(async (address) => {
   userUncheckedPrizes.set(undefined)
 
   if (!!address) {
-    userBalances.set(
-      await getTokenBalances(address, [
-        prizeVault.address,
-        prizeVault.asset.address,
-        dolphinAddress,
-        ...zap.tokenOptions.map((t) => t.address)
-      ])
-    )
+    await updateUserTokenBalances(address)
 
     const prizeHookStatus = await getPrizeHookStatus(address)
     userPrizeHookStatus.set(prizeHookStatus)
