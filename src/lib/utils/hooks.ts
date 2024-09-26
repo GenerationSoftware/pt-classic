@@ -1,6 +1,6 @@
-import { prizeHook, prizeVault } from '$lib/config'
+import { prizeHook, prizePool, prizeVault } from '$lib/config'
+import { erc20Abi, zeroAddress, type Address } from 'viem'
 import { validateClientNetwork } from './providers'
-import { zeroAddress, type Address } from 'viem'
 import { getSetSwapperEvents } from './events'
 import { clients } from '$lib/stores'
 import { vaultABI } from '$lib/abis'
@@ -10,8 +10,19 @@ import { get } from 'svelte/store'
 export const getPrizeHookStatus = async (
   userAddress: Address
 ): Promise<
-  | { isPrizeHookSet: boolean; isSwapperSet: false; pastSwapperAddresses: Address[] }
-  | { isPrizeHookSet: boolean; isSwapperSet: true; swapperAddress: Address; pastSwapperAddresses: Address[] }
+  | {
+      isPrizeHookSet: boolean
+      isSwapperSet: false
+      pastSwapperAddresses: Address[]
+      swappersWithBalance: { address: Address; balance: bigint }[]
+    }
+  | {
+      isPrizeHookSet: boolean
+      isSwapperSet: true
+      swapperAddress: Address
+      pastSwapperAddresses: Address[]
+      swappersWithBalance: { address: Address; balance: bigint }[]
+    }
 > => {
   const publicClient = get(clients).public
   validateClientNetwork(publicClient)
@@ -37,12 +48,46 @@ export const getPrizeHookStatus = async (
     const swapperAddress = swapperAddresses.pop()
     const pastSwapperAddresses = swapperAddresses.filter((a) => a !== zeroAddress)
 
+    const swappersWithBalance = await getSwappersWithBalance(swapperAddresses)
+
     if (!!swapperAddress && swapperAddress !== zeroAddress) {
-      return { isPrizeHookSet, isSwapperSet: true, swapperAddress, pastSwapperAddresses }
+      return { isPrizeHookSet, isSwapperSet: true, swapperAddress, pastSwapperAddresses, swappersWithBalance }
     } else {
-      return { isPrizeHookSet, isSwapperSet: false, pastSwapperAddresses }
+      return { isPrizeHookSet, isSwapperSet: false, pastSwapperAddresses, swappersWithBalance }
     }
   }
 
-  return { isPrizeHookSet, isSwapperSet: false, pastSwapperAddresses: [] }
+  return { isPrizeHookSet, isSwapperSet: false, pastSwapperAddresses: [], swappersWithBalance: [] }
+}
+
+export const getSwappersWithBalance = async (swapperAddresses: Address[]) => {
+  const swappersWithBalance: { address: Address; balance: bigint }[] = []
+
+  const validSwapperAddresses = swapperAddresses.filter((a) => a !== zeroAddress)
+
+  if (!!validSwapperAddresses.length) {
+    const publicClient = get(clients).public
+    validateClientNetwork(publicClient)
+
+    const multicall = await publicClient.multicall({
+      contracts: validSwapperAddresses.map((swapperAddress) => ({
+        address: prizePool.prizeToken.address,
+        abi: erc20Abi,
+        functionName: 'balanceOf',
+        args: [swapperAddress]
+      }))
+    })
+
+    validSwapperAddresses.forEach((address, i) => {
+      if (multicall[i].status === 'success' && typeof multicall[i].result === 'bigint') {
+        const balance = multicall[i].result
+
+        if (balance > 0n) {
+          swappersWithBalance.push({ address, balance })
+        }
+      }
+    })
+  }
+
+  return swappersWithBalance
 }

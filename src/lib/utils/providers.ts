@@ -1,5 +1,5 @@
 import { createPublicClient, createWalletClient, custom, type Address, type PublicClient, type WalletClient } from 'viem'
-import { clients, lastConnectedProviderId, userAddress, walletProviders } from '$lib/stores'
+import { clients, getInitialClients, lastConnectedProviderId, userAddress, walletProviders } from '$lib/stores'
 import { chain, publicClientSettings, transportSettings } from '$lib/config'
 import { get } from 'svelte/store'
 import { DSKit } from 'dskit-eth'
@@ -68,6 +68,11 @@ export const connect = async (providerData: EIP6963ProviderData, options?: { onC
   })
 
   return address
+}
+
+export const disconnect = async () => {
+  userAddress.set(undefined)
+  clients.set(getInitialClients())
 }
 
 export const validateClientNetwork = async (client: PublicClient | WalletClient) => {

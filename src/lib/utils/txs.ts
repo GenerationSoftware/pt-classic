@@ -3,13 +3,14 @@ import {
   encodeFunctionData,
   erc20Abi,
   parseEther,
+  zeroAddress,
   type Address,
   type ContractFunctionParameters,
   type Hash,
   type TransactionReceipt
 } from 'viem'
+import { hookABI, swapperABI, twabRewardsABI, vaultABI } from '$lib/abis'
 import { chain, prizeHook, prizeVault, twabRewards } from '$lib/config'
-import { hookABI, twabRewardsABI, vaultABI } from '$lib/abis'
 import { validateClientNetwork } from './providers'
 import { clients, userAddress } from '$lib/stores'
 import { lower } from './formatting'
@@ -120,6 +121,18 @@ export const setPrizeHook = async (options?: Parameters<typeof sendTx>[1]) => {
   )
 }
 
+export const unsetPrizeHook = async (options?: Parameters<typeof sendTx>[1]) => {
+  return await sendTx(
+    {
+      address: prizeVault.address,
+      abi: vaultABI,
+      functionName: 'setHooks',
+      args: [{ useBeforeClaimPrize: false, useAfterClaimPrize: false, implementation: zeroAddress }]
+    },
+    options
+  )
+}
+
 export const configurePrizeHook = async (options?: Parameters<typeof sendTx>[1]) => {
   return await sendTx(
     { address: prizeHook.address, abi: hookABI, functionName: 'setPrizeSizeVoteAndSwapper', args: [prizeHook.minPrizeSize] },
@@ -178,4 +191,20 @@ export const claimBonusRewards = async (
       options
     )
   }
+}
+
+export const compoundPrizes = async (options?: Parameters<typeof sendTx>[1]) => {
+  return await sendTx(
+    { address: prizeHook.address, abi: hookABI, functionName: 'compoundAccounts', args: [[get(userAddress)], get(userAddress), 1n] },
+    options
+  )
+}
+
+export const retireSwapper = async (options?: Parameters<typeof sendTx>[1]) => {
+  return await sendTx({ address: prizeHook.address, abi: hookABI, functionName: 'removeAndRecoverSwapper' }, options)
+}
+
+export const rescueSwapperFunds = async (swapperAddress: Address, options?: Parameters<typeof sendTx>[1]) => {
+  // TODO: send tx to owned swapper address to rescue uncompounded prize tokens to user's wallet
+  // return await sendTx({ address: swapperAddress, abi: swapperABI, functionName: 'execCalls', args: [] }, options)
 }

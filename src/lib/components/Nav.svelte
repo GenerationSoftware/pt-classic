@@ -1,6 +1,8 @@
 <script>
+  import { userAddress } from '$lib/stores'
   import WalletConnectionModal from './WalletConnectionModal.svelte'
   import NavWalletDisplay from './NavWalletDisplay.svelte'
+  import SettingsModal from './SettingsModal.svelte'
   import NavPageLink from './NavPageLink.svelte'
 </script>
 
@@ -10,9 +12,14 @@
       <img src="/pooltogether.svg" alt="PoolTogether" class="desktop-only" />
       <img src="/pooltogether-small.svg" alt="PoolTogether" class="mobile-only" />
     </a>
-    <WalletConnectionModal>
-      <NavWalletDisplay slot="button-content" />
-    </WalletConnectionModal>
+    <div>
+      <WalletConnectionModal>
+        <NavWalletDisplay slot="button-content" />
+      </WalletConnectionModal>
+      {#if $userAddress}
+        <SettingsModal />
+      {/if}
+    </div>
   </div>
 </div>
 
@@ -59,6 +66,12 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+  }
+
+  div.top-nav-content > div {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
   }
 
   nav {

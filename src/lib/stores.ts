@@ -38,7 +38,7 @@ export const walletProviders = writable<EIP6963ProviderData[]>([])
 export const lastConnectedProviderId = writable<string | null>(localStorage.getItem(localStorageKeys.lastConnectedProviderId))
 lastConnectedProviderId.subscribe((id) => !!id && localStorage.setItem(localStorageKeys.lastConnectedProviderId, id))
 
-const getInitialClients = () => {
+export const getInitialClients = () => {
   const initialPublicClient = createPublicClient({
     chain,
     transport: http(undefined, transportSettings),

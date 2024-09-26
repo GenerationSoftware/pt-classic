@@ -1,8 +1,8 @@
 <script lang="ts">
   import { userClaimableRewards, userUncheckedPrizes } from '$lib/stores'
 
-  export let onClickCheckPrizes: () => {}
-  export let onClickClaimBonusRewards: () => {}
+  export let onClickCheckPrizes: () => void
+  export let onClickClaimBonusRewards: () => void
 </script>
 
 <div>

@@ -1,7 +1,7 @@
 <script lang="ts">
   import Loading from '../Loading.svelte'
 
-  export let action: () => {}
+  export let action: () => void
   export let isDone: boolean
   export let isDoing: boolean
 </script>
