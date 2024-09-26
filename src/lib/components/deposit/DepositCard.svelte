@@ -191,8 +191,9 @@
     font-size: 0.75rem;
   }
 
-  div.switch-token em {
+  div.switch-token > button > em {
     color: var(--pt-purple-100);
+    text-decoration: underline;
   }
 
   div.switch-token > button:hover > em {
