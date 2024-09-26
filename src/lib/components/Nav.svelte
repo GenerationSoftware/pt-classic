@@ -98,9 +98,9 @@
     nav {
       position: absolute;
       inset: 0 auto auto 50%;
-      height: 3.25rem;
       translate: -50%;
-      max-width: 48rem;
+      width: auto;
+      height: 3.25rem;
       justify-content: center;
       gap: 2.5rem;
       background-color: transparent;
