@@ -8,6 +8,7 @@
     userLastCheckedBlockNumber
   } from '$lib/stores'
   import { formatClaimedReward, formatFallbackPrize, formatPrize, getBlockDate } from '$lib/utils'
+  import { prizeVault } from '$lib/config'
   import WalletConnectionModal from '../WalletConnectionModal.svelte'
   import PrizeDetailsModal from './PrizeDetailsModal.svelte'
   import Loading from '../Loading.svelte'
@@ -68,13 +69,25 @@
             {#if row.type === 'fallbackPrize' || row.type === 'bonusReward'}
               {#if row.token.price !== undefined}
                 <PrizeDetailsModal prize={row}>
-                  <span slot="button-content" class="value-with-underlying">+${row.formattedAmount}</span>
+                  <span slot="button-content" class="value-with-underlying">
+                    {#if prizeVault.asset.isUsdEquivalent}
+                      +${row.formattedAmount}
+                    {:else}
+                      +{row.formattedAmount} {prizeVault.asset.symbol}
+                    {/if}
+                  </span>
                 </PrizeDetailsModal>
               {:else}
                 <Loading height=".75rem" />
               {/if}
             {:else}
-              <span>+${row.formattedAmount}</span>
+              <span>
+                {#if prizeVault.asset.isUsdEquivalent}
+                  +${row.formattedAmount}
+                {:else}
+                  +{row.formattedAmount} {prizeVault.asset.symbol}
+                {/if}
+              </span>
             {/if}
           </div>
         {/each}

@@ -22,11 +22,11 @@ export const prizePool: {
   tierLiquidityUtilizationRate: 0.5
 }
 
-export const prizeVault: Token & { asset: Token; deployedAtBlock: bigint } = {
+export const prizeVault: Token & { asset: Token & { isUsdEquivalent: boolean; displayDecimals?: number }; deployedAtBlock: bigint } = {
   address: '0xAF2B22B7155da01230D72289DCEcB7C41a5a4bD8',
   decimals: 6,
   symbol: 'cPrzUSDC',
-  asset: { address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', decimals: 6, symbol: 'USDC' },
+  asset: { address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', decimals: 6, symbol: 'USDC', isUsdEquivalent: true },
   deployedAtBlock: 19_862_159n
 }
 

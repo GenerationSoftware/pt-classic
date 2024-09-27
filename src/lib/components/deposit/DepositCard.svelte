@@ -22,15 +22,21 @@
 
   $: token = tokenOptions[tokenOptionIndex]
 
+  $: isZapping = lower(token.address) !== lower(prizeVault.asset.address)
+
   $: assetBalance = $userBalances[lower(token.address)] as bigint | undefined
   $: flooredAssetBalance =
     Math.floor(parseFloat(formatUnits(assetBalance ?? 0n, token.decimals)) * 10 ** token.decimals) / 10 ** token.decimals
   $: formattedAssetBalance = flooredAssetBalance.toLocaleString('en', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: token.decimals <= 6 ? 2 : 4
+    minimumFractionDigits: isZapping ? 0 : prizeVault.asset.isUsdEquivalent ? 2 : prizeVault.asset.displayDecimals,
+    maximumFractionDigits: isZapping
+      ? token.decimals <= 6
+        ? 2
+        : 4
+      : prizeVault.asset.isUsdEquivalent
+        ? 2
+        : (prizeVault.asset.displayDecimals ?? 4)
   })
-
-  $: isZapping = lower(token.address) !== lower(prizeVault.asset.address)
 
   const getErrorMsg = () => {
     if (!!formInput && assetBalance !== undefined) {
@@ -72,12 +78,15 @@
     <div class="input" class:wallet-connected={!!$userAddress}>
       {#if !$userAddress || assetBalance !== undefined}
         <label class:placeholder-color={!formInput}>
-          {!isZapping ? '$' : ''}
+          {!isZapping && prizeVault.asset.isUsdEquivalent ? '$' : ''}
           <input bind:value={formInput} placeholder="0.00" style:width={`${getInputChars(formInput || '0.00')}ch`} />
-          {isZapping ? token.symbol : ''}
+          {isZapping || !prizeVault.asset.isUsdEquivalent ? token.symbol : ''}
         </label>
         {#if $userAddress}
-          <span>of {!isZapping ? '$' : ''}{formattedAssetBalance} {isZapping ? token.symbol : ''} available</span>
+          <span>
+            of {!isZapping && prizeVault.asset.isUsdEquivalent ? '$' : ''}{formattedAssetBalance}
+            {isZapping || !prizeVault.asset.isUsdEquivalent ? token.symbol : ''} available
+          </span>
         {/if}
       {:else}
         <Loading height="1rem" />

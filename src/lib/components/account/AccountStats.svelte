@@ -9,6 +9,7 @@
     userTransferEvents
   } from '$lib/stores'
   import { formatFallbackPrize, formatPrize, formatShareAmount, lower } from '$lib/utils'
+  import { prizeVault } from '$lib/config'
   import { formatUnits } from 'viem'
   import Loading from '../Loading.svelte'
 
@@ -54,8 +55,8 @@
       return a + tokenAmount * tokenPrice
     }, 0) ?? 0
   $: formattedBonusRewardsClaimed = aggregatedBonusRewardsClaimed.toLocaleString('en', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
+    minimumFractionDigits: prizeVault.asset.isUsdEquivalent ? 2 : (prizeVault.asset.displayDecimals ?? 4),
+    maximumFractionDigits: prizeVault.asset.isUsdEquivalent ? 2 : (prizeVault.asset.displayDecimals ?? 4)
   })
   $: isFetchedBonusRewardsTokenPrices = $userClaimedRewards?.every((reward) => $tokenPrices[lower(reward.token.address)] !== undefined)
 </script>
@@ -64,7 +65,11 @@
   <div class="stat">
     <h3>Total Deposited</h3>
     {#if !!$userTransferEvents && !!$userFlashEvents}
-      <span>${formattedTotalDepositedAmount}</span>
+      {#if prizeVault.asset.isUsdEquivalent}
+        <span>${formattedTotalDepositedAmount}</span>
+      {:else}
+        <span>{formattedTotalDepositedAmount} {prizeVault.asset.symbol}</span>
+      {/if}
     {:else if !$userAddress}
       <span>-</span>
     {:else}
@@ -74,7 +79,11 @@
   <div class="stat">
     <h3>Total Prizes Won</h3>
     {#if !!$userFlashEvents && !!$userClaimedPrizeEvents}
-      <span>+${formattedTotalCheckedPrizesWon}</span>
+      {#if prizeVault.asset.isUsdEquivalent}
+        <span>+${formattedTotalCheckedPrizesWon}</span>
+      {:else}
+        <span>+{formattedTotalCheckedPrizesWon} {prizeVault.asset.symbol}</span>
+      {/if}
     {:else if !$userAddress}
       <span>-</span>
     {:else}
@@ -84,7 +93,11 @@
   <div class="stat">
     <h3>Total Bonus Rewards Claimed</h3>
     {#if !!$userClaimedRewards && !!isFetchedBonusRewardsTokenPrices}
-      <span>+${formattedBonusRewardsClaimed}</span>
+      {#if prizeVault.asset.isUsdEquivalent}
+        <span>+${formattedBonusRewardsClaimed}</span>
+      {:else}
+        <span>+{formattedBonusRewardsClaimed} {prizeVault.asset.symbol}</span>
+      {/if}
     {:else if !$userAddress}
       <span>-</span>
     {:else}

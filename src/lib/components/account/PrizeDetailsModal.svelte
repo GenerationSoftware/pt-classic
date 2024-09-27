@@ -1,6 +1,6 @@
 <script lang="ts">
   import { getBlockDate, type formatClaimedReward, type formatFallbackPrize, type formatPrize } from '$lib/utils'
-  import { chain } from '$lib/config'
+  import { chain, prizeVault } from '$lib/config'
   import Loading from '../Loading.svelte'
   import Modal from '../Modal.svelte'
 
@@ -33,11 +33,19 @@
       </div>
       <div class="item">
         <span>Token Price:</span>
-        <span>${prize.token.price ?? '?'}</span>
+        {#if prizeVault.asset.isUsdEquivalent}
+          <span>${prize.token.price ?? '?'}</span>
+        {:else}
+          <span>{prize.token.price ?? '?'} {prizeVault.asset.symbol}</span>
+        {/if}
       </div>
       <div class="item">
         <span>Prize Value:</span>
-        <span>${prize.formattedAmount}</span>
+        {#if prizeVault.asset.isUsdEquivalent}
+          <span>${prize.formattedAmount}</span>
+        {:else}
+          <span>{prize.formattedAmount} {prizeVault.asset.symbol}</span>
+        {/if}
       </div>
     {:else if prize.type === 'bonusReward'}
       <div class="item">
@@ -46,16 +54,28 @@
       </div>
       <div class="item">
         <span>Token Price:</span>
-        <span>${prize.token.price ?? '?'}</span>
+        {#if prizeVault.asset.isUsdEquivalent}
+          <span>${prize.token.price ?? '?'}</span>
+        {:else}
+          <span>{prize.token.price ?? '?'} {prizeVault.asset.symbol}</span>
+        {/if}
       </div>
       <div class="item">
         <span>Reward Value:</span>
-        <span>${prize.formattedAmount}</span>
+        {#if prizeVault.asset.isUsdEquivalent}
+          <span>${prize.formattedAmount}</span>
+        {:else}
+          <span>{prize.formattedAmount} {prizeVault.asset.symbol}</span>
+        {/if}
       </div>
     {:else}
       <div class="item">
         <span>Prize Amount:</span>
-        <span>${prize.formattedAmount}</span>
+        {#if prizeVault.asset.isUsdEquivalent}
+          <span>${prize.formattedAmount}</span>
+        {:else}
+          <span>{prize.formattedAmount} {prizeVault.asset.symbol}</span>
+        {/if}
       </div>
     {/if}
     <div class="item">

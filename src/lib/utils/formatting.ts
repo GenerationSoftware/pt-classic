@@ -72,7 +72,10 @@ export const formatClaimedReward = (claimedReward: ClaimedReward, tokenPrices: T
 }
 
 export const formatShareAmount = (amount: bigint) => {
-  return parseFloat(formatUnits(amount, prizeVault.decimals)).toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  return parseFloat(formatUnits(amount, prizeVault.decimals)).toLocaleString('en', {
+    minimumFractionDigits: prizeVault.asset.isUsdEquivalent ? 2 : (prizeVault.asset.displayDecimals ?? 4),
+    maximumFractionDigits: prizeVault.asset.isUsdEquivalent ? 2 : (prizeVault.asset.displayDecimals ?? 4)
+  })
 }
 
 export const formatPrizeFrequency = (drawFrequency: number) => {

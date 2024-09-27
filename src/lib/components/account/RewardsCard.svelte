@@ -1,5 +1,6 @@
 <script lang="ts">
   import { tokenPrices, userClaimableRewards } from '$lib/stores'
+  import { prizeVault } from '$lib/config'
   import { formatUnits } from 'viem'
   import { lower } from '$lib/utils'
   import type { ClaimableReward } from '$lib/types'
@@ -25,8 +26,8 @@
       return a + tokenAmount * tokenPrice
     }, 0) ?? 0
   $: formattedTotalClaimableBonusRewards = totalClaimableBonusRewards.toLocaleString('en', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
+    minimumFractionDigits: prizeVault.asset.isUsdEquivalent ? 2 : (prizeVault.asset.displayDecimals ?? 4),
+    maximumFractionDigits: prizeVault.asset.isUsdEquivalent ? 2 : (prizeVault.asset.displayDecimals ?? 4)
   })
   $: isFetchedBonusRewardsTokenPrices = $userClaimableRewards?.every((reward) => $tokenPrices[lower(reward.token.address)] !== undefined)
 </script>
@@ -35,7 +36,13 @@
   {#if !isSuccessfulClaim}
     {#if !!$userClaimableRewards && isFetchedBonusRewardsTokenPrices}
       {#if $userClaimableRewards.length > 0}
-        <span class="rewards-title">You have <strong>${formattedTotalClaimableBonusRewards}</strong> in bonus rewards to claim</span>
+        {#if prizeVault.asset.isUsdEquivalent}
+          <span class="rewards-title">You have <strong>${formattedTotalClaimableBonusRewards}</strong> in bonus rewards to claim</span>
+        {:else}
+          <span class="rewards-title">
+            You have <strong>{formattedTotalClaimableBonusRewards} {prizeVault.asset.symbol}</strong> in bonus rewards to claim
+          </span>
+        {/if}
         <div class="rewards-list">
           {#each $userClaimableRewards as reward}
             {@const rewardAmount = getPromotionRewardAmount(reward)}

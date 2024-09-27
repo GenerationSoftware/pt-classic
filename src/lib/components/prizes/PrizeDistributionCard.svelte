@@ -1,7 +1,7 @@
 <script>
   import { prizeDistribution, tokenPrices } from '$lib/stores'
   import { formatPrizeFrequency, lower } from '$lib/utils'
-  import { prizePool } from '$lib/config'
+  import { prizePool, prizeVault } from '$lib/config'
   import Loading from '../Loading.svelte'
 
   $: prizeTokenPrice = $tokenPrices[lower(prizePool.prizeToken.address)]
@@ -11,11 +11,17 @@
   {#if !!$prizeDistribution && !!prizeTokenPrice}
     {#each $prizeDistribution as prize}
       {@const prizeValue = prize.size * prizeTokenPrice}
-      {@const formattedPrizeValue = prizeValue.toLocaleString('en', { maximumFractionDigits: prizeValue >= 1 ? 0 : 2 })}
+      {@const formattedPrizeValue = prizeValue.toLocaleString('en', {
+        maximumFractionDigits: prizeValue >= 1 ? 0 : prizeValue >= 0.01 ? 2 : 4
+      })}
       {@const formattedFrequency = formatPrizeFrequency(prize.drawFrequency)}
 
       <div class="prize-row">
-        <span class="prize-value">${formattedPrizeValue}</span>
+        {#if prizeVault.asset.isUsdEquivalent}
+          <span class="prize-value">${formattedPrizeValue}</span>
+        {:else}
+          <span class="prize-value">{formattedPrizeValue} {prizeVault.asset.symbol}</span>
+        {/if}
         <span class="prize-freq">{formattedFrequency}</span>
       </div>
     {/each}

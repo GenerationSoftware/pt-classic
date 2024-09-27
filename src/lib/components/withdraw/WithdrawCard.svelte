@@ -14,7 +14,10 @@
 
   $: vaultBalance = $userBalances[lower(prizeVault.address)] as bigint | undefined
   $: flooredVaultBalance = Math.floor(parseFloat(formatUnits(vaultBalance ?? 0n, prizeVault.decimals)) * 100) / 100
-  $: formattedVaultBalance = flooredVaultBalance.toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  $: formattedVaultBalance = flooredVaultBalance.toLocaleString('en', {
+    minimumFractionDigits: prizeVault.asset.isUsdEquivalent ? 2 : prizeVault.asset.displayDecimals,
+    maximumFractionDigits: prizeVault.asset.isUsdEquivalent ? 2 : (prizeVault.asset.displayDecimals ?? 4)
+  })
 
   const getErrorMsg = () => {
     if (!!formInput && vaultBalance !== undefined) {
@@ -54,10 +57,15 @@
     <div class="input" class:wallet-connected={!!$userAddress}>
       {#if !$userAddress || vaultBalance !== undefined}
         <label class:placeholder-color={!formInput}>
-          $<input bind:value={formInput} placeholder="0.00" style:width={`${getInputChars(formInput || '0.00')}ch`} />
+          {prizeVault.asset.isUsdEquivalent ? '$' : ''}
+          <input bind:value={formInput} placeholder="0.00" style:width={`${getInputChars(formInput || '0.00')}ch`} />
+          {!prizeVault.asset.isUsdEquivalent ? prizeVault.asset.symbol : ''}
         </label>
         {#if $userAddress}
-          <span>of ${formattedVaultBalance} available</span>
+          <span>
+            of {prizeVault.asset.isUsdEquivalent ? '$' : ''}{formattedVaultBalance}
+            {!prizeVault.asset.isUsdEquivalent ? prizeVault.asset.symbol : ''} available
+          </span>
         {/if}
       {:else}
         <Loading height="1rem" />

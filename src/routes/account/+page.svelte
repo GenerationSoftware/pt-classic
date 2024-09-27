@@ -68,9 +68,19 @@
 
             {#if prizesWon.length > 0}
               {@const amountWon = plinkoPrizes.reduce((a, b) => a + b.size * b.userWon, 0)}
-              {@const formattedAmountWon = amountWon.toLocaleString('en', { maximumFractionDigits: 2 })}
+              {@const formattedAmountWon = amountWon.toLocaleString('en', {
+                maximumFractionDigits: prizeVault.asset.isUsdEquivalent ? 2 : (prizeVault.asset.displayDecimals ?? 4)
+              })}
 
-              <span>You won <strong>${formattedAmountWon}</strong>!</span>
+              <span>
+                You won <strong>
+                  {#if prizeVault.asset.isUsdEquivalent}
+                    ${formattedAmountWon}
+                  {:else}
+                    {formattedAmountWon} {prizeVault.asset.symbol}
+                  {/if}
+                </strong>!
+              </span>
             {:else}
               <span>Sorry, no prizes this time.</span>
             {/if}

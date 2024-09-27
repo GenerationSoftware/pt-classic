@@ -54,7 +54,7 @@ A simple, static interface for a PoolTogether prize vault with extremely minimal
 The app can be pointed at any prize pool and vault combination, configurable through the `src/lib/config.ts` file.
 
 > [!NOTE]
-> The app queries other tokens' prices with respect to the prize vault's underlying token. If the underlying token is not a dollar-pegged stablecoin, further customization is required.
+> The app queries other tokens' prices with respect to the prize vault's underlying token. If you indicate this is a USD-pegged stablecoin through the `isUsdEquivalent` parameter, the app will append prices/values with "$", otherwise it will display the token's symbol.
 
 ---
 

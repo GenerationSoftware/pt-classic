@@ -1,6 +1,7 @@
 <script lang="ts">
   import { playConfetti } from './Confetti.svelte'
   import { onDestroy, onMount } from 'svelte'
+  import { prizeVault } from '$lib/config'
   import { VectorMath } from '$lib/utils'
   import type { PlinkoAnimation, PlinkoPrizeRowTile, PlinkoState, UncheckedPrize } from '$lib/types'
 
@@ -64,7 +65,7 @@
   let nextGameState = gameState
   let futureGameState: PlinkoState | null = null
   let prizesWonMessage = '0'
-  let prizesTotalMessage = '$0'
+  let prizesTotalMessage = prizeVault.asset.isUsdEquivalent ? '$0' : `0 ${prizeVault.asset.symbol}`
   let prizeBubbles: { top: string; left: string; content: string; backgroundColor: string }[] = []
   let animations: PlinkoAnimation[] = []
   let lastCollisionAnimationStartMs = 0
@@ -319,7 +320,9 @@
             const bubble = {
               top: `${Math.min(100, (100 * rowY) / gameHeight)}%`,
               left: `${(100 * prizeX) / gameWidth + leftOffset}%`,
-              content: `$${prize.size.toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+              content: prizeVault.asset.isUsdEquivalent
+                ? `$${prize.size.toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                : `${prize.size.toLocaleString('en', { minimumFractionDigits: prizeVault.asset.displayDecimals ?? 4, maximumFractionDigits: prizeVault.asset.displayDecimals ?? 4 })} ${prizeVault.asset.symbol}`,
               backgroundColor: getCssColor(`--prize-${Math.floor((1 - prizeScale) * 8)}-color`)
             }
             prizeBubbles.push(bubble)
@@ -608,7 +611,9 @@
 
         // Update stats
         prizesWonMessage = `${gameState.prizesWon}`
-        prizesTotalMessage = `$${gameState.prizesTotal.toFixed(2)}`
+        prizesTotalMessage = prizeVault.asset.isUsdEquivalent
+          ? `$${gameState.prizesTotal.toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+          : `${gameState.prizesTotal.toLocaleString('en', { minimumFractionDigits: prizeVault.asset.displayDecimals ?? 4, maximumFractionDigits: prizeVault.asset.displayDecimals ?? 4 })} ${prizeVault.asset.symbol}`
 
         // Simulate future game states until out of frame
         let _futureGameState = futureGameState ?? nextGameState

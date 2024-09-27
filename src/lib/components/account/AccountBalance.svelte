@@ -1,6 +1,7 @@
 <script>
   import { userAddress, userFlashEvents, userLastCheckedBlockNumber, userTransferEvents } from '$lib/stores'
   import { formatPrize, formatShareAmount, lower } from '$lib/utils'
+  import { prizeVault } from '$lib/config'
   import Loading from '../Loading.svelte'
 
   $: aggregatedTransferAmount =
@@ -29,7 +30,11 @@
 <div>
   <h2>Total Saved</h2>
   {#if !!$userTransferEvents && !!$userFlashEvents}
-    <span class="balance">${formattedTotalSaved}</span>
+    {#if prizeVault.asset.isUsdEquivalent}
+      <span class="balance">${formattedTotalSaved}</span>
+    {:else}
+      <span class="balance">{formattedTotalSaved} {prizeVault.asset.symbol}</span>
+    {/if}
   {:else if !$userAddress}
     <span>-</span>
   {:else}

@@ -1,21 +1,31 @@
 <script>
   import { getTotalPrizeValueAvailable, lower } from '$lib/utils'
   import { prizeDistribution, tokenPrices } from '$lib/stores'
+  import { prizePool, prizeVault } from '$lib/config'
   import { fade } from 'svelte/transition'
-  import { prizePool } from '$lib/config'
   import DepositCard from '$lib/components/deposit/DepositCard.svelte'
   import Loading from '$lib/components/Loading.svelte'
 
   $: prizeTokenPrice = $tokenPrices[lower(prizePool.prizeToken.address)]
   $: totalPrizeValueAvailable = getTotalPrizeValueAvailable($prizeDistribution ?? [], prizeTokenPrice ?? 0)
-  $: formattedTotalPrizeValueAvailable = totalPrizeValueAvailable.toLocaleString('en', { maximumFractionDigits: 0 })
+  $: formattedTotalPrizeValueAvailable = totalPrizeValueAvailable.toLocaleString('en', {
+    maximumFractionDigits: totalPrizeValueAvailable >= 1 ? 0 : 2
+  })
 </script>
 
 <div class="banner">
   <span class="img-wrapper" />
   <span class="title">
     {#if totalPrizeValueAvailable !== 0}
-      <span in:fade>Save & win up to <strong>${formattedTotalPrizeValueAvailable}</strong></span>
+      <span in:fade>
+        Save & win up to <strong>
+          {#if prizeVault.asset.isUsdEquivalent}
+            ${formattedTotalPrizeValueAvailable}
+          {:else}
+            {formattedTotalPrizeValueAvailable} {prizeVault.asset.symbol}
+          {/if}
+        </strong>
+      </span>
     {:else}
       <Loading height="1rem" />
     {/if}
