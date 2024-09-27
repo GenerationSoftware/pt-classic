@@ -85,7 +85,7 @@
       Retire Swapper
     </SettingsActionItem>
     <SettingsActionItem
-      action={() => !!topRetiredSwapper && rescueSwapperFunds(topRetiredSwapper.address, { onSuccess: updatePrizeHookStatus })}
+      action={() => !!topRetiredSwapper && rescueSwapperFunds(topRetiredSwapper, { onSuccess: updatePrizeHookStatus })}
       disabled={!topRetiredSwapper}
       disabledReason={!$userPrizeHookStatus?.pastSwapperAddresses.length
         ? 'No retired swappers.'

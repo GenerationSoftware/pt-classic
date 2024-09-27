@@ -9,8 +9,8 @@ import {
   type Hash,
   type TransactionReceipt
 } from 'viem'
+import { chain, prizeHook, prizePool, prizeVault, twabRewards } from '$lib/config'
 import { hookABI, swapperABI, twabRewardsABI, vaultABI } from '$lib/abis'
-import { chain, prizeHook, prizeVault, twabRewards } from '$lib/config'
 import { validateClientNetwork } from './providers'
 import { clients, userAddress } from '$lib/stores'
 import { lower } from './formatting'
@@ -204,7 +204,16 @@ export const retireSwapper = async (options?: Parameters<typeof sendTx>[1]) => {
   return await sendTx({ address: prizeHook.address, abi: hookABI, functionName: 'removeAndRecoverSwapper' }, options)
 }
 
-export const rescueSwapperFunds = async (swapperAddress: Address, options?: Parameters<typeof sendTx>[1]) => {
-  // TODO: send tx to owned swapper address to rescue uncompounded prize tokens to user's wallet
-  // return await sendTx({ address: swapperAddress, abi: swapperABI, functionName: 'execCalls', args: [] }, options)
+export const rescueSwapperFunds = async (swapper: { address: Address; balance: bigint }, options?: Parameters<typeof sendTx>[1]) => {
+  const transferData = encodeFunctionData({ abi: erc20Abi, functionName: 'transfer', args: [get(userAddress)!, swapper.balance] })
+
+  return await sendTx(
+    {
+      address: swapper.address,
+      abi: swapperABI,
+      functionName: 'execCalls',
+      args: [[{ to: prizePool.prizeToken.address, value: 0n, data: transferData }]]
+    },
+    options
+  )
 }
