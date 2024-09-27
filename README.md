@@ -8,6 +8,8 @@ A simple, static interface for a PoolTogether prize vault with extremely minimal
 
 #### Base USDC
 
+- `latest`
+  - HTTPS: [classic.cabana.fi](https://classic.cabana.fi/)
 - `v0.2.0`
   - IPFS: bafybeiegri6nww56z6jefcyn4tudh4fflfx4wjonfytjzur5yytzzjz5cu ([fleek](https://bafybeiegri6nww56z6jefcyn4tudh4fflfx4wjonfytjzur5yytzzjz5cu.ipfs.flk-ipfs.xyz/), [dweb](https://bafybeiegri6nww56z6jefcyn4tudh4fflfx4wjonfytjzur5yytzzjz5cu.ipfs.dweb.link/))
 
