@@ -11,6 +11,8 @@ A simple, static interface for a PoolTogether prize vault with extremely minimal
 - `v0.2.0`
   - IPFS: bafybeiegri6nww56z6jefcyn4tudh4fflfx4wjonfytjzur5yytzzjz5cu ([fleek](https://bafybeiegri6nww56z6jefcyn4tudh4fflfx4wjonfytjzur5yytzzjz5cu.ipfs.flk-ipfs.xyz/), [dweb](https://bafybeiegri6nww56z6jefcyn4tudh4fflfx4wjonfytjzur5yytzzjz5cu.ipfs.dweb.link/))
 
+---
+
 ### App Features
 
 - Connecting wallets compatible with [EIP-6963](https://eips.ethereum.org/EIPS/eip-6963) and/or [EIP-1193](https://eips.ethereum.org/EIPS/eip-1193)
@@ -33,6 +35,8 @@ A simple, static interface for a PoolTogether prize vault with extremely minimal
 - Claiming bonus rewards
 - Displaying claimed bonus rewards
 
+---
+
 ### Dev Commands
 
 - `pnpm i` - Install the app's dependencies
@@ -41,12 +45,16 @@ A simple, static interface for a PoolTogether prize vault with extremely minimal
 - `pnpm preview` - Host the built app at [localhost:4173](localhost:4173)
 - `pnpm check` - Check the app for any Svelte errors/warnings
 
+---
+
 ### Customization
 
 The app can be pointed at any prize pool and vault combination, configurable through the `src/lib/config.ts` file.
 
 > [!NOTE]
 > The app queries other tokens' prices with respect to the prize vault's underlying token. If the underlying token is not a dollar-pegged stablecoin, further customization is required.
+
+---
 
 ### Hosting
 
