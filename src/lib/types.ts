@@ -1,8 +1,10 @@
 import type {
   formatClaimedPrizeEvent,
   formatFlashEvent,
+  formatPromotionCreatedEvent,
+  formatRewardsClaimedEvent,
+  formatSetSwapperEvent,
   formatTransferEvent,
-  getPrizeDistribution,
   getPrizeHookStatus,
   getPromotionInfo,
   getUserClaimableRewards,
@@ -76,6 +78,9 @@ export type PrizeHookStatus = Awaited<ReturnType<typeof getPrizeHookStatus>>
 export type TransferEvent = ReturnType<typeof formatTransferEvent>
 export type FlashEvent = ReturnType<typeof formatFlashEvent>
 export type ClaimedPrizeEvent = ReturnType<typeof formatClaimedPrizeEvent>
+export type SetSwapperEvent = ReturnType<typeof formatSetSwapperEvent>
+export type RewardsClaimedEvent = ReturnType<typeof formatRewardsClaimedEvent>
+export type PromotionCreatedEvent = ReturnType<typeof formatPromotionCreatedEvent>
 
 export type PrizeDistribution = { tier: number; size: number; count: number; odds: number; drawFrequency: number }[]
 

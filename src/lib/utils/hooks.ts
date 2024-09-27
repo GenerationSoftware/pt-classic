@@ -1,8 +1,8 @@
 import { prizeHook, prizePool, prizeVault } from '$lib/config'
+import { clients, userSetSwapperEvents } from '$lib/stores'
 import { erc20Abi, zeroAddress, type Address } from 'viem'
+import { updateUserSetSwapperEvents } from './events'
 import { validateClientNetwork } from './providers'
-import { getSetSwapperEvents } from './events'
-import { clients } from '$lib/stores'
 import { vaultABI } from '$lib/abis'
 import { lower } from './formatting'
 import { get } from 'svelte/store'
@@ -40,7 +40,7 @@ export const getPrizeHookStatus = async (
     isPrizeHookSet = true
   }
 
-  const setSwapperEvents = await getSetSwapperEvents(userAddress)
+  const setSwapperEvents = await updateUserSetSwapperEvents(userAddress, get(userSetSwapperEvents) ?? [])
 
   if (!!setSwapperEvents.length) {
     const swapperAddresses = [...new Set<Address>(setSwapperEvents.map((e) => e.args.newSwapper))]

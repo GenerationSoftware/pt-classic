@@ -30,7 +30,10 @@ import type {
   TokenPrices,
   TransferEvent,
   UncheckedPrize,
-  KeyedCache
+  KeyedCache,
+  SetSwapperEvent,
+  PromotionCreatedEvent,
+  RewardsClaimedEvent
 } from './types'
 
 export const walletProviders = writable<EIP6963ProviderData[]>([])
@@ -56,12 +59,18 @@ export const userPrizeHookStatus = writable<PrizeHookStatus | undefined>(undefin
 export const userTransferEvents = writable<TransferEvent[] | undefined>(undefined)
 export const userFlashEvents = writable<FlashEvent[] | undefined>(undefined)
 export const userClaimedPrizeEvents = writable<ClaimedPrizeEvent[] | undefined>(undefined)
+export const userSetSwapperEvents = writable<SetSwapperEvent[] | undefined>(undefined)
+export const userRewardsClaimedEvents = writable<RewardsClaimedEvent[] | undefined>(undefined)
 
 export const userClaimedRewards = writable<ClaimedReward[] | undefined>(undefined)
 export const userClaimableRewards = writable<ClaimableReward[] | undefined>(undefined)
 
 export const userLastCheckedBlockNumber = writable<bigint | undefined>(undefined)
 export const userUncheckedPrizes = writable<{ list: UncheckedPrize[]; queriedAtBlockNumber: bigint } | undefined>(undefined)
+
+export const promotionCreatedEvents = writable<PromotionCreatedEvent[]>(
+  JSON.parse(localStorage.getItem(localStorageKeys.promotionCreatedEvents) ?? '{}')[chain.id] ?? []
+)
 
 export const blockTimestamps = writable<{ [blockNumber: number]: number }>(
   JSON.parse(localStorage.getItem(localStorageKeys.blockTimestamps) ?? '{}')[chain.id] ?? {}
@@ -73,12 +82,25 @@ userAddress.subscribe(async (address) => {
   userTransferEvents.set(undefined)
   userFlashEvents.set(undefined)
   userClaimedPrizeEvents.set(undefined)
+  userSetSwapperEvents.set(undefined)
+  userRewardsClaimedEvents.set(undefined)
   userClaimedRewards.set(undefined)
   userClaimableRewards.set(undefined)
   userLastCheckedBlockNumber.set(undefined)
   userUncheckedPrizes.set(undefined)
 
   if (!!address) {
+    const cachedSetSwapperEvents: UserKeyedCache<SetSwapperEvent[]> = JSON.parse(
+      localStorage.getItem(localStorageKeys.setSwapperEvents) ?? '{}'
+    )
+    userSetSwapperEvents.set(cachedSetSwapperEvents[lower(address)]?.[chain.id] ?? [])
+
+    const cachedLastCheckedBlockNumber: UserKeyedCache<string> = JSON.parse(
+      localStorage.getItem(localStorageKeys.lastCheckedBlockNumber) ?? '{}'
+    )
+    const lastCheckedBlockNumber = BigInt(cachedLastCheckedBlockNumber[lower(address)]?.[chain.id] ?? '0')
+    userLastCheckedBlockNumber.set(lastCheckedBlockNumber)
+
     await updateUserTokenBalances(address)
 
     const prizeHookStatus = await getPrizeHookStatus(address)
@@ -100,12 +122,6 @@ userAddress.subscribe(async (address) => {
       localStorage.getItem(localStorageKeys.claimedPrizeEvents) ?? '{}'
     )
     await updateUserClaimedPrizeEvents(address, cachedClaimedPrizeEvents[lower(address)]?.[chain.id] ?? [])
-
-    const cachedLastCheckedBlockNumber: UserKeyedCache<string> = JSON.parse(
-      localStorage.getItem(localStorageKeys.lastCheckedBlockNumber) ?? '{}'
-    )
-    const lastCheckedBlockNumber = BigInt(cachedLastCheckedBlockNumber[lower(address)]?.[chain.id] ?? '0')
-    userLastCheckedBlockNumber.set(lastCheckedBlockNumber)
 
     userUncheckedPrizes.set(await getUserUncheckedPrizes(address, { checkBlockNumber: currentBlockNumber }))
   }
@@ -147,6 +163,32 @@ userClaimedPrizeEvents.subscribe((claimedPrizeEvents) => {
   }
 })
 
+userSetSwapperEvents.subscribe((setSwapperEvents) => {
+  const address = get(userAddress)
+
+  if (!!setSwapperEvents && !!address) {
+    const newStorage: UserKeyedCache<SetSwapperEvent[]> = JSON.parse(localStorage.getItem(localStorageKeys.setSwapperEvents) ?? '{}')
+    if (newStorage[lower(address)] === undefined) newStorage[lower(address)] = {}
+    newStorage[lower(address)][chain.id] = setSwapperEvents
+
+    localStorage.setItem(localStorageKeys.setSwapperEvents, JSON.stringify(newStorage))
+  }
+})
+
+userRewardsClaimedEvents.subscribe((rewardsClaimedEvents) => {
+  const address = get(userAddress)
+
+  if (!!rewardsClaimedEvents && !!address) {
+    const newStorage: UserKeyedCache<RewardsClaimedEvent[]> = JSON.parse(
+      localStorage.getItem(localStorageKeys.rewardsClaimedEvents) ?? '{}'
+    )
+    if (newStorage[lower(address)] === undefined) newStorage[lower(address)] = {}
+    newStorage[lower(address)][chain.id] = rewardsClaimedEvents
+
+    localStorage.setItem(localStorageKeys.rewardsClaimedEvents, JSON.stringify(newStorage))
+  }
+})
+
 userLastCheckedBlockNumber.subscribe((lastCheckedBlockNumber) => {
   const address = get(userAddress)
 
@@ -157,6 +199,14 @@ userLastCheckedBlockNumber.subscribe((lastCheckedBlockNumber) => {
 
     localStorage.setItem(localStorageKeys.lastCheckedBlockNumber, JSON.stringify(newStorage))
   }
+})
+
+promotionCreatedEvents.subscribe((events) => {
+  const newStorage: KeyedCache<PromotionCreatedEvent[]> = JSON.parse(localStorage.getItem(localStorageKeys.promotionCreatedEvents) ?? '{}')
+  if (newStorage[chain.id] === undefined) newStorage[chain.id] = []
+  newStorage[chain.id] = events
+
+  localStorage.setItem(localStorageKeys.promotionCreatedEvents, JSON.stringify(newStorage))
 })
 
 blockTimestamps.subscribe((timestamps) => {
@@ -191,6 +241,11 @@ promotionInfo.subscribe(async (info) => {
   const address = get(userAddress)
 
   if (!!info && !!address) {
+    const cachedRewardsClaimedEvents: UserKeyedCache<RewardsClaimedEvent[]> = JSON.parse(
+      localStorage.getItem(localStorageKeys.rewardsClaimedEvents) ?? '{}'
+    )
+    userRewardsClaimedEvents.set(cachedRewardsClaimedEvents[lower(address)]?.[chain.id] ?? [])
+
     userClaimedRewards.set(await getUserClaimedRewards(info, address))
     userClaimableRewards.set(await getUserClaimableRewards(info, address))
   }
@@ -200,6 +255,11 @@ userAddress.subscribe(async (address) => {
   const info = get(promotionInfo)
 
   if (!!address && !!info) {
+    const cachedRewardsClaimedEvents: UserKeyedCache<RewardsClaimedEvent[]> = JSON.parse(
+      localStorage.getItem(localStorageKeys.rewardsClaimedEvents) ?? '{}'
+    )
+    userRewardsClaimedEvents.set(cachedRewardsClaimedEvents[lower(address)]?.[chain.id] ?? [])
+
     userClaimedRewards.set(await getUserClaimedRewards(info, address))
     userClaimableRewards.set(await getUserClaimableRewards(info, address))
   }

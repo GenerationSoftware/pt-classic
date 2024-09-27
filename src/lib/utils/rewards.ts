@@ -1,9 +1,9 @@
-import { getPromotionCreatedEvents, getRewardsClaimedEvents } from './events'
+import { updatePromotionCreatedEvents, updateUserRewardsClaimedEvents } from './events'
+import { clients, promotionCreatedEvents, userRewardsClaimedEvents } from '$lib/stores'
 import { validateClientNetwork } from './providers'
 import { getCurrentTimestamp } from './time'
 import { twabRewardsABI } from '$lib/abis'
 import { twabRewards } from '$lib/config'
-import { clients } from '$lib/stores'
 import { lower } from './formatting'
 import { get } from 'svelte/store'
 import type { Address, ContractFunctionParameters, Hash } from 'viem'
@@ -27,15 +27,15 @@ export const getPromotionInfo = async () => {
   const publicClient = get(clients).public
   validateClientNetwork(publicClient)
 
-  const promotionCreatedEvents = await getPromotionCreatedEvents()
+  const updatedPromotionCreatedEvents = await updatePromotionCreatedEvents(get(promotionCreatedEvents) ?? [])
 
-  const promotionIds = promotionCreatedEvents.map((event) => event.args.promotionId)
+  const promotionIds = updatedPromotionCreatedEvents.map((event) => event.args.promotionId)
 
   const contracts: ContractFunctionParameters<typeof twabRewardsABI, 'view', 'getPromotion'>[] = promotionIds.map((promotionId) => ({
     address: twabRewards.address,
     abi: twabRewardsABI,
     functionName: 'getPromotion',
-    args: [promotionId]
+    args: [BigInt(promotionId)]
   }))
 
   const multicall = await publicClient.multicall({ contracts })
@@ -52,10 +52,10 @@ export const getPromotionInfo = async () => {
 export const getUserClaimedRewards = async (promotionInfo: PromotionInfo, userAddress: Address) => {
   const claimed: { txHash: Hash; blockNumber: bigint; token: Token; amount: bigint }[] = []
 
-  const rewardsClaimedEvents = await getRewardsClaimedEvents(userAddress)
+  const updatedRewardsClaimedEvents = await updateUserRewardsClaimedEvents(userAddress, get(userRewardsClaimedEvents) ?? [])
 
-  rewardsClaimedEvents.forEach((claimEvent) => {
-    const tokenAddress = promotionInfo[claimEvent.args.promotionId.toString()]?.token
+  updatedRewardsClaimedEvents.forEach((claimEvent) => {
+    const tokenAddress = promotionInfo[claimEvent.args.promotionId]?.token
     const token = !!tokenAddress ? twabRewards.tokenOptions.find((t) => lower(t.address) === lower(tokenAddress)) : undefined
 
     if (!!token) {
@@ -64,9 +64,14 @@ export const getUserClaimedRewards = async (promotionInfo: PromotionInfo, userAd
       )
 
       if (existingClaimIndex === -1) {
-        claimed.push({ txHash: claimEvent.transactionHash, blockNumber: claimEvent.blockNumber, token, amount: claimEvent.args.amount })
+        claimed.push({
+          txHash: claimEvent.transactionHash,
+          blockNumber: BigInt(claimEvent.blockNumber),
+          token,
+          amount: BigInt(claimEvent.args.amount)
+        })
       } else {
-        claimed[existingClaimIndex].amount += claimEvent.args.amount
+        claimed[existingClaimIndex].amount += BigInt(claimEvent.args.amount)
       }
     }
   })

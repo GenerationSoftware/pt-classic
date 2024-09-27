@@ -7,6 +7,9 @@ export enum localStorageKeys {
   transferEvents = 'transferEvents',
   flashEvents = 'flashEvents',
   claimedPrizeEvents = 'claimedPrizeEvents',
+  setSwapperEvents = 'setSwapperEvents',
+  rewardsClaimedEvents = 'rewardsClaimedEvents',
+  promotionCreatedEvents = 'promotionCreatedEvents',
   lastCheckedBlockNumber = 'lastCheckedBlockNumber',
   blockTimestamps = 'blockTimestamps'
 }

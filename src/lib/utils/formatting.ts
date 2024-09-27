@@ -1,8 +1,15 @@
 import { formatUnits, parseUnits, type Address } from 'viem'
 import { prizePool, prizeVault } from '$lib/config'
 import { seconds } from '$lib/constants'
+import type {
+  getClaimedPrizeEvents,
+  getFlashEvents,
+  getPromotionCreatedEvents,
+  getRewardsClaimedEvents,
+  getSetSwapperEvents,
+  getTransferEvents
+} from './events'
 import type { ClaimedPrizeEvent, ClaimedReward, FlashEvent, TimeUnit, TokenPrices } from '$lib/types'
-import type { getClaimedPrizeEvents, getFlashEvents, getTransferEvents } from './events'
 
 export const lower = (address: Address) => {
   return address.toLowerCase() as Lowercase<Address>
@@ -148,7 +155,6 @@ export const formatFlashEvent = (rawFlashEvent: Awaited<ReturnType<typeof getFla
     args: {
       beneficiary: args.beneficiary,
       trader: args.trader,
-      token: args.tokenToBeneficiary,
       amount: (args.amountsToBeneficiary.reduce((a, b) => a + b, 0n) + args.excessToBeneficiary).toString()
     },
     blockNumber: blockNumber.toString(),
@@ -168,10 +174,53 @@ export const formatClaimedPrizeEvent = (rawClaimedPrizeEvent: Awaited<ReturnType
       recipient: args.recipient,
       drawId: args.drawId,
       tier: args.tier,
-      prizeIndex: args.prizeIndex,
-      payout: args.payout.toString(),
-      claimReward: args.claimReward.toString(),
-      claimRewardRecipient: args.claimRewardRecipient
+      payout: args.payout.toString()
+    },
+    blockNumber: blockNumber.toString(),
+    eventName,
+    transactionHash
+  }
+}
+
+export const formatSetSwapperEvent = (rawSetSwapperEvent: Awaited<ReturnType<typeof getSetSwapperEvents>>[number]) => {
+  const { address, args, blockNumber, eventName, transactionHash } = rawSetSwapperEvent
+
+  return {
+    address,
+    args,
+    blockNumber: blockNumber.toString(),
+    eventName,
+    transactionHash
+  }
+}
+
+export const formatRewardsClaimedEvent = (rawRewardsClaimedEvent: Awaited<ReturnType<typeof getRewardsClaimedEvents>>[number]) => {
+  const { address, args, blockNumber, eventName, transactionHash } = rawRewardsClaimedEvent
+
+  return {
+    address,
+    args: {
+      promotionId: args.promotionId.toString(),
+      epochIds: args.epochIds,
+      user: args.user,
+      amount: args.amount.toString()
+    },
+    blockNumber: blockNumber.toString(),
+    eventName,
+    transactionHash
+  }
+}
+
+export const formatPromotionCreatedEvent = (rawPromotionCreatedEvent: Awaited<ReturnType<typeof getPromotionCreatedEvents>>[number]) => {
+  const { address, args, blockNumber, eventName, transactionHash } = rawPromotionCreatedEvent
+
+  return {
+    address,
+    args: {
+      promotionId: args.promotionId.toString(),
+      vault: args.vault,
+      token: args.token,
+      startTimestamp: args.startTimestamp.toString()
     },
     blockNumber: blockNumber.toString(),
     eventName,

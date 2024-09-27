@@ -1,9 +1,24 @@
-import { clients, userClaimedPrizeEvents, userFlashEvents, userTransferEvents } from '$lib/stores'
-import { formatClaimedPrizeEvent, formatFlashEvent, formatTransferEvent } from './formatting'
+import {
+  clients,
+  promotionCreatedEvents,
+  userClaimedPrizeEvents,
+  userFlashEvents,
+  userRewardsClaimedEvents,
+  userSetSwapperEvents,
+  userTransferEvents
+} from '$lib/stores'
+import {
+  formatClaimedPrizeEvent,
+  formatFlashEvent,
+  formatPromotionCreatedEvent,
+  formatRewardsClaimedEvent,
+  formatSetSwapperEvent,
+  formatTransferEvent
+} from './formatting'
 import { prizeHook, prizePool, prizeVault, twabRewards } from '$lib/config'
 import { validateClientNetwork } from './providers'
 import { get } from 'svelte/store'
-import type { ClaimedPrizeEvent, FlashEvent, TransferEvent } from '$lib/types'
+import type { ClaimedPrizeEvent, FlashEvent, PromotionCreatedEvent, RewardsClaimedEvent, SetSwapperEvent, TransferEvent } from '$lib/types'
 import type { Address } from 'viem'
 
 export const getTransferEvents = async (
@@ -99,7 +114,7 @@ export const getFlashEvents = async (beneficiary: Address, swapperAddresses: Add
   return flashEvents
 }
 
-export const getSetSwapperEvents = async (userAddress: Address) => {
+export const getSetSwapperEvents = async (userAddress: Address, options?: { fromBlock?: bigint }) => {
   const publicClient = get(clients).public
   validateClientNetwork(publicClient)
 
@@ -116,7 +131,7 @@ export const getSetSwapperEvents = async (userAddress: Address) => {
       type: 'event'
     },
     args: { account: userAddress },
-    fromBlock: prizeVault.deployedAtBlock,
+    fromBlock: options?.fromBlock ?? prizeVault.deployedAtBlock,
     toBlock: 'latest',
     strict: true
   })
@@ -124,7 +139,7 @@ export const getSetSwapperEvents = async (userAddress: Address) => {
   return setSwapperEvents
 }
 
-export const getPromotionCreatedEvents = async () => {
+export const getPromotionCreatedEvents = async (options?: { fromBlock?: bigint }) => {
   const publicClient = get(clients).public
   validateClientNetwork(publicClient)
 
@@ -148,7 +163,7 @@ export const getPromotionCreatedEvents = async () => {
       vault: prizeVault.address,
       token: twabRewards.tokenOptions.map((t) => t.address)
     },
-    fromBlock: prizeVault.deployedAtBlock,
+    fromBlock: options?.fromBlock ?? prizeVault.deployedAtBlock,
     toBlock: 'latest',
     strict: true
   })
@@ -156,7 +171,7 @@ export const getPromotionCreatedEvents = async () => {
   return promotionCreatedEvents
 }
 
-export const getRewardsClaimedEvents = async (userAddress: Address) => {
+export const getRewardsClaimedEvents = async (userAddress: Address, options?: { fromBlock?: bigint }) => {
   const publicClient = get(clients).public
   validateClientNetwork(publicClient)
 
@@ -176,7 +191,7 @@ export const getRewardsClaimedEvents = async (userAddress: Address) => {
     args: {
       user: userAddress
     },
-    fromBlock: prizeVault.deployedAtBlock,
+    fromBlock: options?.fromBlock ?? prizeVault.deployedAtBlock,
     toBlock: 'latest',
     strict: true
   })
@@ -262,4 +277,49 @@ export const updateUserClaimedPrizeEvents = async (userAddress: Address, oldClai
   userClaimedPrizeEvents.set(updatedUserClaimedPrizeEvents)
 
   return updatedUserClaimedPrizeEvents
+}
+
+export const updateUserSetSwapperEvents = async (userAddress: Address, oldSetSwapperEvents: SetSwapperEvent[]) => {
+  const lastSetSwapperEvent = oldSetSwapperEvents.at(-1)
+
+  const newSetSwapperEvents = (
+    await getSetSwapperEvents(userAddress, {
+      fromBlock: !!lastSetSwapperEvent ? BigInt(lastSetSwapperEvent.blockNumber) + 1n : undefined
+    })
+  ).map(formatSetSwapperEvent)
+
+  const updatedUserSetSwapperEvents = [...oldSetSwapperEvents, ...newSetSwapperEvents]
+  userSetSwapperEvents.set(updatedUserSetSwapperEvents)
+
+  return updatedUserSetSwapperEvents
+}
+
+export const updateUserRewardsClaimedEvents = async (userAddress: Address, oldRewardsClaimedEvents: RewardsClaimedEvent[]) => {
+  const lastRewardsClaimedEvent = oldRewardsClaimedEvents.at(-1)
+
+  const newRewardsClaimedEvents = (
+    await getRewardsClaimedEvents(userAddress, {
+      fromBlock: !!lastRewardsClaimedEvent ? BigInt(lastRewardsClaimedEvent.blockNumber) + 1n : undefined
+    })
+  ).map(formatRewardsClaimedEvent)
+
+  const updatedUserRewardsClaimedEvents = [...oldRewardsClaimedEvents, ...newRewardsClaimedEvents]
+  userRewardsClaimedEvents.set(updatedUserRewardsClaimedEvents)
+
+  return updatedUserRewardsClaimedEvents
+}
+
+export const updatePromotionCreatedEvents = async (oldPromotionCreatedEvents: PromotionCreatedEvent[]) => {
+  const lastPromotionCreatedEvent = oldPromotionCreatedEvents.at(-1)
+
+  const newPromotionCreatedEvents = (
+    await getPromotionCreatedEvents({
+      fromBlock: !!lastPromotionCreatedEvent ? BigInt(lastPromotionCreatedEvent.blockNumber) + 1n : undefined
+    })
+  ).map(formatPromotionCreatedEvent)
+
+  const updatedPromotionCreatedEvents = [...oldPromotionCreatedEvents, ...newPromotionCreatedEvents]
+  promotionCreatedEvents.set(updatedPromotionCreatedEvents)
+
+  return updatedPromotionCreatedEvents
 }
