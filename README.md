@@ -4,6 +4,13 @@ A simple, static interface for a PoolTogether prize vault with extremely minimal
 
 ---
 
+### Deployments
+
+#### Base USDC
+
+- `v0.2.0`
+  - IPFS: bafybeiegri6nww56z6jefcyn4tudh4fflfx4wjonfytjzur5yytzzjz5cu ([fleek](https://bafybeiegri6nww56z6jefcyn4tudh4fflfx4wjonfytjzur5yytzzjz5cu.ipfs.flk-ipfs.xyz/), [dweb](https://bafybeiegri6nww56z6jefcyn4tudh4fflfx4wjonfytjzur5yytzzjz5cu.ipfs.dweb.link/))
+
 ### App Features
 
 - Connecting wallets compatible with [EIP-6963](https://eips.ethereum.org/EIPS/eip-6963) and/or [EIP-1193](https://eips.ethereum.org/EIPS/eip-1193)
