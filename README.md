@@ -46,4 +46,4 @@ The app can be pointed at any prize pool and vault combination, configurable thr
 The app builds statically, meaning it can easily be hosted on Github Pages, IPFS, IPNS, through an ENS's content hash, Arweave, etc.
 
 > [!IMPORTANT]
-> Accessing the app through a subpath (e.g. www.mysite.com/pt-classic/) is not currently supported.
+> Accessing the app through a subpath (e.g. `www.mysite.com/pt-classic/`) is not currently supported.
