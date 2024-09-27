@@ -1,8 +1,8 @@
-import fs from 'fs'
-import yargs from 'yargs'
-import * as path from 'path'
-import { hideBin } from 'yargs/helpers'
 import { TurboFactory } from '@ardrive/turbo-sdk'
+import { hideBin } from 'yargs/helpers'
+import * as path from 'path'
+import yargs from 'yargs'
+import fs from 'fs'
 
 const __dirname = process.cwd()
 
@@ -13,9 +13,7 @@ const argv = yargs(hideBin(process.argv)).option('deploy-dir', {
   default: './build'
 }).argv
 
-// const ARWEAVE_BASE_64_JWK = process.env.ARWEAVE_BASE_64_JWK
-
-const runDeploy = async () => {
+const deploy = async () => {
   if (argv.deployDir.length == 0) {
     console.error('deploy directory must not be an empty string')
     return
@@ -32,34 +30,22 @@ const runDeploy = async () => {
     return
   }
 
-  // if (!ARWEAVE_BASE_64_JWK) {
-  //   console.error('ARWEAVE_BASE_64_JWK is missing')
-  //   return
-  // }
-
-  // let jwk = JSON.parse(Buffer.from(ARWEAVE_BASE_64_JWK, 'base64').toString('utf-8'))
   const jwk = JSON.parse(fs.readFileSync(walletFile))
   const turbo = TurboFactory.authenticated({ privateKey: jwk })
 
   const folderPath = path.resolve(`${__dirname}/${argv.deployDir}`)
-  console.log(`Deploying: ${folderPath} to Arweave ...`)
-  console.log()
+  console.log(`Deploying: ${folderPath} to Arweave ...\n`)
 
   try {
-    const { manifest, fileResponses, manifestResponse } = await turbo.uploadFolder({
-      folderPath
-    })
+    const { manifestResponse } = await turbo.uploadFolder({ folderPath })
 
-    console.log(`Deployed!`)
-    console.log(``)
-
+    console.log(`Deployed!\n`)
     console.log(`Transaction id:`)
     console.log(manifestResponse.id)
-    console.log(``)
-    console.log(`__Make sure to update ENS contentHash with this new ID!__`)
+    console.log(`\n__Make sure to update ENS contentHash with this new ID!__`)
   } catch (e) {
     console.error(e)
   }
 }
 
-runDeploy()
+deploy()
