@@ -1,16 +1,13 @@
-<script lang="ts">
+<script>
   import { userClaimableRewards, userUncheckedPrizes } from '$lib/stores'
-
-  export let onClickCheckPrizes: () => void
-  export let onClickClaimBonusRewards: () => void
 </script>
 
 <div>
   {#if !!$userUncheckedPrizes?.list.length}
-    <button on:click={onClickCheckPrizes} class="teal-button">Check Prizes</button>
+    <a href="/account/prizes" class="teal-button">Check Prizes</a>
   {/if}
   {#if !!$userClaimableRewards?.length}
-    <button on:click={onClickClaimBonusRewards} class="teal-button">Claim Bonuses</button>
+    <a href="/account/rewards" class="teal-button">Claim Bonuses</a>
   {/if}
 </div>
 

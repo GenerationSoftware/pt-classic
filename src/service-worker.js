@@ -2,7 +2,7 @@
 import { build, files, version } from '$service-worker'
 
 const cacheId = `ptc-cache-${version}`
-const assets = [...build, ...files]
+const assets = [...build, ...files.filter(f => !f.startsWith('/.'))]
 
 self.addEventListener('install', (event) => {
   // create a new cache and add all files to it
