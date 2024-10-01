@@ -59,11 +59,7 @@ export const getTokenPrice = async (token: { address: Address; decimals: number 
 
   !!dskit.publicClient && validateClientNetwork(dskit.publicClient)
 
-  // TODO: `token: { ...token }` is not necessary once dskit is fixed (overriding token on redirect currently)
-  const tokenPricePromise = dskit.price.ofToken(
-    { token: { ...token }, tokenDenominator: prizeVault.asset },
-    tokenSwapRouteConfigs[lower(token.address)]
-  )
+  const tokenPricePromise = dskit.price.ofToken({ token, tokenDenominator: prizeVault.asset }, tokenSwapRouteConfigs[lower(token.address)])
 
   tokenPricePromises[lower(token.address)] = tokenPricePromise
 

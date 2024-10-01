@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   dskit-eth:
-    specifier: 0.1.9
-    version: 0.1.9(typescript@5.5.4)
+    specifier: 0.1.10
+    version: 0.1.10(typescript@5.5.4)
   viem:
     specifier: 2.20.0
     version: 2.20.0(typescript@5.5.4)
@@ -1841,8 +1841,8 @@ packages:
     resolution: {integrity: sha512-gO+/OMXF7488D+u3ue+G7Y4AA3ZmUnB3eHJXmBTgNHvr4ZNzl36A0ZtG+XCRNYCkYx/bFmw4qtkoFLa+wSrwAA==}
     dev: true
 
-  /dskit-eth@0.1.9(typescript@5.5.4):
-    resolution: {integrity: sha512-+7T73KRhjVNWJAso+iRAeKNH++5PKnLRSTJcb1GEgUihlcbJx4lphvuOUD7r7xlM4nVjd46Znbw2G8EysK8dpQ==}
+  /dskit-eth@0.1.10(typescript@5.5.4):
+    resolution: {integrity: sha512-9LQD4NVgKDGYuJYUUNJUBt7rvkzi+eBFViO7DYeo1hQzuche5NXipxbwNR30lw3Hn5yJ2dEYcn/MNCL2mNLncA==}
     dependencies:
       viem: 2.20.0(typescript@5.5.4)
     transitivePeerDependencies:
