@@ -97,7 +97,7 @@ export const getUserUncheckedPrizes = async (userAddress: Address, options?: { c
   const relevantFlashEvents = get(userFlashEvents)?.filter((e) => BigInt(e.blockNumber) > minBlockNumber) ?? []
   const relevantClaimedPrizeEvents = get(userClaimedPrizeEvents)?.filter((e) => BigInt(e.blockNumber) > minBlockNumber) ?? []
 
-  const numUncheckedDraws = Math.floor((maxTimestamp - minTimestamp) / seconds.day)
+  const numUncheckedDraws = Math.floor((maxTimestamp - minTimestamp) / prizePool.drawPeriodSeconds)
 
   if (!relevantFlashEvents.length && !relevantClaimedPrizeEvents.length && (!firstDepositEvent || numUncheckedDraws < 1))
     return uncheckedPrizes
