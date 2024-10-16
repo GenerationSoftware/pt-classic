@@ -14,8 +14,7 @@ export const getWalletProviders = (options?: { onAutoConnect?: () => void }) => 
   safeSdk.safe
     .getInfo()
     .then((safeInfo) => {
-      console.log(safeInfo)
-      if (safeInfo) {
+      if (safeInfo && safeInfo.chainId == chain.id) {
         const safeProvider = new SafeAppProvider(safeInfo, safeSdk)
         if (!get(userAddress)) {
           connect({
