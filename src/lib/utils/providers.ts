@@ -4,9 +4,32 @@ import { chain, publicClientSettings, transportSettings } from '$lib/config'
 import { get } from 'svelte/store'
 import { DSKit } from 'dskit-eth'
 import type { EIP6963AnnounceProviderEvent, EIP6963ProviderData } from '$lib/types'
+import SafeAppsSDK from '@safe-global/safe-apps-sdk'
+import { SafeAppProvider } from '@safe-global/safe-apps-provider'
 
 export const getWalletProviders = (options?: { onAutoConnect?: () => void }) => {
   const prevProviderId = get(lastConnectedProviderId)
+
+  const safeSdk = new SafeAppsSDK()
+  safeSdk.safe
+    .getInfo()
+    .then((safeInfo) => {
+      if (safeInfo && safeInfo.chainId == chain.id) {
+        const safeProvider = new SafeAppProvider(safeInfo, safeSdk)
+        if (!get(userAddress)) {
+          connect({
+            info: {
+              uuid: 'Safe',
+              name: 'Safe App Connection',
+              icon: '',
+              rdns: ''
+            },
+            provider: safeProvider
+          })
+        }
+      }
+    })
+    .catch(console.warn)
 
   const updateProviders = (providerData: EIP6963ProviderData) => {
     walletProviders.update((providers) => [...providers, providerData])
@@ -43,7 +66,11 @@ export const connect = async (providerData: EIP6963ProviderData, options?: { onC
 
   const _walletClient = createWalletClient({ chain, transport })
 
-  const [address] = await _walletClient.requestAddresses()
+  // Some providers only support `getAddresses` since `requestAddresses` uses optional RPC calls
+  let [address] = await _walletClient.getAddresses()
+  if (!address) {
+    address = (await _walletClient.requestAddresses())[0]
+  }
 
   const publicClient = createPublicClient({ chain, transport, ...publicClientSettings }) as PublicClient
   const walletClient = createWalletClient({ account: address, chain, transport })
