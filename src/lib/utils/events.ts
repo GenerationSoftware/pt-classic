@@ -15,20 +15,52 @@ import {
   formatSetSwapperEvent,
   formatTransferEvent
 } from './formatting'
-import { prizeHook, prizePool, prizeVault, twabRewards } from '$lib/config'
+import { eventQuerySettings, prizeHook, prizePool, prizeVault, twabRewards } from '$lib/config'
 import { validateClientNetwork } from './providers'
 import { get } from 'svelte/store'
 import type { ClaimedPrizeEvent, FlashEvent, PromotionCreatedEvent, RewardsClaimedEvent, SetSwapperEvent, TransferEvent } from '$lib/types'
-import type { Address } from 'viem'
+import type { AbiEvent, Address, GetLogsParameters, GetLogsReturnType } from 'viem'
 
-export const getTransferEvents = async (
-  address: Address,
-  tokenAddress: Address,
-  options?: { filter?: 'from' | 'to'; fromBlock?: bigint }
+const getPaginatedEvents = async <Event extends AbiEvent>(
+  params: GetLogsParameters<Event, undefined, true, bigint, bigint | 'latest'> & {
+    fromBlock: bigint
+    toBlock: bigint | 'latest'
+    args?: any
+  }
 ) => {
   const publicClient = get(clients).public
   validateClientNetwork(publicClient)
 
+  const events: GetLogsReturnType<Event, undefined, true, bigint, bigint, Event['name']> = []
+
+  const maxBlock = params.toBlock === 'latest' ? await publicClient.getBlockNumber() : params.toBlock
+
+  let fromBlock = params.fromBlock
+  let toBlock = params.fromBlock + eventQuerySettings.maxPageSizeInBlocks - 1n
+
+  if (toBlock > maxBlock) {
+    toBlock = maxBlock
+  }
+
+  while (toBlock <= maxBlock) {
+    const newEventsPage = await publicClient.getLogs<Event, undefined, true, bigint, bigint>({ ...params, fromBlock, toBlock })
+    events.push(...newEventsPage)
+
+    fromBlock = toBlock + 1n
+
+    if (toBlock !== maxBlock && toBlock + eventQuerySettings.maxPageSizeInBlocks > maxBlock) {
+      toBlock = maxBlock
+    } else {
+      toBlock += eventQuerySettings.maxPageSizeInBlocks
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, eventQuerySettings.paginationDelay))
+  }
+
+  return events
+}
+
+const getTransferEvents = async (address: Address, tokenAddress: Address, options?: { filter?: 'from' | 'to'; fromBlock?: bigint }) => {
   const transferEvent = {
     type: 'event',
     name: 'Transfer',
@@ -42,7 +74,7 @@ export const getTransferEvents = async (
   const fromTransferEvents =
     options?.filter === 'to'
       ? []
-      : await publicClient.getLogs({
+      : await getPaginatedEvents({
           address: tokenAddress,
           event: transferEvent,
           args: { from: address },
@@ -54,7 +86,7 @@ export const getTransferEvents = async (
   const toTransferEvents =
     options?.filter === 'from'
       ? []
-      : await publicClient.getLogs({
+      : await getPaginatedEvents({
           address: tokenAddress,
           event: transferEvent,
           args: { to: address },
@@ -66,13 +98,10 @@ export const getTransferEvents = async (
   return [...fromTransferEvents, ...toTransferEvents]
 }
 
-export const getFlashEvents = async (beneficiary: Address, swapperAddresses: Address[], options?: { fromBlock?: bigint }) => {
+const getFlashEvents = async (beneficiary: Address, swapperAddresses: Address[], options?: { fromBlock?: bigint }) => {
   if (!swapperAddresses.length) return []
 
-  const publicClient = get(clients).public
-  validateClientNetwork(publicClient)
-
-  const flashEvents = await publicClient.getLogs({
+  const flashEvents = await getPaginatedEvents({
     address: swapperAddresses,
     event: {
       anonymous: false,
@@ -114,11 +143,8 @@ export const getFlashEvents = async (beneficiary: Address, swapperAddresses: Add
   return flashEvents
 }
 
-export const getSetSwapperEvents = async (userAddress: Address, options?: { fromBlock?: bigint }) => {
-  const publicClient = get(clients).public
-  validateClientNetwork(publicClient)
-
-  const setSwapperEvents = await publicClient.getLogs({
+const getSetSwapperEvents = async (userAddress: Address, options?: { fromBlock?: bigint }) => {
+  const setSwapperEvents = await getPaginatedEvents({
     address: prizeHook.address,
     event: {
       anonymous: false,
@@ -139,11 +165,8 @@ export const getSetSwapperEvents = async (userAddress: Address, options?: { from
   return setSwapperEvents
 }
 
-export const getPromotionCreatedEvents = async (options?: { fromBlock?: bigint }) => {
-  const publicClient = get(clients).public
-  validateClientNetwork(publicClient)
-
-  const promotionCreatedEvents = await publicClient.getLogs({
+const getPromotionCreatedEvents = async (options?: { fromBlock?: bigint }) => {
+  const promotionCreatedEvents = await getPaginatedEvents({
     address: twabRewards.address,
     event: {
       anonymous: false,
@@ -171,11 +194,8 @@ export const getPromotionCreatedEvents = async (options?: { fromBlock?: bigint }
   return promotionCreatedEvents
 }
 
-export const getRewardsClaimedEvents = async (userAddress: Address, options?: { fromBlock?: bigint }) => {
-  const publicClient = get(clients).public
-  validateClientNetwork(publicClient)
-
-  const rewardsClaimedEvents = await publicClient.getLogs({
+const getRewardsClaimedEvents = async (userAddress: Address, options?: { fromBlock?: bigint }) => {
+  const rewardsClaimedEvents = await getPaginatedEvents({
     address: twabRewards.address,
     event: {
       anonymous: false,
@@ -199,11 +219,8 @@ export const getRewardsClaimedEvents = async (userAddress: Address, options?: { 
   return rewardsClaimedEvents
 }
 
-export const getClaimedPrizeEvents = async (userAddress: Address, options?: { fromBlock?: bigint }) => {
-  const publicClient = get(clients).public
-  validateClientNetwork(publicClient)
-
-  const claimedPrizeEvents = await publicClient.getLogs({
+const getClaimedPrizeEvents = async (userAddress: Address, options?: { fromBlock?: bigint }) => {
+  const claimedPrizeEvents = await getPaginatedEvents({
     address: prizePool.address,
     event: {
       anonymous: false,
