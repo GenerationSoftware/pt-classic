@@ -173,7 +173,7 @@ export const getUserUncheckedPrizes = async (userAddress: Address, options?: { c
 
   // Adding fallback prizes won
   relevantClaimedPrizeEvents.forEach((claimedPrizeEvent) => {
-    const size = parseFloat(formatUnits(BigInt(claimedPrizeEvent.args.payout), prizeVault.decimals))
+    const size = parseFloat(formatUnits(BigInt(claimedPrizeEvent.args.payout), prizePool.prizeToken.decimals)) * prizeTokenPrice
     const tierOdds = prizeDistribution[claimedPrizeEvent.args.tier]?.odds ?? 1
     const userOdds = tierOdds * oddsMultiplier
 
