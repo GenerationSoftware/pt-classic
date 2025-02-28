@@ -57,8 +57,3 @@ export const pageTransition: { duration: number } = { duration: 100 }
 
 export const transportSettings: Omit<TransportConfig, 'name' | 'key' | 'request' | 'type'> = { retryCount: 3, retryDelay: 500 }
 export const publicClientSettings: Omit<ClientConfig, 'chain' | 'transport'> = { batch: { multicall: { batchSize: 1_024 * 1_024 } } }
-
-export const eventQuerySettings: { maxPageSizeInBlocks: bigint; paginationDelay: number } = {
-  maxPageSizeInBlocks: 10_000_000n,
-  paginationDelay: 0
-}

@@ -15,52 +15,18 @@ import {
   formatSetSwapperEvent,
   formatTransferEvent
 } from './formatting'
-import { eventQuerySettings, prizeHook, prizePool, prizeVault, twabRewards } from '$lib/config'
-import { validateClientNetwork } from './providers'
+import { prizeHook, prizePool, prizeVault, twabRewards } from '$lib/config'
 import { get } from 'svelte/store'
 import type { ClaimedPrizeEvent, FlashEvent, PromotionCreatedEvent, RewardsClaimedEvent, SetSwapperEvent, TransferEvent } from '$lib/types'
-import type { AbiEvent, Address, GetLogsParameters, GetLogsReturnType } from 'viem'
+import type { Address } from 'viem'
 
-const getPaginatedEvents = async <Event extends AbiEvent>(
-  params: GetLogsParameters<Event, undefined, true, bigint, bigint | 'latest'> & {
-    fromBlock: bigint
-    toBlock: bigint | 'latest'
-    args?: any
-  }
+export const getTransferEvents = async (
+  address: Address,
+  tokenAddress: Address,
+  options?: { filter?: 'from' | 'to'; fromBlock?: bigint }
 ) => {
-  const publicClient = get(clients).public
-  validateClientNetwork(publicClient)
+  const dskitClient = get(clients).dskit
 
-  const events: GetLogsReturnType<Event, undefined, true, bigint, bigint, Event['name']> = []
-
-  const maxBlock = params.toBlock === 'latest' ? await publicClient.getBlockNumber() : params.toBlock
-
-  let fromBlock = params.fromBlock
-  let toBlock = params.fromBlock + eventQuerySettings.maxPageSizeInBlocks - 1n
-
-  if (toBlock > maxBlock) {
-    toBlock = maxBlock
-  }
-
-  while (toBlock <= maxBlock) {
-    const newEventsPage = await publicClient.getLogs<Event, undefined, true, bigint, bigint>({ ...params, fromBlock, toBlock })
-    events.push(...newEventsPage)
-
-    fromBlock = toBlock + 1n
-
-    if (toBlock !== maxBlock && toBlock + eventQuerySettings.maxPageSizeInBlocks > maxBlock) {
-      toBlock = maxBlock
-    } else {
-      toBlock += eventQuerySettings.maxPageSizeInBlocks
-    }
-
-    await new Promise((resolve) => setTimeout(resolve, eventQuerySettings.paginationDelay))
-  }
-
-  return events
-}
-
-const getTransferEvents = async (address: Address, tokenAddress: Address, options?: { filter?: 'from' | 'to'; fromBlock?: bigint }) => {
   const transferEvent = {
     type: 'event',
     name: 'Transfer',
@@ -74,34 +40,34 @@ const getTransferEvents = async (address: Address, tokenAddress: Address, option
   const fromTransferEvents =
     options?.filter === 'to'
       ? []
-      : await getPaginatedEvents({
+      : await dskitClient.event.query({
           address: tokenAddress,
           event: transferEvent,
           args: { from: address },
           fromBlock: options?.fromBlock ?? prizeVault.deployedAtBlock,
-          toBlock: 'latest',
-          strict: true
+          toBlock: 'latest'
         })
 
   const toTransferEvents =
     options?.filter === 'from'
       ? []
-      : await getPaginatedEvents({
+      : await dskitClient.event.query({
           address: tokenAddress,
           event: transferEvent,
           args: { to: address },
           fromBlock: options?.fromBlock ?? prizeVault.deployedAtBlock,
-          toBlock: 'latest',
-          strict: true
+          toBlock: 'latest'
         })
 
   return [...fromTransferEvents, ...toTransferEvents]
 }
 
-const getFlashEvents = async (beneficiary: Address, swapperAddresses: Address[], options?: { fromBlock?: bigint }) => {
+export const getFlashEvents = async (beneficiary: Address, swapperAddresses: Address[], options?: { fromBlock?: bigint }) => {
   if (!swapperAddresses.length) return []
 
-  const flashEvents = await getPaginatedEvents({
+  const dskitClient = get(clients).dskit
+
+  const flashEvents = await dskitClient.event.query({
     address: swapperAddresses,
     event: {
       anonymous: false,
@@ -136,15 +102,16 @@ const getFlashEvents = async (beneficiary: Address, swapperAddresses: Address[],
     },
     args: { beneficiary },
     fromBlock: options?.fromBlock ?? prizeVault.deployedAtBlock,
-    toBlock: 'latest',
-    strict: true
+    toBlock: 'latest'
   })
 
   return flashEvents
 }
 
-const getSetSwapperEvents = async (userAddress: Address, options?: { fromBlock?: bigint }) => {
-  const setSwapperEvents = await getPaginatedEvents({
+export const getSetSwapperEvents = async (userAddress: Address, options?: { fromBlock?: bigint }) => {
+  const dskitClient = get(clients).dskit
+
+  const setSwapperEvents = await dskitClient.event.query({
     address: prizeHook.address,
     event: {
       anonymous: false,
@@ -158,15 +125,16 @@ const getSetSwapperEvents = async (userAddress: Address, options?: { fromBlock?:
     },
     args: { account: userAddress },
     fromBlock: options?.fromBlock ?? prizeVault.deployedAtBlock,
-    toBlock: 'latest',
-    strict: true
+    toBlock: 'latest'
   })
 
   return setSwapperEvents
 }
 
-const getPromotionCreatedEvents = async (options?: { fromBlock?: bigint }) => {
-  const promotionCreatedEvents = await getPaginatedEvents({
+export const getPromotionCreatedEvents = async (options?: { fromBlock?: bigint }) => {
+  const dskitClient = get(clients).dskit
+
+  const promotionCreatedEvents = await dskitClient.event.query({
     address: twabRewards.address,
     event: {
       anonymous: false,
@@ -187,15 +155,16 @@ const getPromotionCreatedEvents = async (options?: { fromBlock?: bigint }) => {
       token: twabRewards.tokenOptions.map((t) => t.address)
     },
     fromBlock: options?.fromBlock ?? prizeVault.deployedAtBlock,
-    toBlock: 'latest',
-    strict: true
+    toBlock: 'latest'
   })
 
   return promotionCreatedEvents
 }
 
-const getRewardsClaimedEvents = async (userAddress: Address, options?: { fromBlock?: bigint }) => {
-  const rewardsClaimedEvents = await getPaginatedEvents({
+export const getRewardsClaimedEvents = async (userAddress: Address, options?: { fromBlock?: bigint }) => {
+  const dskitClient = get(clients).dskit
+
+  const rewardsClaimedEvents = await dskitClient.event.query({
     address: twabRewards.address,
     event: {
       anonymous: false,
@@ -212,15 +181,16 @@ const getRewardsClaimedEvents = async (userAddress: Address, options?: { fromBlo
       user: userAddress
     },
     fromBlock: options?.fromBlock ?? prizeVault.deployedAtBlock,
-    toBlock: 'latest',
-    strict: true
+    toBlock: 'latest'
   })
 
   return rewardsClaimedEvents
 }
 
-const getClaimedPrizeEvents = async (userAddress: Address, options?: { fromBlock?: bigint }) => {
-  const claimedPrizeEvents = await getPaginatedEvents({
+export const getClaimedPrizeEvents = async (userAddress: Address, options?: { fromBlock?: bigint }) => {
+  const dskitClient = get(clients).dskit
+
+  const claimedPrizeEvents = await dskitClient.event.query({
     address: prizePool.address,
     event: {
       anonymous: false,
@@ -244,8 +214,7 @@ const getClaimedPrizeEvents = async (userAddress: Address, options?: { fromBlock
       recipient: userAddress
     },
     fromBlock: options?.fromBlock ?? prizeVault.deployedAtBlock,
-    toBlock: 'latest',
-    strict: true
+    toBlock: 'latest'
   })
 
   return claimedPrizeEvents
@@ -288,7 +257,9 @@ export const updateUserClaimedPrizeEvents = async (userAddress: Address, oldClai
     await getClaimedPrizeEvents(userAddress, {
       fromBlock: !!lastClaimedPrizeEvent ? BigInt(lastClaimedPrizeEvent.blockNumber) + 1n : undefined
     })
-  ).map(formatClaimedPrizeEvent)
+  )
+    .map(formatClaimedPrizeEvent)
+    .filter((e) => e.args.payout !== '0')
 
   const updatedUserClaimedPrizeEvents = [...oldClaimedPrizeEvents, ...newClaimedPrizeEvents]
   userClaimedPrizeEvents.set(updatedUserClaimedPrizeEvents)

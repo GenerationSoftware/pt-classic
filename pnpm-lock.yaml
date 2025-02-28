@@ -12,8 +12,8 @@ dependencies:
     specifier: ^9.1.0
     version: 9.1.0(typescript@5.5.4)
   dskit-eth:
-    specifier: 0.1.10
-    version: 0.1.10(typescript@5.5.4)
+    specifier: 0.2.4
+    version: 0.2.4(typescript@5.5.4)
   viem:
     specifier: 2.20.0
     version: 2.20.0(typescript@5.5.4)
@@ -889,7 +889,6 @@ packages:
     engines: {node: ^14.21.3 || >=16}
     dependencies:
       '@noble/hashes': 1.5.0
-    dev: true
 
   /@noble/ed25519@1.7.3:
     resolution: {integrity: sha512-iR8GBkDt0Q3GyaVcIu7mSsVIqnFbkbRzGLWlvhwunacoLwt4J3swfKhfaM6rN6WY+TBGoYT1GtT1mIh2/jGbRQ==}
@@ -908,7 +907,6 @@ packages:
   /@noble/hashes@1.5.0:
     resolution: {integrity: sha512-1j6kQFb7QRru7eKN3ZDvRcP13rugwdxZqCjbiAVZfIJwgj2A65UmT4TgARXGlXgnRkORLTDTrO19ZErt7+QXgA==}
     engines: {node: ^14.21.3 || >=16}
-    dev: true
 
   /@polka/url@1.0.0-next.28:
     resolution: {integrity: sha512-8LduaNlMZGwdZ6qWrKlfa+2M4gahzFkprZiAt2TF8uS0qQgBizKXpXURqvTJ4WtmupWxaLqjRb2UCTe72mu+Aw==}
@@ -1876,8 +1874,8 @@ packages:
     resolution: {integrity: sha512-gO+/OMXF7488D+u3ue+G7Y4AA3ZmUnB3eHJXmBTgNHvr4ZNzl36A0ZtG+XCRNYCkYx/bFmw4qtkoFLa+wSrwAA==}
     dev: true
 
-  /dskit-eth@0.1.10(typescript@5.5.4):
-    resolution: {integrity: sha512-9LQD4NVgKDGYuJYUUNJUBt7rvkzi+eBFViO7DYeo1hQzuche5NXipxbwNR30lw3Hn5yJ2dEYcn/MNCL2mNLncA==}
+  /dskit-eth@0.2.4(typescript@5.5.4):
+    resolution: {integrity: sha512-L6gy8TgJ08Fl7JsisS6xb1PcKOSLj12kJthWow+YXxesIoNTjturJBAW1J40o0Mio4lTegpovhGq9tT80TcFqQ==}
     dependencies:
       viem: 2.20.0(typescript@5.5.4)
     transitivePeerDependencies:
@@ -3182,8 +3180,8 @@ packages:
   /webauthn-p256@0.0.5:
     resolution: {integrity: sha512-drMGNWKdaixZNobeORVIqq7k5DsRC9FnG201K2QjeOoQLmtSDaSsVZdkg6n5jUALJKcAG++zBPJXmv6hy0nWFg==}
     dependencies:
-      '@noble/curves': 1.4.0
-      '@noble/hashes': 1.4.0
+      '@noble/curves': 1.6.0
+      '@noble/hashes': 1.5.0
     dev: false
 
   /webidl-conversions@3.0.1:

@@ -1,6 +1,6 @@
 {
   "name": "pt-classic",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "type": "module",
   "private": true,
   "scripts": {
@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@safe-global/safe-apps-provider": "0.18.3",
-    "dskit-eth": "0.1.10",
+    "dskit-eth": "0.2.4",
     "viem": "2.20.0"
   },
   "devDependencies": {
