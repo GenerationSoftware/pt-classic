@@ -221,11 +221,12 @@ export const getClaimedPrizeEvents = async (userAddress: Address, options?: { fr
 }
 
 export const updateUserTransferEvents = async (userAddress: Address, oldTransferEvents: TransferEvent[]) => {
-  const lastTransferEvent = oldTransferEvents.at(-1)
+  const oldBlockNumbers = oldTransferEvents.map((e) => Number(e.blockNumber))
+  const latestBlockNumber = !!oldBlockNumbers.length ? BigInt(Math.max(...oldBlockNumbers)) : undefined
 
   const newTransferEvents = (
     await getTransferEvents(userAddress, prizeVault.address, {
-      fromBlock: !!lastTransferEvent ? BigInt(lastTransferEvent.blockNumber) + 1n : undefined
+      fromBlock: !!latestBlockNumber ? latestBlockNumber + 1n : undefined
     })
   ).map(formatTransferEvent)
 
@@ -236,11 +237,12 @@ export const updateUserTransferEvents = async (userAddress: Address, oldTransfer
 }
 
 export const updateUserFlashEvents = async (userAddress: Address, swapperAddresses: Address[], oldFlashEvents: FlashEvent[]) => {
-  const lastFlashEvent = oldFlashEvents.at(-1)
+  const oldBlockNumbers = oldFlashEvents.map((e) => Number(e.blockNumber))
+  const latestBlockNumber = !!oldBlockNumbers.length ? BigInt(Math.max(...oldBlockNumbers)) : undefined
 
   const newFlashEvents = (
     await getFlashEvents(userAddress, swapperAddresses, {
-      fromBlock: !!lastFlashEvent ? BigInt(lastFlashEvent.blockNumber) + 1n : undefined
+      fromBlock: !!latestBlockNumber ? latestBlockNumber + 1n : undefined
     })
   ).map(formatFlashEvent)
 
@@ -251,11 +253,12 @@ export const updateUserFlashEvents = async (userAddress: Address, swapperAddress
 }
 
 export const updateUserClaimedPrizeEvents = async (userAddress: Address, oldClaimedPrizeEvents: ClaimedPrizeEvent[]) => {
-  const lastClaimedPrizeEvent = oldClaimedPrizeEvents.at(-1)
+  const oldBlockNumbers = oldClaimedPrizeEvents.map((e) => Number(e.blockNumber))
+  const latestBlockNumber = !!oldBlockNumbers.length ? BigInt(Math.max(...oldBlockNumbers)) : undefined
 
   const newClaimedPrizeEvents = (
     await getClaimedPrizeEvents(userAddress, {
-      fromBlock: !!lastClaimedPrizeEvent ? BigInt(lastClaimedPrizeEvent.blockNumber) + 1n : undefined
+      fromBlock: !!latestBlockNumber ? latestBlockNumber + 1n : undefined
     })
   )
     .map(formatClaimedPrizeEvent)
@@ -268,11 +271,12 @@ export const updateUserClaimedPrizeEvents = async (userAddress: Address, oldClai
 }
 
 export const updateUserSetSwapperEvents = async (userAddress: Address, oldSetSwapperEvents: SetSwapperEvent[]) => {
-  const lastSetSwapperEvent = oldSetSwapperEvents.at(-1)
+  const oldBlockNumbers = oldSetSwapperEvents.map((e) => Number(e.blockNumber))
+  const latestBlockNumber = !!oldBlockNumbers.length ? BigInt(Math.max(...oldBlockNumbers)) : undefined
 
   const newSetSwapperEvents = (
     await getSetSwapperEvents(userAddress, {
-      fromBlock: !!lastSetSwapperEvent ? BigInt(lastSetSwapperEvent.blockNumber) + 1n : undefined
+      fromBlock: !!latestBlockNumber ? latestBlockNumber + 1n : undefined
     })
   ).map(formatSetSwapperEvent)
 
@@ -283,11 +287,12 @@ export const updateUserSetSwapperEvents = async (userAddress: Address, oldSetSwa
 }
 
 export const updateUserRewardsClaimedEvents = async (userAddress: Address, oldRewardsClaimedEvents: RewardsClaimedEvent[]) => {
-  const lastRewardsClaimedEvent = oldRewardsClaimedEvents.at(-1)
+  const oldBlockNumbers = oldRewardsClaimedEvents.map((e) => Number(e.blockNumber))
+  const latestBlockNumber = !!oldBlockNumbers.length ? BigInt(Math.max(...oldBlockNumbers)) : undefined
 
   const newRewardsClaimedEvents = (
     await getRewardsClaimedEvents(userAddress, {
-      fromBlock: !!lastRewardsClaimedEvent ? BigInt(lastRewardsClaimedEvent.blockNumber) + 1n : undefined
+      fromBlock: !!latestBlockNumber ? latestBlockNumber + 1n : undefined
     })
   ).map(formatRewardsClaimedEvent)
 
@@ -298,11 +303,12 @@ export const updateUserRewardsClaimedEvents = async (userAddress: Address, oldRe
 }
 
 export const updatePromotionCreatedEvents = async (oldPromotionCreatedEvents: PromotionCreatedEvent[]) => {
-  const lastPromotionCreatedEvent = oldPromotionCreatedEvents.at(-1)
+  const oldBlockNumbers = oldPromotionCreatedEvents.map((e) => Number(e.blockNumber))
+  const latestBlockNumber = !!oldBlockNumbers.length ? BigInt(Math.max(...oldBlockNumbers)) : undefined
 
   const newPromotionCreatedEvents = (
     await getPromotionCreatedEvents({
-      fromBlock: !!lastPromotionCreatedEvent ? BigInt(lastPromotionCreatedEvent.blockNumber) + 1n : undefined
+      fromBlock: !!latestBlockNumber ? latestBlockNumber + 1n : undefined
     })
   ).map(formatPromotionCreatedEvent)
 
